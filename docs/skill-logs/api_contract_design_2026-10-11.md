@@ -16,3 +16,4 @@
   - API-002 1.2: P-10〜P-14、`collections[]`・`revokedCollections[]`・`channels[].media`・`resourcesSize`、アプリの振る舞い（素材集の取得・更新・取り下げ・鍵の移し替え）、エラー `collection_rejected`・`producer_changed`、確認観点 V-19〜V-24
 - 判断根拠: 実装済みのアプリ（ADR-001 T-5）と管理システムを壊さないよう、どちらも項目の追加にとどめ `format` を上げない。素材集の取り下げを `revoked[]` に混ぜると、古いアプリが同じ ID のチャンネルを止めるので別の配列にした
 - 承認ステータス: 開発者の承認待ち（API-003 は 1.1 も承認待ち）
+- 追記（同日）: ADR-002 1.1 に合わせ、API-003 1.2 に `selectors` と題材を問わないきっかけ（`"any": true`・`categories`）、V-21・V-22 を、API-002 1.2 に P-15（`collections[].tags`・`regions`・`grants`）、基準で選ぶ素材集の取得、V-25・V-26 を追加した。API-004 を 1.1 にした（基準で選ぶ制作元、タグの一覧、P-6）

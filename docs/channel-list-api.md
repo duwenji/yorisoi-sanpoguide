@@ -92,6 +92,7 @@ Claude の提案を開発者が承認した。
 | P-12 | 形式の版 | `format` は 1 のまま（項目の追加）。古いアプリは `collections[]` を無視する。素材集を使うチャンネルは、古いアプリには `minAppVersion` で「アプリの更新が必要」と出る |
 | P-13 | 制作元の鍵の移し替え | `collections[].producerChange` を、P-9 の `publisherChange` と同じ決まりで載せる |
 | P-14 | 取得の前に示す情報（API-003 の未決事項 No.9） | `channels[].media`（使う素材の種類）と `channels[].resourcesSize`（チャンネルを選んだときに前もって取得する大きさの合計。宣言した素材集の分を含む）を載せる。管理システムが計算する |
+| P-15 | 基準で選ぶための情報（ADR-002 1.1 D-23・D-24） | `collections[]` に `tags`（素材のタグの和集合）・`regions`（素材の題材から計算した geohash の 3 文字の一覧）・`grants`（素材集の利用許諾の写し）を載せる。すべて管理システムが素材集のパッケージから作る。アプリは、基準に合い、地域が重なり、利用許諾が合う素材集だけを取得できる（取得してから捨てる無駄と、余分な地域を伝えることを避ける）。取得したあと、パッケージの値と一致するかを確かめる |
 
 ### 全体の構成
 
@@ -252,6 +253,9 @@ flowchart LR
       "summary": "鎌倉市観光協会による寺社の音声ガイド",
       "media": ["text", "audio"],
       "resourcesSize": 2480000,
+      "tags": ["history", "faith"],
+      "regions": ["xn7"],
+      "grants": { "publishers": "*" },
       "package": { "url": "https://cdn.example.com/col/kamakura-audio-guide-2.zip", "sha256": "<hex>", "size": 9120, "format": 1 },
       "minAppVersion": 14,
       "approvedAt": "2026-10-11T09:00:00Z"
@@ -277,13 +281,16 @@ flowchart LR
 | `channels[].minAppVersion` | int | 必要なアプリの versionCode。満たさなければ一覧に「アプリの更新が必要」と出す |
 | `revoked[]` | object[] | 問題があって止めたチャンネル。`versions` を省略するとすべての版 |
 | `channels[].media` | string[]? | （1.2）チャンネルが使う素材の種類（`text`・`image`・`audio`・`video`）。同梱の素材と、宣言した素材集の参照する素材を合わせたもの。組み込みの制作元の分は含めない |
-| `channels[].resourcesSize` | int? | （1.2）チャンネルを選んだときに前もって取得する大きさの合計（バイト）。パッケージの外の素材のうち、きっかけで使うもの（映像を除く）と、宣言した素材集のパッケージ・素材を含む。リストに載っている素材集の版で計算する |
+| `channels[].resourcesSize` | int? | （1.2）チャンネルを選んだときに前もって取得する大きさの合計（バイト）。パッケージの外の素材のうち、きっかけで使うもの（映像を除く）と、宣言した素材集のパッケージ・素材を含む。リストに載っている素材集の版で計算する。基準で選ぶ素材（`selectors`）は含めない（取得する地域で変わるため。上限は API-004 P-6） |
 | `collections[]` | object[]? | （1.2）承認済みの素材集（P-10）。各素材集の最新の承認済みの版 1 つだけ |
 | `collections[].id` | string | 提供元の中で一意。チャンネルの `id` とは別の名前空間。書式はチャンネルの `id` と同じ。取り下げ・退会のあとも再利用しない（ADR-002 D-17） |
 | `collections[].version` | int | 審査を通るたびに増える |
 | `collections[].producer` | string | 制作元のアカウントID。素材集の `signature.json` の公開鍵と、`collection.json` の `producer` と一致すること |
 | `collections[].producerName` | string | 制作元の表示名。アプリは素材の出典の横に出す |
 | `collections[].producerChange` | object? | 制作元の鍵を移し替えたときだけ（P-13）。決まりは `publisherChange` と同じ |
+| `collections[].tags` | string[] | （P-15）素材に付いたタグの和集合（API-004「タグ」） |
+| `collections[].regions` | string[]? | （P-15）素材の題材（`about`）の位置を geohash の 3 文字にしたものの一覧。題材を持つ素材がなければ省略（地域を問わない） |
+| `collections[].grants` | object | （P-15）`collection.json` の `grants` の写し。アプリは取得後に一致を確かめ、違えば `collection_rejected` |
 | `collections[].package` | object | 素材集のパッケージ（API-004「素材集の形式」）。`format` は素材集の形式の版 |
 | `collections[].media`・`resourcesSize` | | 素材集の全体での値 |
 | `collections[].minAppVersion` | int | 必要なアプリの versionCode。満たさない素材集は、使うチャンネルの候補として「出せない」になる |
@@ -349,6 +356,7 @@ sequenceDiagram
 | 取り下げ | `revoked` に載った、またはリストから消えたチャンネルは使わない。`revoked` に載ったものはパッケージを消し、理由を知らせる。散歩中に分かったら（散歩の開始時の取得で）その時点で標準に戻す |
 | 位置情報 | 取得の要求に位置情報を含めない。`regions` による並べ替えは端末で行う |
 | 素材集の取得（1.2） | チャンネルのパッケージを取得したときに、そのチャンネルが宣言した素材集のパッケージと、きっかけで使う素材をまとめて取得する（API-003 F-10）。一覧には `resourcesSize` を出し、従量制の回線では取得の前に確かめる |
+| 基準で選ぶ素材集の取得（1.2） | 使っているチャンネルに `selectors` があれば、リストの `tags`・`regions`・`grants` で対象の素材集を選び、API-004 P-6 の範囲（今いる地域と隣の地域、従量制でない回線、50MB まで）で前もって取得する。リストの取得のあとと、地域が変わったあとの次の Wi-Fi のときに取り直す。散歩中は取得しない |
 | 素材集の更新（1.2） | 使っている素材集に新しい版が出たら、チャンネルと同じく次の取得時（既定は Wi-Fi のときだけ）に取得し、確認できてから入れ替える。入れ替えまでは前の版を使う |
 | 素材集の取り下げ（1.2） | `revokedCollections` に載った、またはリストから消えた素材集は使わず、パッケージと素材を消す。それを参照する候補は「出せない」になり、チャンネルは使い続ける（ADR-002 D-12）。利用者には知らせない（チャンネルは変わらないため。設定画面のチャンネルの詳細に出す） |
 | 制作元の鍵の移し替え（1.2） | `publisherChange` と同じ扱い。`producerChange` の裏付けなく制作元が変わった素材集は、その版を使わず前の版を使い続ける（`producer_changed`） |
@@ -415,6 +423,8 @@ sequenceDiagram
 | V-22 | （1.2）アプリ: 古いアプリ（`collections[]` を知らない）が 1.2 のリストを読んでも、チャンネルの一覧と `revoked` の扱いが変わらない |
 | V-23 | （1.2）アプリ: `revokedCollections` で素材集が止まり、それを使うチャンネルは使い続けられる |
 | V-24 | （1.2）アプリ: `producerChange` の裏付けがある制作元の変更は受け入れ、裏付けのない変更は `producer_changed` で拒む |
+| V-25 | （1.2）`collections[].tags`・`regions`・`grants` が、素材集のパッケージから計算した値と一致する |
+| V-26 | （1.2）アプリ: 基準で選ぶ素材集の取得の要求が、今いる地域と隣の地域のものだけで、散歩中・従量制の回線では起きない |
 
 ## 互換性方針・移行メモ
 
@@ -461,3 +471,4 @@ sequenceDiagram
 | 2026-10-03 | 1.0 | L-5 を追加。P-1〜P-7 を決定事項にして承認 | Claude（承認: 開発者） |
 | 2026-10-03 | 1.1 | P-8（リストは要約に署名。AWS KMS の 4,096 バイトの制限のため）、P-9（配信元の鍵の移し替えと `publisherChange`）を追加。V-03 を改め、V-15〜V-18 とエラー `publisher_changed` を追加。未決事項 No.6 の置き場所を決定 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.2 | 素材集（ADR-002）を追加: P-10〜P-14、`collections[]`・`revokedCollections[]`・`channels[].media`・`resourcesSize`、アプリの振る舞い、エラー `collection_rejected`・`producer_changed`、確認観点 V-19〜V-24。`format` は 1 のまま | Claude |
+| 2026-10-11 | 1.2（追記） | P-15（`collections[].tags`・`regions`・`grants`）、基準で選ぶ素材集の取得、確認観点 V-25・V-26 を追加（ADR-002 1.1） | Claude |
