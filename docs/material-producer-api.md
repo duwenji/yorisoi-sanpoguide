@@ -12,7 +12,7 @@
 | 作成者 | Claude（開発者との検討） |
 | 承認者 | 開発者（2026-10-11） |
 | ステータス | 承認済 |
-| 版 | 1.2 |
+| 版 | 1.3 |
 
 ## 目的・背景
 
@@ -285,12 +285,12 @@ resources/
   "grants": { "publishers": "*" },
   "resources": [
     { "id": "hachimangu-intro", "type": "text", "file": "resources/text/hachimangu.md", "tags": ["history", "faith"],
-      "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮" } },
+      "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮", "lat": 35.3260, "lon": 139.5565 } },
     { "id": "hachimangu-audio", "type": "audio",
       "url": "https://cdn.example.com/kamakura/hachimangu.ogg", "sha256": "<hex>", "size": 2480000,
       "durationSec": 154, "mime": "audio/ogg", "transcript": "hachimangu-intro",
       "credit": { "author": "鎌倉市観光協会", "license": "permission" },
-      "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮" } }
+      "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮", "lat": 35.3260, "lon": 139.5565 } }
   ]
 }
 ```
@@ -304,7 +304,7 @@ resources/
 | `name` / `summary` / `lang` | API-003 の `channel.json` と同じ決まり |
 | `grants.publishers` | 使ってよい配信元。`"*"`（誰でも）か、アカウントIDの配列（1〜50 個）（ADR-002 D-9） |
 | `resources[]` | API-003 の `resources[]` と同じ項目・上限。加えて `about`（任意） |
-| `resources[].about` | 題材（`name` は 1〜60 文字。1.2）。`{ "type": "spot", "osm": …, "name"?: … }` か `{ "type": "point", "lat", "lon", "radiusM" }`。照合の規則は API-003 のきっかけと同じ |
+| `resources[].about` | 題材（`name` は 1〜60 文字。1.2）。`{ "type": "spot", "osm": …, "name"?: …, "lat": …, "lon": … }`（1.3: スポットにもおおよその位置を必須。スポットの中か、その境界から 100m 以内の点。リストの `regions` の計算と、ID が違っても同じ名前で 200m 以内なら同じスポットとみなす照合に使う） か `{ "type": "point", "lat", "lon", "radiusM" }`。照合の規則は API-003 のきっかけと同じ |
 | `resources[].tags` | （1.1）[タグ](#タグ)を 0〜3 個。基準で選ぶときに使う。タグのない素材は基準では当たらない（ID・題材での参照には使える）。書式は英小文字で始まる英小文字・数字・`-` の 1〜30 文字（1.2）。一覧にないタグは拒まない |
 
 - `signature.json`（1.2 で明記）: API-003 と同じ形（`payload`・`publisherKey`・`sig`）。`payload` は `{ "type": "collection-package", "collection": "<素材集のID>", "version": <版>, "producer": "<アカウントID>", "files": { "<パス>": "<SHA-256 の hex>" } }`。`type` が違う署名（チャンネルの署名など）は拒む
@@ -377,7 +377,7 @@ resources/
 | 3 | ~~素材集を題材でまとめて出す一括のきっかけ~~ → 解決（1.1、基準で選ぶ制作元と、API-003 1.2 の題材を問わないきっかけ） | — |
 | 4 | 素材集の素材を AI に渡すか（ADR-002 の未決事項 No.1）。渡す場合は `params` ではなく別の型にする | アプリの素材の第 1 段の後 |
 | 5 | 試用チケットで素材集も試せるようにするか（`trust=trial`） | 管理システムの改訂（ADR-002 T-6） |
-| 6 | 題材がスポット（`about.type: "spot"`）の素材は位置（緯度・経度）を持たないため、管理システムがリストの `regions`（API-002 P-15）を計算できない。案: `about` のスポットにおおよその `lat`・`lon` を必須で足す（同じ名前で 200m 以内の照合にも使える）。または、管理システムが OSM から位置を引く | T-6 の前 |
+| 6 | ~~題材がスポットの素材は位置を持たないため、管理システムがリストの `regions` を計算できない~~ → 解決（1.3、2026-10-11 開発者の選択）。`about` のスポットにおおよその `lat`・`lon` を必須で足す。管理システムが OSM から位置を引く案は、公開の Overpass サーバーに頼り、審査のたびに遅く失敗しやすいため採らない | — |
 
 ## 関連ドキュメント・参照リンク
 
@@ -397,3 +397,4 @@ resources/
 | 2026-10-11 | 1.1 | 承認 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.2 | 素材集の `signature.json` の `payload` の形、空の素材集を拒むこと、タグの書式、`about.name` の長さを明記（station-format の実装で決めた値。ADR-002 T-5a） | Claude |
 | 2026-10-11 | 1.2 | 承認 | Claude（承認: 開発者） |
+| 2026-10-11 | 1.3 | 題材がスポットの `about` に `lat`・`lon` を必須で足す（未決事項 No.6 の解決。開発者の選択による）。リストの `regions` はすべての題材の位置から計算できる | Claude（承認: 開発者） |

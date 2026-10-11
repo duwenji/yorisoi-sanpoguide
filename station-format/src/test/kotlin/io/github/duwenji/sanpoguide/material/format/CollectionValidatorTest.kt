@@ -26,7 +26,7 @@ class CollectionValidatorTest {
           "grants": { "publishers": "*" },
           "resources": [
             { "id": "hachimangu-intro", "type": "text", "file": "resources/text/hachimangu.md", "tags": ["history", "faith"],
-              "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮" } },
+              "about": { "type": "spot", "osm": "way/123456", "name": "鶴岡八幡宮", "lat": 35.3260, "lon": 139.5565 } },
             { "id": "hachimangu-audio", "type": "audio",
               "url": "https://cdn.example.com/kamakura/hachimangu.ogg", "sha256": "${"b".repeat(64)}", "size": 2480000,
               "durationSec": 154, "mime": "audio/ogg", "transcript": "hachimangu-intro",
@@ -75,7 +75,8 @@ class CollectionValidatorTest {
         val c = (result as CollectionCheck.Ok).collection
         assertEquals(Grants.EVERYONE, c.manifest.grants)
         val intro = c.resources["hachimangu-intro"]!!
-        assertEquals(About.Spot("way/123456", "鶴岡八幡宮"), intro.about)
+        assertEquals(About.Spot("way/123456", "鶴岡八幡宮", 35.3260, 139.5565), intro.about)
+        assertEquals(listOf("xn7"), Regions.of(c.resources))
         assertEquals(listOf("history", "faith"), intro.tags)
         assertEquals(About.Point(35.3258, 139.5564, 60), c.resources["hachimangu-audio"]!!.about)
         assertEquals("鶴岡八幡宮の本宮は、石段を上った先にあります。", c.resources.texts["hachimangu-intro"])
@@ -114,6 +115,9 @@ class CollectionValidatorTest {
         assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(withFirst { put("tags", JSONArray(listOf("a", "b", "c", "d"))) })))))
         assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(withFirst { put("tags", JSONArray().put("Not A Tag")) })))))
         assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(withFirst { put("about", JSONObject().put("type", "spot").put("osm", "street/1")) })))))
+        // A spot subject carries its approximate position (API-004 1.3).
+        assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(withFirst { getJSONObject("about").remove("lat") })))))
+        assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(withFirst { getJSONObject("about").put("lon", 190) })))))
         assertEquals(RejectCode.BAD_RESOURCE, code(check(signed(files(manifest { put("resources", JSONArray()) })))))
         // A tag this version doesn't know is kept, not refused (API-004「タグ」).
         assertTrue(check(signed(files(withFirst { put("tags", JSONArray().put("pilgrimage")) }))) is CollectionCheck.Ok)

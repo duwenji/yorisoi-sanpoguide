@@ -29,8 +29,12 @@ sealed interface ResourceLocation {
 
 /** What a resource is about (API-004 `about`), for choosing by subject. */
 sealed interface About {
-    /** [osm] is `node/…`, `way/…` or `relation/…`; with [name], a spot of the same name within 200m matches too. */
-    data class Spot(val osm: String, val name: String?) : About
+    /**
+     * [osm] is `node/…`, `way/…` or `relation/…`; with [name], a spot of the same name within 200m
+     * of [lat], [lon] matches too. The position is approximate: in the spot or within 100m of it
+     * (API-004 1.3), enough for its region and for that match.
+     */
+    data class Spot(val osm: String, val name: String?, val lat: Double, val lon: Double) : About
     data class Point(val lat: Double, val lon: Double, val radiusM: Int) : About
 }
 
@@ -205,17 +209,24 @@ object ResourceReader {
         "spot" -> {
             val osm = a.string("osm", CODE)
             if (!OSM.matches(osm)) reject(CODE, "$id: about.osm \"$osm\"")
-            About.Spot(osm, a.optString("name", CODE)?.also { checkLength("$id about.name", it, 1, 60, CODE) })
+            val name = a.optString("name", CODE)?.also { checkLength("$id about.name", it, 1, 60, CODE) }
+            val (lat, lon) = position(id, a)
+            About.Spot(osm, name, lat, lon)
         }
         "point" -> {
-            val lat = a.double("lat", CODE)
-            val lon = a.double("lon", CODE)
+            val (lat, lon) = position(id, a)
             val radius = a.int("radiusM", CODE)
-            if (lat !in -90.0..90.0 || lon !in -180.0..180.0) reject(CODE, "$id: about is not on the earth")
             if (radius !in 20..300) reject(CODE, "$id: about.radiusM $radius (20..300)")
             About.Point(lat, lon, radius)
         }
         else -> reject(CODE, "$id: about.type \"$type\"")
+    }
+
+    private fun position(id: String, a: JSONObject): Pair<Double, Double> {
+        val lat = a.double("lat", CODE)
+        val lon = a.double("lon", CODE)
+        if (lat !in -90.0..90.0 || lon !in -180.0..180.0) reject(CODE, "$id: about is not on the earth")
+        return lat to lon
     }
 
     private fun readTags(id: String, r: JSONObject): List<String> {
