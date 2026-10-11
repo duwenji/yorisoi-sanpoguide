@@ -28,6 +28,7 @@ import io.github.duwenji.sanpoguide.material.MaterialContext
 import io.github.duwenji.sanpoguide.material.MoodSceneProducer
 import io.github.duwenji.sanpoguide.material.Narration
 import io.github.duwenji.sanpoguide.material.Producers
+import io.github.duwenji.sanpoguide.material.format.Regions
 import io.github.duwenji.sanpoguide.material.Subject
 import io.github.duwenji.sanpoguide.mood.MoodSource
 import io.github.duwenji.sanpoguide.prompt.PromptTemplates
@@ -107,7 +108,10 @@ class SanpoApp : Application() {
         spots = SpotRepository(OverpassClient(), shops = { stations.current.value.searchedKinds })
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
-        channels = ThirdPartyChannels(this, BuiltInStations.standardPackage(), appScope, developerMode)
+        // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
+        channels = ThirdPartyChannels(this, BuiltInStations.standardPackage(), appScope, developerMode) {
+            spots.location.value?.let { Regions.around(it.latitude, it.longitude) }
+        }
         stations = StationRepository(BuiltInStations.load(), settings.settings, appScope, channels.stations)
         channels.refreshIfDue()
         appScope.launch {
