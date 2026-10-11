@@ -138,6 +138,8 @@ API-003 で `format: 1` にすべての種類を定め、アプリは次の段�
 | 新しい Gradle モジュール `:station-format`（JVM のライブラリ、Android に依存しない） | `channel.json` の読み込み（`StationManifest`）、API-003 の確認（`StationValidator`）、署名の確認、エラーコード。チャンネル管理システムの審査用の道具でも、そのまま使う |
 | `app` の `station/` | `Station`（設定値とスロットの読み込み）、`BuiltInStations`（`:station-format` の `BuiltInChannels` を `Station` にする）、`StationRepository`（選んでいるチャンネル・カスタマイズ・移行）、プロンプトの振り分け |
 | `:station-format` の `sanpoguide/channels/{id}/` | 組み込みのチャンネル（API-003 の構成。`signature.json` なし）。2026-10-03 に `app` の `assets/channels/` から移した |
+| `:station-format` の `material/format/`（2026-10-11、ADR-002 T-7） | 制作元の記述（`ProducerDescriptor`）・属性・方針（`ProducerPolicy`、API-004 P-1）・組み込みの制作元の一覧（`BuiltInProducers`）。管理システムの機械審査でも使う |
+| `app` の `material/`（2026-10-11、ADR-002 T-7） | 制作元の IF（`Producer`・`MaterialRequest`・`Material`・`MaterialResult`）、候補を順に試す `Producers`（API-004 I-7）、組み込みの制作元 6 つ（`BuiltIns.kt`。`GuideRepository`・`WalkCompanion`・定型文・`SpotPhotos`・`Soundscape`・雰囲気の絵を包む）、省略形の展開（`Shorthand`）と、散歩と画面が使う入り口 `Narration` |
 | 変更する既存のコード | `WalkService`（話す処理）、`WalkCompanion`・`GuideRepository`・`GuidePrompt`（プロンプト・キャッシュ）、`SettingsRepository`（移行）、`HistoryStore`（記録）、`MainScreen`・`SettingsScreen`（選択・カスタマイズ）、`Soundscape`（`mood.sound` の固定） |
 
 ## テスト

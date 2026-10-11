@@ -1,6 +1,5 @@
 package io.github.duwenji.sanpoguide.companion
 
-import android.util.Log
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
@@ -43,29 +42,25 @@ class WalkCompanion(
     private val guides: GuideRepository,
     private val history: HistoryStore,
     private val prompts: PromptTemplates,
-    /** The channel in use; its slots fill the system prompt and add to the event prompts. */
-    private val station: () -> Station,
     /** The current mood for the companion's tone, or null when the user has turned moods off. */
     private val mood: () -> Mood? = { null },
     /** Whether the user allows coordinates to go to the AI (off by default). */
     private val shareLocation: () -> Boolean = { false },
 ) {
-    suspend fun say(event: TalkEvent, session: WalkSession?, weather: Weather?): String {
+    /**
+     * The AI's line for [event] on [channel], whose slots fill the system prompt and add to the
+     * event prompts; null when no AI is set up. Throws when the AI fails.
+     */
+    suspend fun aiLine(event: TalkEvent, session: WalkSession?, weather: Weather?, channel: Station): String? {
         val kind = kindOf(event)
-        val eventVars = eventVars(event)
-        val fallback = prompts.render(Prompts.Fallback.companion(kind), fallbackVars(event, session, eventVars))
-        return try {
-            val channel = station()
-            val instructions = kind.stationEvent?.let(channel::eventInstructions)
-            val user = StationPrompts.companionUser(prompts, situationVars(event, session, weather), kind, eventVars, instructions)
-            guides.chat(prompts.render(Prompts.Talk.SYSTEM, channel.companionSystemVars()), user)
-                ?.takeIf { it.isNotBlank() }
-                ?: fallback
-        } catch (e: Exception) {
-            Log.w(TAG, "Companion line failed; using fallback", e)
-            fallback
-        }
+        val instructions = kind.stationEvent?.let(channel::eventInstructions)
+        val user = StationPrompts.companionUser(prompts, situationVars(event, session, weather), kind, eventVars(event), instructions)
+        return guides.chat(prompts.render(Prompts.Talk.SYSTEM, channel.companionSystemVars()), user)
     }
+
+    /** The fixed line for [event], used when the AI isn't set up or fails. */
+    fun fallbackLine(event: TalkEvent, session: WalkSession?): String =
+        prompts.render(Prompts.Fallback.companion(kindOf(event)), fallbackVars(event, session, eventVars(event)))
 
     private fun kindOf(event: TalkEvent) = when (event) {
         TalkEvent.Start -> Prompts.Event.START
@@ -189,7 +184,6 @@ class WalkCompanion(
     }
 
     companion object {
-        private const val TAG = "Companion"
         /** Enough to show the shape of a walk without filling the prompt with numbers. */
         private const val ROUTE_SKETCH_POINTS = 20
 

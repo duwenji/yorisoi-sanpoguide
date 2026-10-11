@@ -15,6 +15,14 @@ import io.github.duwenji.sanpoguide.data.SpotRepository
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.guide.Speaker
 import io.github.duwenji.sanpoguide.history.HistoryStore
+import io.github.duwenji.sanpoguide.material.AiCompanionProducer
+import io.github.duwenji.sanpoguide.material.AiGuideProducer
+import io.github.duwenji.sanpoguide.material.AmbientProducer
+import io.github.duwenji.sanpoguide.material.CommonsPhotoProducer
+import io.github.duwenji.sanpoguide.material.FallbackTextProducer
+import io.github.duwenji.sanpoguide.material.MoodSceneProducer
+import io.github.duwenji.sanpoguide.material.Narration
+import io.github.duwenji.sanpoguide.material.Producers
 import io.github.duwenji.sanpoguide.mood.MoodSource
 import io.github.duwenji.sanpoguide.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
@@ -56,6 +64,9 @@ class SanpoApp : Application() {
         private set
     lateinit var companion: WalkCompanion
         private set
+    /** The material the walk and the screens use, from the producers (ADR-002). */
+    lateinit var narration: Narration
+        private set
     lateinit var mood: MoodSource
         private set
     lateinit var photos: SpotPhotos
@@ -87,17 +98,27 @@ class SanpoApp : Application() {
                 }
             }
         }
-        guides = GuideRepository(settings, prompts, station = { stations.current.value })
+        guides = GuideRepository(settings, prompts)
         speaker = Speaker(this)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
         mood = MoodSource(spots, feed.weather, appScope)
         companion = WalkCompanion(
             guides, history, prompts,
-            station = { stations.current.value },
             mood = { mood.mood.value.takeIf { stations.current.value.moodTone } },
             shareLocation = { settings.settings.value.shareLocationWithAi },
         )
+        val producers = Producers(
+            listOf(
+                AiGuideProducer(guides, settings),
+                AiCompanionProducer(companion, settings),
+                FallbackTextProducer(prompts, companion),
+                CommonsPhotoProducer(photos, settings),
+                AmbientProducer(),
+                MoodSceneProducer(),
+            )
+        )
+        narration = Narration(producers, station = { stations.current.value })
         appScope.launch { history.load() }
 
         getSystemService(NotificationManager::class.java).apply {

@@ -362,19 +362,19 @@ private fun SpotPhotoView(state: PhotoState) {
             color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp),
         )
         is PhotoState.Ready -> {
-            val photo = state.photo
+            val credit = state.credit
             val uriHandler = LocalUriHandler.current
             Image(
-                photo.bitmap.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop,
+                state.image.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp)),
             )
             Text(
-                listOfNotNull("写真: ${photo.author ?: "作者不明"}", photo.license, "Wikimedia Commons").joinToString(" / "),
+                listOfNotNull("写真: ${credit?.author ?: "作者不明"}", credit?.license, credit?.via).joinToString(" / "),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth().clickable { uriHandler.openUri(photo.pageUrl) }.padding(top = 4.dp, bottom = 12.dp),
+                modifier = Modifier.fillMaxWidth().clickable { credit?.source?.let(uriHandler::openUri) }.padding(top = 4.dp, bottom = 12.dp),
             )
         }
     }
