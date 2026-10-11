@@ -16,7 +16,7 @@ import java.util.Base64
 /** API-004 確かめる手順 1・2 and 確認観点 W-10, on collections built and signed as a producer would. */
 class CollectionValidatorTest {
     private val producer = TestPublisher()
-    private val listed = ListedCollection("kamakura-audio-guide", 2, producer.accountId)
+    private val listed = CollectionListedAs("kamakura-audio-guide", 2, producer.accountId)
 
     private fun manifest(change: JSONObject.() -> Unit = {}) = JSONObject(
         """
@@ -60,7 +60,7 @@ class CollectionValidatorTest {
         "resources/text/hachimangu.md" to "鶴岡八幡宮の本宮は、石段を上った先にあります。\n".toByteArray(),
     )
 
-    private fun check(files: Map<String, ByteArray>, listedAs: ListedCollection? = listed) =
+    private fun check(files: Map<String, ByteArray>, listedAs: CollectionListedAs? = listed) =
         CollectionValidator.checkArchive(zip(files.toList()), listedAs, JcaEd25519)
 
     private fun code(result: CollectionCheck): RejectCode {
@@ -104,6 +104,8 @@ class CollectionValidatorTest {
         assertEquals(RejectCode.PUBLISHER_MISMATCH, code(check(signed(files(manifest { put("producer", other) })))))
         assertEquals(RejectCode.PUBLISHER_MISMATCH, code(check(signed(files()), listed.copy(producer = other))))
         assertEquals(RejectCode.BAD_MANIFEST, code(check(signed(files()), listed.copy(version = 3))))
+        // After a key transfer the list names the new id; the version signed with the old key still counts.
+        assertTrue(check(signed(files()), listed.copy(producer = other, formerProducers = setOf(producer.accountId))) is CollectionCheck.Ok)
     }
 
     @Test

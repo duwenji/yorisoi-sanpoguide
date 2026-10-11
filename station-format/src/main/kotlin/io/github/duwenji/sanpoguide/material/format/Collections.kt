@@ -43,8 +43,12 @@ data class CollectionManifest(
 /** A collection that passed every check: its settings and its resources. */
 data class CollectionPackage(val manifest: CollectionManifest, val resources: Resources)
 
-/** What the approved list says about a collection (API-002 1.2 `collections[]`); the package must agree. */
-data class ListedCollection(val id: String, val version: Int, val producer: String)
+/**
+ * What the approved list says about a collection (API-002 1.2 `collections[]`); the package must
+ * agree. A version signed before the producer moved to a new key names a former id
+ * ([formerProducers], from `producerChange`), and is still the listed version (API-004 1.0 D-17).
+ */
+data class CollectionListedAs(val id: String, val version: Int, val producer: String, val formerProducers: Set<String> = emptySet())
 
 sealed interface CollectionCheck {
     data class Ok(val collection: CollectionPackage) : CollectionCheck
@@ -62,13 +66,13 @@ object CollectionValidator {
     private const val MANIFEST = "collection.json"
     private const val SIGNATURE = "signature.json"
 
-    fun check(files: StationFiles, listedAs: ListedCollection?, verifier: Ed25519Verifier): CollectionCheck = try {
+    fun check(files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionCheck = try {
         CollectionCheck.Ok(validate(files, listedAs, verifier))
     } catch (e: Reject) {
         CollectionCheck.Rejected(e.code, e.message.orEmpty())
     }
 
-    fun checkArchive(zip: ByteArray, listedAs: ListedCollection?, verifier: Ed25519Verifier): CollectionCheck {
+    fun checkArchive(zip: ByteArray, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionCheck {
         val files = try {
             PackageArchive.open(zip)
         } catch (e: ArchiveException) {
@@ -77,7 +81,7 @@ object CollectionValidator {
         return check(files, listedAs, verifier)
     }
 
-    private fun validate(files: StationFiles, listedAs: ListedCollection?, verifier: Ed25519Verifier): CollectionPackage {
+    private fun validate(files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionPackage {
         val paths = files.list()
         val json = readJson(files, MANIFEST, RejectCode.BAD_MANIFEST)
         paths.firstOrNull { it != MANIFEST && it != SIGNATURE && !it.startsWith(ResourceReader.RESOURCES_DIR) }
@@ -97,7 +101,9 @@ object CollectionValidator {
             if (manifest.id != listedAs.id || manifest.version != listedAs.version) {
                 reject(RejectCode.BAD_MANIFEST, "${manifest.id}@${manifest.version} is listed as ${listedAs.id}@${listedAs.version}")
             }
-            if (manifest.producer != listedAs.producer) reject(RejectCode.PUBLISHER_MISMATCH, "producer ${manifest.producer}")
+            if (manifest.producer != listedAs.producer && manifest.producer !in listedAs.formerProducers) {
+                reject(RejectCode.PUBLISHER_MISMATCH, "producer ${manifest.producer}")
+            }
         }
 
         val resources = ResourceReader.read(json, files, inCollection = true)

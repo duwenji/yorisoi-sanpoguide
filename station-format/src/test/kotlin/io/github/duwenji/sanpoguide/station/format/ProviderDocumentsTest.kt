@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.station.format
 
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -127,6 +128,46 @@ class ProviderDocumentsTest {
         val revoked = list.revoked.single()
         assertTrue(revoked.covers(2))
         assertFalse(revoked.covers(3))
+        // A list from before API-002 1.2 has no collections, media or sizes.
+        assertTrue(list.collections.isEmpty() && list.revokedCollections.isEmpty())
+        assertEquals(emptyList<String>(), kamakura.media)
+        assertNull(kamakura.resourcesSize)
+        assertEquals(setOf("sg1" + "a".repeat(32)), list.formerPublisherIds(kamakura.publisher))
+    }
+
+    @Test
+    fun `a 1_2 list reads collections, their revocations and the channels' media`() {
+        val producer = "sg1" + "c".repeat(32)
+        fun collection(grants: String) = JSONObject(
+            """
+            { "id": "kamakura-audio-guide", "version": 2, "producer": "$producer", "producerName": "鎌倉市観光協会",
+              "producerChange": { "from": "sg1${"d".repeat(32)}", "at": "2026-10-10T00:00:00Z", "reason": "鍵の漏えい" },
+              "name": "鎌倉音声ガイド", "summary": "寺社の音声ガイド", "media": ["text", "audio"], "resourcesSize": 2480000,
+              "tags": ["history", "faith"], "regions": ["xn7"], "grants": { "publishers": $grants },
+              "package": { "url": "https://cdn.example.com/col/k-2.zip", "sha256": "${"0".repeat(64)}", "size": 9120, "format": 1 },
+              "minAppVersion": 14, "approvedAt": "2026-10-11T09:00:00Z" }
+            """.trimIndent(),
+        )
+        val json = listWith { body ->
+            body.getJSONArray("channels").getJSONObject(0).put("media", JSONArray(listOf("text", "audio"))).put("resourcesSize", 4_820_000)
+            body.put("collections", JSONArray().put(collection("[\"sg1${"b".repeat(32)}\"]")))
+            body.put("revokedCollections", JSONArray().put(JSONObject()
+                .put("id", "old-collection").put("versions", JSONArray().put(1)).put("reason", "申し立て").put("revokedAt", "2026-10-10T00:00:00Z")))
+        }
+        val list = docs.channelList(json, keyset, now)
+        assertEquals(listOf("text", "audio"), list.channels[0].media)
+        assertEquals(4_820_000L, list.channels[0].resourcesSize)
+        val c = list.collections.single()
+        assertEquals(producer, c.producer)
+        assertEquals(listOf("history", "faith"), c.tags)
+        assertEquals(listOf("xn7"), c.regions)
+        assertTrue(c.grants.allows("sg1" + "b".repeat(32)))
+        assertFalse(c.grants.allows(producer))
+        assertEquals(setOf("sg1" + "d".repeat(32)), list.formerProducerIds(producer))
+        assertTrue(list.revokedCollections.single().covers(1))
+        // Grants that are neither "*" nor a list make the list unreadable.
+        val badGrants = listWith { it.put("collections", JSONArray().put(collection("\"everyone\""))) }
+        assertEquals(ProviderError.BAD_DOCUMENT, error { docs.channelList(badGrants, keyset, now) })
     }
 
     @Test
