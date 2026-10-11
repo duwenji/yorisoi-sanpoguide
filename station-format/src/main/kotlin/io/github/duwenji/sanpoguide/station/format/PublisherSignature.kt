@@ -67,5 +67,5 @@ private val BASE64URL = Regex("[A-Za-z0-9_-]*")
 internal fun decodeBase64Url(text: String): ByteArray? =
     if (BASE64URL.matches(text)) runCatching { Base64.getUrlDecoder().decode(text) }.getOrNull() else null
 
-/** What a verified `signature.json` vouches for (API-003 F-6). */
-internal data class SignedFiles(val channel: String, val version: Int, val publisher: String, val accountId: String)
+/** What a verified `signature.json` vouches for (API-003 F-6): the channel or collection, its version, its owner as written, and the key's account id. */
+internal data class SignedFiles(val subject: String, val version: Int, val owner: String, val accountId: String)
