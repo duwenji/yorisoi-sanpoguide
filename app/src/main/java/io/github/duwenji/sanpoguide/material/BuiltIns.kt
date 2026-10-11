@@ -89,7 +89,7 @@ class FallbackTextProducer(private val prompts: PromptTemplates, private val com
                 prompts.render(Prompts.Fallback.GUIDE, GuidePrompt.fallbackVars(subject.poi))
             }
             is Subject.Event -> companion.fallbackLine(subject.event, request.context.session)
-            Subject.None -> return MaterialResult.None
+            is Subject.Point, Subject.None -> return MaterialResult.None
         }
         return ready(MaterialType.TEXT, Content.Text(text), descriptor.id)
     }

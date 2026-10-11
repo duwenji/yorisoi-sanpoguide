@@ -19,6 +19,9 @@ import io.github.duwenji.sanpoguide.material.AiCompanionProducer
 import io.github.duwenji.sanpoguide.material.AiGuideProducer
 import io.github.duwenji.sanpoguide.material.AmbientProducer
 import io.github.duwenji.sanpoguide.material.CommonsPhotoProducer
+import io.github.duwenji.sanpoguide.material.CueFinder
+import io.github.duwenji.sanpoguide.material.CuePresenter
+import io.github.duwenji.sanpoguide.material.FileCueMemory
 import io.github.duwenji.sanpoguide.material.FallbackTextProducer
 import io.github.duwenji.sanpoguide.material.MoodSceneProducer
 import io.github.duwenji.sanpoguide.material.Narration
@@ -28,6 +31,7 @@ import io.github.duwenji.sanpoguide.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.station.BuiltInStations
 import io.github.duwenji.sanpoguide.station.StationRepository
+import io.github.duwenji.sanpoguide.station.remote.ChannelSync
 import io.github.duwenji.sanpoguide.station.remote.ThirdPartyChannels
 import io.github.duwenji.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +70,12 @@ class SanpoApp : Application() {
         private set
     /** The material the walk and the screens use, from the producers (ADR-002). */
     lateinit var narration: Narration
+        private set
+
+    /** A third party's cues: which fire now, and what they show (ADR-002 T-8b). */
+    lateinit var cueFinder: CueFinder
+        private set
+    lateinit var cues: CuePresenter
         private set
     lateinit var mood: MoodSource
         private set
@@ -119,6 +129,8 @@ class SanpoApp : Application() {
             )
         )
         narration = Narration(producers, station = { stations.current.value })
+        cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
+        cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE)
         appScope.launch { history.load() }
 
         getSystemService(NotificationManager::class.java).apply {

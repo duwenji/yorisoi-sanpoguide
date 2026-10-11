@@ -28,9 +28,16 @@ import io.github.duwenji.sanpoguide.companion.WalkSession
 import io.github.duwenji.sanpoguide.companion.Weather
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.history.SpotVisit
+import io.github.duwenji.sanpoguide.material.Content
+import io.github.duwenji.sanpoguide.material.CueFire
+import io.github.duwenji.sanpoguide.material.MaterialContext
+import io.github.duwenji.sanpoguide.material.Shown
+import io.github.duwenji.sanpoguide.material.Subject
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.sound.AmbientPlayer
 import io.github.duwenji.sanpoguide.station.Station
+import io.github.duwenji.sanpoguide.station.format.CueEvent
+import io.github.duwenji.sanpoguide.station.format.PresentAs
 import io.github.duwenji.sanpoguide.station.format.TalkEventKind
 import io.github.duwenji.sanpoguide.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
@@ -151,6 +158,7 @@ class WalkService : LifecycleService() {
             val s = session ?: return@collect
             if (s.stations.lastOrNull()?.station == station.key) return@collect
             s.switchStation(station.key, trialNotice(station) + station.manifest.greeting)
+            s.pendingSelect = true
             maybeTalk()
         }
     }
@@ -166,8 +174,10 @@ class WalkService : LifecycleService() {
             if (!greeted) {
                 greeted = true
                 refreshWeather(location)
-                if (app.stations.current.value.talksOn(TalkEventKind.START)) {
-                    talk { speakLine(app.narration.line(TalkEvent.Start, s, weather)) }
+                talk {
+                    if (app.stations.current.value.talksOn(TalkEventKind.START)) speakLine(app.narration.line(TalkEvent.Start, s, weather))
+                    // The channel's own cues for the start come after the greeting (API-003 `event: start`).
+                    eventCues(s, CueEvent.START, Subject.Event(TalkEvent.Start))
                 }
             }
             try {
@@ -212,6 +222,11 @@ class WalkService : LifecycleService() {
             talk {
                 s.pendingGreeting = null
                 speakLine(line)
+                // A channel chosen mid-walk shows its cues for being chosen after its greeting (API-003 `event: select`).
+                if (s.pendingSelect) {
+                    s.pendingSelect = false
+                    eventCues(s, CueEvent.SELECT, Subject.None)
+                }
             }
             return
         }
@@ -221,11 +236,25 @@ class WalkService : LifecycleService() {
         // the spot they arrived at has been introduced, and a rest remark may be due instead.
         val stationary = s.restMinutes(now) >= STATIONARY_MINUTES
         if (!stationary && !justSwitched && now - s.lastSpotTalkAt >= level.spotGapMs) {
-            // One spot per tick, by distance from the user (spots' distances to each other don't matter).
-            val candidates = app.spots.spots.value
+            val nearby = app.spots.spots.value
                 .filter { poi -> poi.id !in s.talkedAbout && s.visits.none { it.matches(poi) } }
                 .map { it to it.distanceFrom(location) }
                 .filter { (_, d) -> d <= ANNOUNCE_RADIUS_M }
+                .sortedBy { (_, d) -> d }
+            // A spot the channel put a cue on comes first, even of a kind it skips or with spot talk
+            // off: the channel placed it on purpose (API-003「きっかけ」). The spacing still holds.
+            val cued = station.materials?.let { m ->
+                nearby.firstNotNullOfOrNull { (poi, d) -> app.cueFinder.spot(station.id, m.media, poi, d.toInt(), s.shownCues, now)?.let { Triple(poi, d, it) } }
+            }
+            if (cued != null) {
+                talk {
+                    s.lastSpotTalkAt = now
+                    talkAboutSpot(s, cued.first, cued.second.toInt(), cued.third)
+                }
+                return
+            }
+            // One spot per tick, by distance from the user (spots' distances to each other don't matter).
+            val candidates = nearby
                 .map { (poi, d) -> SpotCandidate(poi, d, app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty()) }
             val spot = SpotChooser.pick(
                 candidates, station.preferredCategories, station.skippedCategories,
@@ -236,6 +265,15 @@ class WalkService : LifecycleService() {
                     s.lastSpotTalkAt = now
                     talkAboutSpot(s, spot.poi, spot.distanceM.toInt())
                 }
+                return
+            }
+        }
+
+        // A point the channel put a cue on, as for spots: not while standing still (API-003「きっかけ」).
+        if (!stationary && !justSwitched) {
+            val fire = station.materials?.let { app.cueFinder.point(station.id, it.media, location.latitude, location.longitude, s.shownCues, now) }
+            if (fire != null) {
+                talk { show(s, fire, present(s, fire, station), spotName = null) }
                 return
             }
         }
@@ -301,14 +339,22 @@ class WalkService : LifecycleService() {
         }
     }
 
-    private suspend fun talkAboutSpot(s: WalkSession, poi: Poi, distanceM: Int) {
+    /**
+     * Talks about a spot: what the channel's cue shows when it has one ([fire]), else the narration.
+     * A cue that comes to nothing (all its candidates failed) leaves the usual narration.
+     */
+    private suspend fun talkAboutSpot(s: WalkSession, poi: Poi, distanceM: Int, fire: CueFire? = null) {
         s.talkedAbout += poi.id
+        val station = app.stations.current.value
+        val shown = fire?.let { present(s, it, station) }.orEmpty()
         val past = app.history.visitsTo(poi, excludingWalk = s.id)
-        val text = if (past.isEmpty()) {
-            // The AI, else a fixed line (a short "nearby" one when the AI failed).
-            app.narration.spotGuide(poi, distanceM)
-        } else {
-            app.narration.line(TalkEvent.Revisit(poi, past), s, weather)
+        val text = when {
+            shown.isNotEmpty() -> textOf(shown) ?: poi.name
+            past.isEmpty() -> {
+                // The AI, else a fixed line (a short "nearby" one when the AI failed).
+                app.narration.spotGuide(poi, distanceM)
+            }
+            else -> app.narration.line(TalkEvent.Revisit(poi, past), s, weather)
         }
         s.visits += SpotVisit(
             poi.id, poi.name, poi.category, System.currentTimeMillis(), text, poi.lat, poi.lon,
@@ -319,8 +365,48 @@ class WalkService : LifecycleService() {
         saveProgress(s)
         getSystemService(NotificationManager::class.java)
             .notify(SPOT_NOTIFICATION_ID, spotNotification(poi, text))
-        speakLine(text, poi.name)
+        if (fire != null && shown.isNotEmpty()) show(s, fire, shown, poi.name) else speakLine(text, poi.name)
     }
+
+    // ---- a channel's cues (ADR-002 T-8b) ----
+
+    private suspend fun present(s: WalkSession, fire: CueFire, station: Station): List<Shown> =
+        app.cues.present(fire, station, MaterialContext(station, s, weather, app.mood.mood.value))
+
+    /**
+     * Shows what a cue came to, in its order: spoken lines in the queue the companion speaks
+     * from (API-003 F-13), a card's text in the feed. Notifications, sheets and full screen
+     * come with T-8c. The cue counts as shown even when it came to nothing, so it isn't tried
+     * again on every tick.
+     */
+    private fun show(s: WalkSession, fire: CueFire, shown: List<Shown>, spotName: String?) {
+        app.cueFinder.record(fire, s.shownCues, System.currentTimeMillis())
+        var name = spotName
+        for (item in shown) {
+            val text = item.items.firstNotNullOfOrNull { (it.content as? Content.Text)?.text } ?: continue
+            when (item.presentAs) {
+                PresentAs.SPEAK -> {
+                    speakLine(text, name)
+                    name = null
+                }
+                PresentAs.CARD -> app.feed.add(Utterance(System.currentTimeMillis(), text, name))
+                else -> Unit
+            }
+        }
+    }
+
+    /** The cues of the current channel for [event], each after the other. */
+    private suspend fun eventCues(s: WalkSession, event: CueEvent, subject: Subject) {
+        val station = app.stations.current.value
+        val media = station.materials?.media ?: return
+        for (fire in app.cueFinder.events(station.id, media, event, subject, s.shownCues, System.currentTimeMillis())) {
+            show(s, fire, present(s, fire, station), spotName = null)
+        }
+    }
+
+    /** What a cue said, for the history and the spot notification: its first text. */
+    private fun textOf(shown: List<Shown>): String? =
+        shown.firstNotNullOfOrNull { item -> item.items.firstNotNullOfOrNull { (it.content as? Content.Text)?.text } }
 
     /** "前方" etc. while the user is walking; null when standing (no reliable heading) or already there. */
     private fun directionTo(location: Location, advice: FacilityAdvice): String? {
@@ -372,13 +458,27 @@ class WalkService : LifecycleService() {
         val lastWeather = weather
         app.feed.endWalk()
         if (record.durationMs < MIN_SAVED_WALK_MS && record.visits.isEmpty()) return
-        val summarize = app.stations.current.value.talksOn(TalkEventKind.FINISH)
+        val station = app.stations.current.value
+        val summarize = station.talksOn(TalkEventKind.FINISH)
         app.appScope.launch {
             app.history.save(record)
-            if (!summarize) return@launch
-            val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
-            app.feed.add(Utterance(System.currentTimeMillis(), line))
-            app.speaker.speak(line)
+            if (summarize) {
+                val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
+                app.feed.add(Utterance(System.currentTimeMillis(), line))
+                app.speaker.speak(line)
+            }
+            // The channel's own cues for the end come after the summary (API-003 `event: finish`).
+            val media = station.materials?.media ?: return@launch
+            for (fire in app.cueFinder.events(station.id, media, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, System.currentTimeMillis())) {
+                app.cueFinder.record(fire, s.shownCues, System.currentTimeMillis())
+                val shown = app.cues.present(fire, station, MaterialContext(station, null, lastWeather))
+                for (item in shown) {
+                    val text = item.items.firstNotNullOfOrNull { (it.content as? Content.Text)?.text } ?: continue
+                    if (item.presentAs != PresentAs.SPEAK && item.presentAs != PresentAs.CARD) continue
+                    app.feed.add(Utterance(System.currentTimeMillis(), text))
+                    if (item.presentAs == PresentAs.SPEAK) app.speaker.speak(text)
+                }
+            }
         }
     }
 

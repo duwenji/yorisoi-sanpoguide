@@ -17,6 +17,8 @@ import kotlin.coroutines.cancellation.CancellationException
 /** What material is about (API-004「題材」). */
 sealed interface Subject {
     data class Spot(val poi: Poi, val distanceM: Int?) : Subject
+    /** A place a channel's cue names by position (API-003 `trigger.type: point`). */
+    data class Point(val lat: Double, val lon: Double, val radiusM: Int) : Subject
     data class Event(val event: TalkEvent) : Subject
     data object None : Subject
 }
@@ -35,13 +37,26 @@ data class MaterialContext(
     val after: MaterialResult.Unavailable? = null,
 )
 
-/** A request for one piece of material; built-in producers choose by [subject] (API-004 I-4). */
-data class MaterialRequest(val subject: Subject, val type: MaterialType, val context: MaterialContext)
+/**
+ * A request for one piece of material (API-004 I-4): by [id] when a cue names the resource,
+ * otherwise by [subject]. Built-in producers make [type]; resources may be any of [accepts]
+ * (what the presentation can show), a text no longer than [maxTextChars].
+ */
+data class MaterialRequest(
+    val subject: Subject,
+    val type: MaterialType,
+    val context: MaterialContext,
+    val id: String? = null,
+    val accepts: Set<MaterialType> = setOf(type),
+    val maxTextChars: Int? = null,
+)
 
 /** The material itself, in the forms the app shows. */
 sealed interface Content {
     data class Text(val text: String) : Content
     data class Image(val bitmap: Bitmap) : Content
+    /** An image as stored (JPEG, PNG or WebP), decoded when shown: a channel's or a collection's. */
+    class EncodedImage(val bytes: ByteArray) : Content
     /** A background sound the app synthesizes. */
     data class Ambient(val sound: Soundscape) : Content
     /** A picture the app draws (API-004 `content=render`). */
@@ -51,8 +66,8 @@ sealed interface Content {
 /** Who made it and under what license (API-003 F-11). [via] names the service it came through. */
 data class Credit(val author: String?, val license: String?, val source: String? = null, val via: String? = null)
 
-/** One piece of material with where it came from (API-004「素材」). */
-data class Material(val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null)
+/** One piece of material with where it came from (API-004「素材」); [alt] describes an image in words (API-003 F-11). */
+data class Material(val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null, val alt: String? = null)
 
 /** What a producer gave back (API-004「結果」). Producers return these instead of throwing. */
 sealed interface MaterialResult {
