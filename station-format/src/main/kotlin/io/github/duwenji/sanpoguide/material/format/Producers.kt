@@ -16,7 +16,7 @@ enum class Fetch(val json: String) { LOCAL("local"), PREFETCH("prefetch"), ON_DE
 enum class Exposure(val json: String) { NONE("none"), SUBJECT("subject") }
 
 /**
- * What a producer makes and how (API-004「制作元の記述」). Every producer — built in, a third
+ * What a producer makes and how (API-004「素材提供者の記述」). Every producer — built in, a third
  * party's collection, or a channel's own resources — is described the same way; what the app
  * allows follows from these values ([ProducerPolicy]), not from what kind of producer it is.
  *
@@ -50,7 +50,7 @@ object ProducerPolicy {
 }
 
 /**
- * The producers built into the app (API-004「組み込みの制作元」). Adding one takes an app update
+ * The producers built into the app (API-004「組み込みの素材提供者」). Adding one takes an app update
  * (ADR-002 D-6) and a new row in that table. The management system's checks read this list to
  * know which `builtin:` references a channel may use.
  */

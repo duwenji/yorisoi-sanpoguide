@@ -14,7 +14,7 @@ import io.github.duwenji.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.sanpoguide.sound.Soundscape
 import kotlin.coroutines.cancellation.CancellationException
 
-// The producers built into the app (API-004「組み込みの制作元」). Each wraps the code that made
+// The producers built into the app (API-004「組み込みの素材提供者」). Each wraps the code that made
 // this material before producers existed, so what the user sees and hears stays the same.
 
 private fun ready(type: MaterialType, content: Content, producer: String, credit: Credit? = null) =

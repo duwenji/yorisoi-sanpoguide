@@ -5,7 +5,7 @@ import org.json.JSONObject
 import java.io.File
 import java.time.Instant
 
-/** A provider the user added (API-002 設定画面の提供元), with the documents last accepted from it. */
+/** A provider the user added (API-002 設定画面のリスト), with the documents last accepted from it. */
 data class ProviderRecord(
     val id: String,
     /** Where the provider is; `/.well-known/sanpo-channels` is under it. */

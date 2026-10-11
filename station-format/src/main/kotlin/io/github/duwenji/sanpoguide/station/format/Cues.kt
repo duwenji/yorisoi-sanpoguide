@@ -8,7 +8,7 @@ import org.json.JSONObject
 /** A third-party collection a channel uses, under a name of its own (API-003 1.2 `collections`). */
 data class CollectionUse(val alias: String, val id: String, val minVersion: Int)
 
-/** Choose material by what it is rather than which it is (API-003 1.2 `selectors`, API-004「基準で選ぶ制作元」). */
+/** Choose material by what it is rather than which it is (API-003 1.2 `selectors`, API-004「基準で選ぶ素材提供者」). */
 data class Selector(
     val alias: String,
     val type: MaterialType,

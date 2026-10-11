@@ -88,7 +88,7 @@ Envelope
 ```mermaid
 sequenceDiagram
     autonumber
-    actor U as 利用者
+    actor U as 散策者
     participant App as アプリ
     participant S as サーバー
     U->>App: 設定で URL を入力して保存
@@ -237,7 +237,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor U as 利用者
+    actor U as 散策者
     participant App as アプリ
     participant S as サーバー
     App->>S: GET /.well-known/sanpo-messages
