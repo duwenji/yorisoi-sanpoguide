@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.station.format
 
+import io.github.duwenji.sanpoguide.material.format.Grants
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -66,6 +67,7 @@ class FileRef(val url: String, val sha256: String)
 
 class PackageRef(val url: String, val sha256: String, val size: Int, val format: Int)
 
+/** A publisher's (or, for a collection, a producer's) move to a new key (API-002 P-9, P-13). */
 class PublisherChange(val from: String, val at: Instant, val reason: String)
 
 /** One entry of `channels[]`. */
@@ -85,7 +87,37 @@ class ListedChannel(
     val pkg: PackageRef,
     val minAppVersion: Int,
     val approvedAt: Instant,
+    /** The kinds of material the channel uses (API-002 1.2 P-14); empty in older lists. */
+    val media: List<String> = emptyList(),
+    /** Bytes fetched ahead when the channel is chosen, collections included (P-14); null in older lists. */
+    val resourcesSize: Long? = null,
 )
+
+/** One entry of `collections[]` (API-002 1.2 P-10・P-15). */
+class ListedCollection(
+    val id: String,
+    val version: Int,
+    val producer: String,
+    val producerName: String,
+    val producerChange: PublisherChange?,
+    val name: String,
+    val summary: String,
+    val media: List<String>,
+    val resourcesSize: Long,
+    /** The tags its resources carry, for selectors (API-004「タグ」). */
+    val tags: List<String>,
+    /** Where its resources are about, as 3-letter geohashes; empty when they're about nowhere in particular. */
+    val regions: List<String>,
+    /** A copy of the package's grants, to choose before fetching; the package must agree. */
+    val grants: Grants,
+    val pkg: PackageRef,
+    val minAppVersion: Int,
+    val approvedAt: Instant,
+)
+
+class RevokedCollection(val id: String, val versions: List<Int>?, val reason: String, val revokedAt: Instant) {
+    fun covers(version: Int): Boolean = versions == null || version in versions
+}
 
 class RevokedChannel(val id: String, val versions: List<Int>?, val reason: String, val revokedAt: Instant) {
     fun covers(version: Int): Boolean = versions == null || version in versions
@@ -100,7 +132,19 @@ class ChannelList(
     val sha256: String,
     val channels: List<ListedChannel>,
     val revoked: List<RevokedChannel>,
-)
+    /** Approved collections (API-002 1.2); empty in older lists. */
+    val collections: List<ListedCollection> = emptyList(),
+    /** Kept apart from [revoked]: collection ids are another namespace (P-11). */
+    val revokedCollections: List<RevokedCollection> = emptyList(),
+) {
+    /** The ids [publisher] used before moving to a new key, from its channels' `publisherChange`. */
+    fun formerPublisherIds(publisher: String): Set<String> =
+        channels.filter { it.publisher == publisher }.mapNotNull { it.publisherChange?.from }.toSet()
+
+    /** The ids [producer] used before moving to a new key, from its collections' `producerChange`. */
+    fun formerProducerIds(producer: String): Set<String> =
+        collections.filter { it.producer == producer }.mapNotNull { it.producerChange?.from }.toSet()
+}
 
 class TestTicket(val provider: String, val channel: String, val publisher: String, val pkg: PackageRef, val issuedAt: Instant, val expiresAt: Instant)
 
@@ -200,6 +244,10 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
             revoked = list.getJSONArray("revoked").objects().map { r ->
                 RevokedChannel(r.getString("id"), r.optJSONArray("versions")?.ints(), r.getString("reason"), instant(r.getString("revokedAt")))
             },
+            collections = list.optJSONArray("collections")?.objects()?.map(::listedCollection).orEmpty(),
+            revokedCollections = list.optJSONArray("revokedCollections")?.objects()?.map { r ->
+                RevokedCollection(r.getString("id"), r.optJSONArray("versions")?.ints(), r.getString("reason"), instant(r.getString("revokedAt")))
+            }.orEmpty(),
         )
     }
 
@@ -262,6 +310,32 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
         tags = c.optJSONArray("tags")?.strings().orEmpty(),
         regions = c.optJSONArray("regions")?.strings().orEmpty(),
         icon = c.getJSONObject("icon").let { FileRef(it.getString("url"), it.getString("sha256")) },
+        pkg = packageRef(c.getJSONObject("package")),
+        minAppVersion = c.getInt("minAppVersion"),
+        approvedAt = instant(c.getString("approvedAt")),
+        media = c.optJSONArray("media")?.strings().orEmpty(),
+        resourcesSize = if (c.has("resourcesSize")) c.getLong("resourcesSize") else null,
+    )
+
+    private fun listedCollection(c: JSONObject) = ListedCollection(
+        id = c.getString("id"),
+        version = c.getInt("version"),
+        producer = c.getString("producer"),
+        producerName = c.getString("producerName"),
+        producerChange = c.optJSONObject("producerChange")?.let { PublisherChange(it.getString("from"), instant(it.getString("at")), it.getString("reason")) },
+        name = c.getString("name"),
+        summary = c.getString("summary"),
+        media = c.getJSONArray("media").strings(),
+        resourcesSize = c.getLong("resourcesSize"),
+        tags = c.getJSONArray("tags").strings(),
+        regions = c.optJSONArray("regions")?.strings().orEmpty(),
+        grants = c.getJSONObject("grants").let { g ->
+            when (val publishers = g.get("publishers")) {
+                "*" -> Grants.EVERYONE
+                is JSONArray -> Grants(publishers.strings().toSet())
+                else -> fail(ProviderError.BAD_DOCUMENT, "grants.publishers of ${c.getString("id")}")
+            }
+        },
         pkg = packageRef(c.getJSONObject("package")),
         minAppVersion = c.getInt("minAppVersion"),
         approvedAt = instant(c.getString("approvedAt")),
