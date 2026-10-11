@@ -160,8 +160,8 @@ flowchart TB
 | ID | 追従タスク | 担当 | 時期 |
 |---|---|---|---|
 | T-1 | 制作元 IF と素材集の形式の契約書 [API-004](../material-producer-api.md)（2026-10-11 承認） | 開発者・Claude | 本書と同時 |
-| T-2 | API-003 の改訂（1.2）: `collections` の宣言、`present` の `source`（候補の順番）、省略形の展開の規則、`resources` を同梱の素材集と位置づける | Claude | T-1 の承認後 |
-| T-3 | API-002 の改訂（1.2）: リストに素材集（`collections[]`）と取り下げを載せる。未決事項 No.9（`media`・`resourcesSize`）も同時に | Claude | T-1 の承認後 |
+| T-2 | API-003 の改訂（1.2）: `collections` の宣言、`present` の `source`（候補の順番）、省略形の展開の規則、`resources` を同梱の素材集と位置づける。1.2 草案（2026-10-11） | Claude | T-1 の承認後 |
+| T-3 | API-002 の改訂（1.2）: リストに素材集（`collections[]`）と取り下げを載せる。未決事項 No.9（`media`・`resourcesSize`）も同時に。1.2 草案（2026-10-11） | Claude | T-1 の承認後 |
 | T-4 | 審査基準（[channel-review-policy.md](../channel-review-policy.md)）に素材集の審査の項目を足す。API-003「審査で確かめること（素材・きっかけ）」のうち素材の項目を素材集の審査に移す | 開発者・Claude | T-2 と並行 |
 | T-5 | station-format: IF の型と素材集の確認 | Claude | T-2・T-3 の後 |
 | T-6 | sanpo-channel-console: 制作元の役割と素材集（ADR・DM-001・API-001・画面の改訂、実装）。役割の付け方、素材集の上限（数・申請の回数をチャンネルとは別に数える）、素材集の ID の予約（D-17）、依存の記録と知らせ（D-18）、退会時の取り下げ（D-19）、身元の確認の記録（D-20）、外部の素材の確認（D-22） | 開発者・Claude | T-5 の後 |
