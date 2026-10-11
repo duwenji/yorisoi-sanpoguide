@@ -50,6 +50,12 @@ data class TrialChannel(
     val expiresAt: Instant,
 )
 
+/**
+ * A third party's collection kept on the device for the channels that declare it (ADR-002 T-8a):
+ * the version the provider's list named when it was fetched.
+ */
+data class FetchedCollection(val provider: String, val id: String, val version: Int, val sha256: String)
+
 /** Something the user should hear about once: a channel withdrawn, its publisher's key moved, a list expired. */
 data class ChannelNotice(val at: Instant, val text: String)
 
@@ -58,12 +64,18 @@ data class ChannelState(
     val installed: List<InstalledChannel> = emptyList(),
     val notices: List<ChannelNotice> = emptyList(),
     val trials: List<TrialChannel> = emptyList(),
+    val collections: List<FetchedCollection> = emptyList(),
 )
 
-/** Keeps [ChannelState] in `state.json` and the packages as `pkg/{sha256}.zip` under [dir]. */
+/**
+ * Keeps [ChannelState] in `state.json` under [dir], the packages as `pkg/{sha256}.zip`, the
+ * collections as `col/{sha256}.zip` and the outside resources fetched ahead as `res/{sha256}`.
+ */
 class ChannelStore(private val dir: File) {
     private val stateFile = File(dir, "state.json")
     private val packages = File(dir, "pkg")
+    private val collections = File(dir, "col")
+    private val resources = File(dir, "res")
 
     fun load(): ChannelState = runCatching { decode(JSONObject(stateFile.readText())) }.getOrDefault(ChannelState())
 
@@ -88,6 +100,36 @@ class ChannelStore(private val dir: File) {
         File(packages, "$sha256.zip").delete()
     }
 
+    fun readCollection(sha256: String): ByteArray? = File(collections, "$sha256.zip").takeIf { it.isFile }?.readBytes()
+
+    fun writeCollection(sha256: String, bytes: ByteArray) {
+        collections.mkdirs()
+        File(collections, "$sha256.zip").writeBytes(bytes)
+    }
+
+    fun deleteCollection(sha256: String) {
+        File(collections, "$sha256.zip").delete()
+    }
+
+    fun readResource(sha256: String): ByteArray? = File(resources, sha256).takeIf { it.isFile }?.readBytes()
+
+    fun hasResource(sha256: String): Boolean = File(resources, sha256).isFile
+
+    /** Written whole to a temporary name first, so a cut-off fetch never looks complete. */
+    fun writeResource(sha256: String, bytes: ByteArray) {
+        resources.mkdirs()
+        val tmp = File(resources, "$sha256.tmp")
+        tmp.writeBytes(bytes)
+        if (!tmp.renameTo(File(resources, sha256))) tmp.delete()
+    }
+
+    /** The SHA-256 of every resource kept. */
+    fun resourceNames(): Set<String> = resources.list()?.filter { !it.endsWith(".tmp") }?.toSet().orEmpty()
+
+    fun deleteResource(sha256: String) {
+        File(resources, sha256).delete()
+    }
+
     private fun encode(state: ChannelState) = JSONObject()
         .put("providers", JSONArray(state.providers.map { p ->
             JSONObject().put("id", p.id).put("url", p.url).put("enabled", p.enabled)
@@ -104,6 +146,9 @@ class ChannelStore(private val dir: File) {
         .put("trials", JSONArray(state.trials.map { t ->
             JSONObject().put("provider", t.provider).put("id", t.id).put("version", t.version).put("publisher", t.publisher)
                 .put("sha256", t.sha256).put("name", t.name).put("expiresAt", t.expiresAt.toString())
+        }))
+        .put("collections", JSONArray(state.collections.map { c ->
+            JSONObject().put("provider", c.provider).put("id", c.id).put("version", c.version).put("sha256", c.sha256)
         }))
 
     private fun decode(o: JSONObject) = ChannelState(
@@ -122,6 +167,9 @@ class ChannelStore(private val dir: File) {
         notices = o.optJSONArray("notices").objects().map { ChannelNotice(Instant.parse(it.getString("at")), it.getString("text")) },
         trials = o.optJSONArray("trials").objects().map { t ->
             TrialChannel(t.getString("provider"), t.getString("id"), t.getInt("version"), t.getString("publisher"), t.getString("sha256"), t.getString("name"), Instant.parse(t.getString("expiresAt")))
+        },
+        collections = o.optJSONArray("collections").objects().map { c ->
+            FetchedCollection(c.getString("provider"), c.getString("id"), c.getInt("version"), c.getString("sha256"))
         },
     )
 }
