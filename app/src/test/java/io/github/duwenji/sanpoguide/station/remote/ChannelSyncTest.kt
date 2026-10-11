@@ -1,8 +1,6 @@
 package io.github.duwenji.sanpoguide.station.remote
 
 import io.github.duwenji.sanpoguide.station.BuiltInStations
-import io.github.duwenji.sanpoguide.station.format.AccountIds
-import io.github.duwenji.sanpoguide.station.format.ProviderIds
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -15,17 +13,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.security.KeyPair
-import java.security.KeyPairGenerator
-import java.security.MessageDigest
-import java.security.Signature
 import java.time.Duration
 import java.time.Instant
-import java.util.Base64
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 /**
  * Third-party channels end to end on the JVM (API-002 アプリの振る舞い): a provider and publishers
@@ -285,83 +275,3 @@ class ChannelSyncTest {
     }
 }
 
-private val b64 = Base64.getUrlEncoder().withoutPadding()
-
-private fun sha256(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-
-private fun KeyPair.raw(): ByteArray = public.encoded.takeLast(32).toByteArray()
-
-private fun KeyPair.sign(message: ByteArray): ByteArray = Signature.getInstance("Ed25519").run {
-    initSign(private)
-    update(message)
-    sign()
-}
-
-private fun ed25519() = KeyPairGenerator.getInstance("Ed25519").generateKeyPair()
-
-private fun signed(content: JSONObject, keyId: String, key: KeyPair): JSONObject {
-    val bytes = content.toString().toByteArray()
-    return JSONObject().put("payload", b64.encodeToString(bytes)).put("keyId", keyId).put("sig", b64.encodeToString(key.sign(bytes)))
-}
-
-/** A channel provider as the channel management system signs (API-002): a root key and one signing key. */
-private class TestProvider {
-    private val root = ed25519()
-    private val signing = ed25519()
-    val id: String = ProviderIds.of(root.raw())
-
-    fun discovery(): String {
-        val keyset = JSONObject().put("type", "keyset").put("provider", id).put("seq", 1).put("issuedAt", "2026-10-01T00:00:00Z")
-            .put("keys", JSONArray().put(JSONObject().put("keyId", "k-1").put("publicKey", b64.encodeToString(signing.raw())).put("notBefore", "2026-10-01T00:00:00Z").put("notAfter", "2027-04-01T00:00:00Z")))
-            .put("revokedKeys", JSONArray())
-        return JSONObject().put("provider", id).put("name", "検証用の提供元").put("versions", JSONArray(listOf("v1"))).put("list", "/v1/channels.json")
-            .put("rootKey", b64.encodeToString(root.raw())).put("keyset", signed(keyset, id, root)).toString()
-    }
-
-    fun ticket(channel: String, publisher: String, pkg: JSONObject, issuedAt: Instant, days: Long = 7, provider: String = id): String =
-        signed(
-            JSONObject().put("type", "test-ticket").put("provider", provider).put("channel", channel).put("publisher", publisher).put("package", pkg)
-                .put("issuedAt", issuedAt.toString()).put("expiresAt", issuedAt.plus(Duration.ofDays(days)).toString()),
-            "k-1", signing,
-        ).toString()
-
-    fun list(seq: Int, channels: JSONArray, revoked: JSONArray, issuedAt: Instant, expiresAt: Instant): String {
-        val body = JSONObject().put("type", "channel-list").put("format", 1).put("provider", id).put("seq", seq)
-            .put("issuedAt", issuedAt.toString()).put("expiresAt", expiresAt.toString()).put("channels", channels).put("revoked", revoked)
-        val bytes = body.toString().toByteArray()
-        val digest = JSONObject().put("type", "channel-list-digest").put("provider", id).put("seq", seq)
-            .put("issuedAt", issuedAt.toString()).put("expiresAt", expiresAt.toString()).put("sha256", sha256(bytes)).put("size", bytes.size)
-        return JSONObject().put("payload", b64.encodeToString(bytes)).put("digest", signed(digest, "k-1", signing)).toString()
-    }
-}
-
-/** A publisher signing its package (API-003 F-6). */
-private class TestPublisher {
-    private val key = ed25519()
-    val accountId: String = AccountIds.of(key.raw())
-
-    fun packageZip(channel: String, version: Int): ByteArray {
-        val manifest = JSONObject(
-            """
-            { "format": 1, "id": "$channel", "version": $version, "publisher": "$accountId",
-              "name": "鎌倉歴史散歩", "summary": "寺社と武士の歴史", "lang": "ja", "greeting": "歴史をたどりながら歩きましょう。",
-              "talk": { "level": "normal", "events": { "spot": true, "revisit": true, "milestone": true, "rest": false, "start": true, "finish": true } },
-              "spots": { "prefer": ["temple"], "skip": [] }, "guide": { "length": "long" }, "mood": { "tone": true, "sound": "temple" } }
-            """.trimIndent(),
-        )
-        val files = mapOf("channel.json" to manifest.toString().toByteArray(), "prompts/guide/focus.md" to "- 由来を中心に話す\n".toByteArray())
-        val payload = JSONObject().put("type", "channel-package").put("channel", channel).put("version", version).put("publisher", accountId)
-            .put("files", JSONObject(files.mapValues { (_, b) -> sha256(b) })).toString().toByteArray()
-        val signature = JSONObject().put("payload", b64.encodeToString(payload)).put("publisherKey", b64.encodeToString(key.raw()))
-            .put("sig", b64.encodeToString(key.sign(payload))).toString().toByteArray()
-        val out = ByteArrayOutputStream()
-        ZipOutputStream(out).use { zip ->
-            for ((name, bytes) in files + ("signature.json" to signature)) {
-                zip.putNextEntry(ZipEntry(name))
-                zip.write(bytes)
-                zip.closeEntry()
-            }
-        }
-        return out.toByteArray()
-    }
-}

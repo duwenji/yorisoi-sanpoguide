@@ -1,16 +1,29 @@
 package io.github.duwenji.sanpoguide.station.remote
 
+import io.github.duwenji.sanpoguide.material.ChannelMaterials
+import io.github.duwenji.sanpoguide.material.MaterialPlan
+import io.github.duwenji.sanpoguide.material.Prefetch
+import io.github.duwenji.sanpoguide.material.format.CollectionCheck
+import io.github.duwenji.sanpoguide.material.format.CollectionListedAs
+import io.github.duwenji.sanpoguide.material.format.CollectionPackage
+import io.github.duwenji.sanpoguide.material.format.CollectionValidator
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.StationSource
 import io.github.duwenji.sanpoguide.station.format.ChannelList
+import io.github.duwenji.sanpoguide.station.format.CollectionReferences
+import io.github.duwenji.sanpoguide.station.format.CollectionStatus
 import io.github.duwenji.sanpoguide.station.format.Ed25519Verifier
 import io.github.duwenji.sanpoguide.station.format.ListedAs
 import io.github.duwenji.sanpoguide.station.format.ListedChannel
+import io.github.duwenji.sanpoguide.station.format.ListedCollection
+import io.github.duwenji.sanpoguide.station.format.PackageArchive
 import io.github.duwenji.sanpoguide.station.format.ProviderDocuments
 import io.github.duwenji.sanpoguide.station.format.ProviderException
 import io.github.duwenji.sanpoguide.station.format.ProviderIds
 import io.github.duwenji.sanpoguide.station.format.ProviderInfo
 import io.github.duwenji.sanpoguide.station.format.StationCheck
+import io.github.duwenji.sanpoguide.station.format.StationFiles
+import io.github.duwenji.sanpoguide.station.format.StationMedia
 import io.github.duwenji.sanpoguide.station.format.StationPackage
 import io.github.duwenji.sanpoguide.station.format.StationValidator
 import org.json.JSONObject
@@ -56,6 +69,7 @@ data class ProviderView(
  *
  * @param appVersion the app's versionCode, against `minAppVersion`.
  * @param allowLocalHttp debug builds may use `http://localhost` and `http://10.0.2.2` (the emulator's host).
+ * @param mediaStage the material this app shows (API-003 M-1: 1 text and images, 2 audio, 3 video).
  */
 class ChannelSync(
     private val store: ChannelStore,
@@ -64,8 +78,11 @@ class ChannelSync(
     private val appVersion: Int,
     private val now: () -> Instant,
     private val allowLocalHttp: Boolean = false,
+    private val mediaStage: Int = MEDIA_STAGE,
 ) {
     companion object {
+        /** The app shows text and images (ADR-002 T-8). */
+        const val MEDIA_STAGE = 1
         val REFRESH_EVERY: Duration = Duration.ofHours(24)
         const val DISCOVERY_PATH = "/.well-known/sanpo-channels"
         private const val MAX_DISCOVERY_BYTES = 64 * 1024
@@ -109,6 +126,7 @@ class ChannelSync(
                 trials = s.trials.filter { it.provider != providerId },
             )
         }
+        collectGarbage()
     }
 
     fun setEnabled(providerId: String, enabled: Boolean) = updateProvider(providerId) { it.copy(enabled = enabled) }
@@ -171,10 +189,19 @@ class ChannelSync(
                 revoked != null -> {
                     store.deletePackage(c.sha256)
                     update { s -> s.copy(installed = s.installed - c) }
+                    collectGarbage()
                     notice("「${listed?.name ?: c.name.ifEmpty { c.id }}」は提供元（${info.name}）が取り下げました: ${revoked.reason}")
                 }
-                listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c) }
+                listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c, list) }
             }
+        }
+        // New versions of collections, and material a metered network left behind, come on Wi-Fi (ADR-002 T-8a).
+        if (unmetered) {
+            for (c in state.installed.filter { it.provider == providerId }) {
+                open(c.sha256, ListedAs(c.id, c.version, c.publisher))?.let { fetchMaterials(providerId, list, it.pkg.media, c.publisher) }
+            }
+            for (t in state.trials.filter { it.provider == providerId }) open(t.sha256, null)?.let { fetchMaterials(providerId, list, it.pkg.media, t.publisher) }
+            collectGarbage()
         }
     }
 
@@ -187,20 +214,22 @@ class ChannelSync(
         if (entry.pkg.format != 1) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
         if (entry.minAppVersion > appVersion) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
         val installed = state.installed.firstOrNull { it.provider == providerId && it.id == channelId }
-        download(providerId, entry, installed)
+        download(providerId, entry, installed, list)
     }
 
     fun uninstall(providerId: String, channelId: String) {
         val c = state.installed.firstOrNull { it.provider == providerId && it.id == channelId } ?: return
         store.deletePackage(c.sha256)
         update { s -> s.copy(installed = s.installed - c) }
+        collectGarbage()
     }
 
     /**
      * Fetches, checks and keeps a package; replaces [previous] only once the new one checks out.
      * A new publisher is accepted only with the list's `publisherChange` from the one on the device (P-9).
+     * The material its cues may show is fetched with it (API-003 F-10).
      */
-    private fun download(providerId: String, entry: ListedChannel, previous: InstalledChannel?) {
+    private fun download(providerId: String, entry: ListedChannel, previous: InstalledChannel?, list: ChannelList) {
         if (previous != null && entry.publisher != previous.publisher) {
             val change = entry.publisherChange
             if (change == null || change.from != previous.publisher) {
@@ -215,13 +244,16 @@ class ChannelSync(
             throw ChannelSyncException("パッケージを取得できませんでした（${e.message}）")
         }
         if (bytes.size != entry.pkg.size || sha256(bytes) != entry.pkg.sha256) throw ChannelSyncException("パッケージがリストと一致しません（hash_mismatch）")
-        val check = StationValidator.checkArchive(bytes, ListedAs(entry.id, entry.version, entry.publisher), verifier)
+        val check = StationValidator.checkArchive(bytes, ListedAs(entry.id, entry.version, entry.publisher), verifier, mediaStage)
         if (check is StationCheck.Rejected) throw ChannelSyncException("パッケージの確認に失敗しました（package_rejected: ${check.code.json}）")
+        check as StationCheck.Ok
 
         store.writePackage(entry.pkg.sha256, bytes)
         val next = InstalledChannel(providerId, entry.id, entry.version, entry.publisher, entry.pkg.sha256, name = entry.name)
         update { s -> s.copy(installed = s.installed.filter { !(it.provider == providerId && it.id == entry.id) } + next) }
         if (previous != null && previous.sha256 != next.sha256) store.deletePackage(previous.sha256)
+        fetchMaterials(providerId, list, check.station.media, entry.publisher)
+        collectGarbage()
         if (previous != null && entry.publisher != previous.publisher) {
             notice("「${entry.name}」の配信元の鍵が移し替えられました: ${entry.publisherChange!!.reason}")
         }
@@ -239,11 +271,11 @@ class ChannelSync(
         val (info, list) = validList(c.provider) ?: return@mapNotNull null
         val entry = list.channels.firstOrNull { it.id == c.id } ?: return@mapNotNull null
         if (list.revoked.any { it.id == c.id && it.covers(c.version) }) return@mapNotNull null
-        val zip = store.readPackage(c.sha256) ?: return@mapNotNull null
-        val pkg = (StationValidator.checkArchive(zip, ListedAs(c.id, c.version, c.publisher), verifier) as? StationCheck.Ok)?.station ?: return@mapNotNull null
+        val opened = open(c.sha256, ListedAs(c.id, c.version, c.publisher)) ?: return@mapNotNull null
         Station(
-            pkg, standard, key = "${c.provider}/${c.id}@${c.version}", id = "${c.provider}/${c.id}",
+            opened.pkg, standard, key = "${c.provider}/${c.id}@${c.version}", id = "${c.provider}/${c.id}",
             source = StationSource(provider.id, info.name, entry.publisherName),
+            materials = materials(c.provider, list, opened, c.publisher),
         )
     }.sortedBy { it.name }
 
@@ -300,7 +332,7 @@ class ChannelSync(
             throw ChannelSyncException("パッケージを取得できませんでした（${e.message}）")
         }
         if (bytes.size != ticket.pkg.size || sha256(bytes) != ticket.pkg.sha256) throw ChannelSyncException("パッケージがチケットと一致しません（hash_mismatch）")
-        val pkg = when (val check = StationValidator.checkArchive(bytes, null, verifier)) {
+        val pkg = when (val check = StationValidator.checkArchive(bytes, null, verifier, mediaStage)) {
             is StationCheck.Rejected -> throw ChannelSyncException("パッケージの確認に失敗しました（package_rejected: ${check.code.json}）")
             is StationCheck.Ok -> check.station
         }
@@ -312,6 +344,8 @@ class ChannelSync(
         val replaced = state.trials.filter { it.provider == providerId && it.id == ticket.channel }
         update { s -> s.copy(trials = s.trials - replaced.toSet() + trial) }
         replaced.filter { it.sha256 != trial.sha256 }.forEach { store.deletePackage(it.sha256) }
+        validList(providerId)?.let { (_, list) -> fetchMaterials(providerId, list, pkg.media, ticket.publisher) }
+        collectGarbage()
         return trialId(trial)
     }
 
@@ -319,6 +353,7 @@ class ChannelSync(
         val gone = state.trials.filter { it.provider == providerId && it.id == channelId }
         gone.forEach { store.deletePackage(it.sha256) }
         update { s -> s.copy(trials = s.trials - gone.toSet()) }
+        collectGarbage()
     }
 
     private fun ticketProvider(json: String): String {
@@ -331,11 +366,11 @@ class ChannelSync(
     private fun trialStations(standard: StationPackage): List<Station> = state.trials.mapNotNull { t ->
         if (!now().isBefore(t.expiresAt)) return@mapNotNull null
         val provider = state.providers.firstOrNull { it.id == t.provider } ?: return@mapNotNull null
-        val zip = store.readPackage(t.sha256) ?: return@mapNotNull null
-        val pkg = (StationValidator.checkArchive(zip, null, verifier) as? StationCheck.Ok)?.station ?: return@mapNotNull null
+        val opened = open(t.sha256, null) ?: return@mapNotNull null
         Station(
-            pkg, standard, key = "${trialId(t)}@${t.version}#${t.sha256.take(8)}", id = trialId(t),
+            opened.pkg, standard, key = "${trialId(t)}@${t.version}#${t.sha256.take(8)}", id = trialId(t),
             source = StationSource(provider.id, provider.name ?: provider.id, t.publisher, trial = true),
+            materials = materials(t.provider, validList(t.provider)?.second, opened, t.publisher),
         )
     }
 
@@ -345,6 +380,117 @@ class ChannelSync(
         if (expired.isEmpty()) return
         expired.forEach { store.deletePackage(it.sha256) }
         update { s -> s.copy(trials = s.trials - expired.toSet()) }
+        collectGarbage()
+    }
+
+    // ---- material (ADR-002 T-8a) ----
+
+    private class Opened(val pkg: StationPackage, val files: StationFiles)
+
+    /** A package on the device, checked again as it is used. */
+    private fun open(sha256: String, listedAs: ListedAs?): Opened? {
+        val zip = store.readPackage(sha256) ?: return null
+        val pkg = (StationValidator.checkArchive(zip, listedAs, verifier, mediaStage) as? StationCheck.Ok)?.station ?: return null
+        return Opened(pkg, PackageArchive.open(zip))
+    }
+
+    private val collectionCache = HashMap<String, Pair<CollectionPackage, StationFiles>>()
+
+    /** A collection on the device, with its own checks (API-004 手順 1・2); the list's are the caller's. */
+    private fun openCollection(sha256: String): Pair<CollectionPackage, StationFiles>? = collectionCache.getOrPut(sha256) {
+        val zip = store.readCollection(sha256) ?: return null
+        val files = runCatching { PackageArchive.open(zip) }.getOrNull() ?: return null
+        val pkg = (CollectionValidator.check(files, null, verifier) as? CollectionCheck.Ok)?.collection ?: return null
+        pkg to files
+    }
+
+    /** The collections kept for [providerId] at the version [list] names, signed by the producer it names, by id. */
+    private fun keptCollections(providerId: String, list: ChannelList): Map<String, Pair<CollectionPackage, StationFiles>> =
+        state.collections.filter { it.provider == providerId }.mapNotNull { c ->
+            val listed = list.collections.firstOrNull { it.id == c.id && it.version == c.version } ?: return@mapNotNull null
+            val opened = openCollection(c.sha256) ?: return@mapNotNull null
+            val producer = opened.first.manifest.producer
+            if (producer != listed.producer && producer !in list.formerProducerIds(listed.producer)) return@mapNotNull null
+            c.id to opened
+        }.toMap()
+
+    /** What a channel can show now; collections are resolved against [list], and none are usable without one. */
+    private fun materials(providerId: String, list: ChannelList?, opened: Opened, publisher: String): ChannelMaterials? {
+        val media = opened.pkg.media
+        if (media.isEmpty) return null
+        val kept = list?.let { keptCollections(providerId, it) }.orEmpty()
+        val statuses = list?.let { CollectionReferences.resolve(media, publisher, it, kept.mapValues { e -> e.value.first }).statuses }.orEmpty()
+        val files = media.collections.mapNotNull { use ->
+            kept[use.id]?.takeIf { statuses[use.alias] is CollectionStatus.Usable }?.let { use.alias to it.second }
+        }.toMap()
+        return ChannelMaterials(media, statuses, opened.files, files, store::readResource)
+    }
+
+    /**
+     * Fetches what [media] may show and the device doesn't have: the collections it declares, at
+     * the version [list] names, then the outside resources of [MaterialPlan]. Each failure leaves
+     * just that material out (its cue moves on to the next candidate) until the next try.
+     */
+    private fun fetchMaterials(providerId: String, list: ChannelList, media: StationMedia, publisher: String) {
+        if (media.isEmpty) return
+        fun resolved() = CollectionReferences.resolve(media, publisher, list, keptCollections(providerId, list).mapValues { it.value.first })
+        for (status in resolved().statuses.values) {
+            if (status is CollectionStatus.NotFetched) runCatching { fetchCollection(providerId, status.listed, list) }
+        }
+        val usable = resolved().statuses.mapNotNull { (alias, s) -> (s as? CollectionStatus.Usable)?.let { alias to it.pkg } }.toMap()
+        for (item in MaterialPlan.prefetch(media, usable, mediaStage)) {
+            if (!store.hasResource(item.sha256)) runCatching { fetchResource(item) }
+        }
+    }
+
+    private fun fetchCollection(providerId: String, listed: ListedCollection, list: ChannelList) {
+        val bytes = http.get(checkedUrl(listed.pkg.url), minOf(listed.pkg.size, ProviderDocuments.MAX_PACKAGE_BYTES))
+        if (bytes.size != listed.pkg.size || sha256(bytes) != listed.pkg.sha256) throw IOException("hash_mismatch")
+        val listedAs = CollectionListedAs(listed.id, listed.version, listed.producer, list.formerProducerIds(listed.producer))
+        if (CollectionValidator.checkArchive(bytes, listedAs, verifier) !is CollectionCheck.Ok) throw IOException("collection_invalid")
+        store.writeCollection(listed.pkg.sha256, bytes)
+        val next = FetchedCollection(providerId, listed.id, listed.version, listed.pkg.sha256)
+        val previous = state.collections.filter { it.provider == providerId && it.id == listed.id }
+        update { s -> s.copy(collections = s.collections - previous.toSet() + next) }
+        previous.filter { it.sha256 != next.sha256 }.forEach {
+            store.deleteCollection(it.sha256)
+            collectionCache.remove(it.sha256)
+        }
+    }
+
+    private fun fetchResource(item: Prefetch) {
+        val bytes = http.get(checkedUrl(item.url), item.size.toInt())
+        if (bytes.size.toLong() != item.size || sha256(bytes) != item.sha256) throw IOException("hash_mismatch")
+        store.writeResource(item.sha256, bytes)
+    }
+
+    /**
+     * Drops the collections no channel on the device declares, and the resources none can show.
+     * An expired list doesn't count against them: the channel comes back with the next list.
+     */
+    private fun collectGarbage() {
+        val collections = HashSet<Pair<String, String>>()
+        val resources = HashSet<String>()
+        val channels = state.installed.map { it.provider to open(it.sha256, ListedAs(it.id, it.version, it.publisher)) } +
+            state.trials.map { it.provider to open(it.sha256, null) }
+        for ((provider, opened) in channels) {
+            val media = opened?.pkg?.media ?: continue
+            media.collections.forEach { collections += provider to it.id }
+            val byAlias = media.collections.mapNotNull { use ->
+                state.collections.firstOrNull { it.provider == provider && it.id == use.id }
+                    ?.let { c -> openCollection(c.sha256)?.let { use.alias to it.first } }
+            }.toMap()
+            MaterialPlan.prefetch(media, byAlias, mediaStage).forEach { resources += it.sha256 }
+        }
+        val dropped = state.collections.filter { (it.provider to it.id) !in collections }
+        if (dropped.isNotEmpty()) {
+            dropped.forEach {
+                store.deleteCollection(it.sha256)
+                collectionCache.remove(it.sha256)
+            }
+            update { s -> s.copy(collections = s.collections - dropped.toSet()) }
+        }
+        (store.resourceNames() - resources).forEach(store::deleteResource)
     }
 
     // ---- helpers ----

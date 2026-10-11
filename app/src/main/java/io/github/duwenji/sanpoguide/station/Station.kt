@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.station
 
+import io.github.duwenji.sanpoguide.material.ChannelMaterials
 import io.github.duwenji.sanpoguide.prompt.StationPrompts
 import io.github.duwenji.sanpoguide.settings.TalkLevel
 import io.github.duwenji.sanpoguide.station.format.GuideLength
@@ -36,6 +37,8 @@ data class StationOverrides(
  * @param id how settings name the channel: the manifest's id for a built-in one,
  *   `{provider id}/{channel id}` for a third party's (ids are unique only within a provider).
  * @param source who delivers a third party's channel; null for a built-in one.
+ * @param materials what a third party's channel can show beyond words (ADR-002 T-8); null when
+ *   it has no material.
  */
 class Station(
     private val pkg: StationPackage,
@@ -44,6 +47,7 @@ class Station(
     val overrides: StationOverrides = StationOverrides(),
     val id: String = pkg.manifest.id,
     val source: StationSource? = null,
+    val materials: ChannelMaterials? = null,
 ) {
     val manifest: StationManifest get() = pkg.manifest
     val name: String get() = manifest.name
@@ -81,7 +85,7 @@ class Station(
     val isBuiltIn: Boolean get() = manifest.publisher == null
 
     fun withOverrides(overrides: StationOverrides) =
-        Station(pkg, standard, key, if (isBuiltIn) normalize(overrides) else StationOverrides(), id, source)
+        Station(pkg, standard, key, if (isBuiltIn) normalize(overrides) else StationOverrides(), id, source, materials)
 
     /** [overrides] without the values that equal this channel's own, so only real changes are kept. */
     fun normalize(overrides: StationOverrides): StationOverrides = StationOverrides(
