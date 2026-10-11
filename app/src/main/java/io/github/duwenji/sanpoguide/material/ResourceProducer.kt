@@ -43,27 +43,49 @@ class ResourceProducer(
         }
         var missing = false
         for (r in candidates) {
-            if (r.type !in request.accepts || stageOf(r.type) > stage) continue
-            val content = when (r.type) {
-                MaterialType.TEXT -> text(r)?.takeIf { t -> request.maxTextChars?.let { t.codePointCount(0, t.length) <= it } ?: true }?.let(Content::Text)
-                MaterialType.IMAGE -> bytes(r)?.let(Content::EncodedImage) ?: run { missing = true; null }
-                // Audio and video come with later app stages.
-                else -> null
-            } ?: continue
-            // A collection's text often has no credit of its own; whose it is is still shown.
-            val credit = r.credit?.let { Credit(it.author, it.license, it.source, via = producerName) }
-                ?: producerName?.let { Credit(null, null, via = it) }
-            return MaterialResult.Ready(Material(r.type, content, descriptor.id, credit, alt = r.alt))
+            when (val read = readResource(r, request, stage, text, bytes, descriptor.id, producerName)) {
+                is ResourceRead.Ok -> return MaterialResult.Ready(read.material)
+                ResourceRead.Missing -> missing = true
+                ResourceRead.No -> Unit
+            }
         }
         // Not fetched yet (a metered network, or a failure): the next Wi-Fi brings it.
         return if (missing) MaterialResult.Unavailable(MaterialResult.Reason.NOT_PREPARED) else MaterialResult.None
     }
+}
 
-    private fun stageOf(type: MaterialType) = when (type) {
-        MaterialType.VIDEO -> 3
-        MaterialType.AUDIO -> 2
-        else -> 1
-    }
+/** A resource read for a request: its material, not fetched yet, or not something this request can show. */
+internal sealed interface ResourceRead {
+    data class Ok(val material: Material) : ResourceRead
+    data object Missing : ResourceRead
+    data object No : ResourceRead
+}
+
+/**
+ * Reads [r] as material for [request]: of a type it accepts and the app's [stage] shows, a text
+ * within its length. [producerName] is shown beside the credit (a collection's producer).
+ */
+internal fun readResource(
+    r: Resource, request: MaterialRequest, stage: Int, text: (Resource) -> String?, bytes: (Resource) -> ByteArray?,
+    producerId: String, producerName: String?,
+): ResourceRead {
+    if (r.type !in request.accepts || stageOf(r.type) > stage) return ResourceRead.No
+    val content = when (r.type) {
+        MaterialType.TEXT -> text(r)?.takeIf { t -> request.maxTextChars?.let { t.codePointCount(0, t.length) <= it } ?: true }?.let(Content::Text)
+        MaterialType.IMAGE -> bytes(r)?.let(Content::EncodedImage) ?: return ResourceRead.Missing
+        // Audio and video come with later app stages.
+        else -> null
+    } ?: return ResourceRead.No
+    // A collection's text often has no credit of its own; whose it is is still shown.
+    val credit = r.credit?.let { Credit(it.author, it.license, it.source, via = producerName) }
+        ?: producerName?.let { Credit(null, null, via = it) }
+    return ResourceRead.Ok(Material(r.type, content, producerId, credit, alt = r.alt))
+}
+
+private fun stageOf(type: MaterialType) = when (type) {
+    MaterialType.VIDEO -> 3
+    MaterialType.AUDIO -> 2
+    else -> 1
 }
 
 /**

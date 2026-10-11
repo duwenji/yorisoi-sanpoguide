@@ -20,6 +20,8 @@ import io.github.duwenji.sanpoguide.station.format.StationMedia
  * @param collections by alias, as `CollectionReferences.resolve` gave them.
  * @param collectionFiles the files of each usable collection, by alias.
  * @param stored outside resources fetched ahead, by SHA-256.
+ * @param selected the collections on the device each selector may draw from, best first, by its alias (T-8d).
+ * @param lang the channel's language, which selectors ask for unless they name another.
  */
 class ChannelMaterials(
     val media: StationMedia,
@@ -27,6 +29,8 @@ class ChannelMaterials(
     private val own: StationFiles,
     private val collectionFiles: Map<String, StationFiles>,
     private val stored: (sha256: String) -> ByteArray?,
+    val selected: Map<String, List<SelectedCollection>> = emptyMap(),
+    val lang: String = "ja",
 ) {
     /** A usable collection by its alias in this channel, or null. */
     fun collection(alias: String): CollectionStatus.Usable? = collections[alias] as? CollectionStatus.Usable
@@ -40,6 +44,12 @@ class ChannelMaterials(
         is ResourceLocation.File -> (if (alias == null) own else collectionFiles[alias])?.read(at.path)
         is ResourceLocation.External -> stored(at.sha256)
     }
+
+    /** The bytes of a resource of a collection a selector draws from. */
+    fun bytes(c: SelectedCollection, resource: Resource): ByteArray? = when (val at = resource.location) {
+        is ResourceLocation.File -> c.files.read(at.path)
+        is ResourceLocation.External -> stored(at.sha256)
+    }
 }
 
 /** An outside resource to fetch when the channel is chosen (API-003 F-10). */
@@ -51,25 +61,39 @@ data class Prefetch(val url: String, val sha256: String, val size: Long)
  * (API-004 P-6). A collection named without an id may give any of its resources, so all of those
  * its presentation can show are fetched.
  *
+ * The selectors' outside resources count against a 50MB of their own (P-6), best collection first.
+ *
  * @param collections usable collections by alias.
+ * @param selected the collections each selector draws from on the device, best first, by its alias.
  */
 object MaterialPlan {
-    fun prefetch(media: StationMedia, collections: Map<String, CollectionPackage>, stage: Int): List<Prefetch> {
+    fun prefetch(
+        media: StationMedia, collections: Map<String, CollectionPackage>, stage: Int,
+        selected: Map<String, List<CollectionPackage>> = emptyMap(), lang: String = "ja",
+    ): List<Prefetch> {
         val out = LinkedHashMap<String, Prefetch>()
         var total = 0L
-        fun consider(r: Resource, presentation: Presentation) {
+        var selectedTotal = 0L
+        fun consider(r: Resource, presentation: Presentation, bySelector: Boolean = false) {
             val at = r.location as? ResourceLocation.External ?: return
             if (r.type == MaterialType.VIDEO || r.type !in presentation.presentAs.types) return
             if (presentation.presentAs.stageOf(r.type) > stage || at.sha256 in out) return
-            if (total + at.size > ResourceReader.MAX_PREFETCH_TOTAL) return
-            total += at.size
+            val sum = if (bySelector) selectedTotal else total
+            if (sum + at.size > ResourceReader.MAX_PREFETCH_TOTAL) return
+            if (bySelector) selectedTotal += at.size else total += at.size
             out[at.sha256] = Prefetch(at.url, at.sha256, at.size)
         }
+        val selectors = media.selectors.associateBy { it.alias }
         for (p in media.cues.flatMap { it.present }) {
             for (ref in p.items.flatten()) {
                 when (ref) {
                     is Reference.Self -> media.resources[ref.id]?.let { consider(it, p) }
                     is Reference.Alias -> {
+                        selectors[ref.alias]?.let { selector ->
+                            for (pkg in selected[ref.alias].orEmpty()) {
+                                pkg.resources.items.filter { SelectorPlan.matches(selector, it, pkg.manifest.lang, lang) }.forEach { consider(it, p, bySelector = true) }
+                            }
+                        }
                         val pkg = collections[ref.alias] ?: continue
                         val id = ref.id
                         if (id != null) pkg.resources[id]?.let { consider(it, p) } else pkg.resources.items.forEach { consider(it, p) }

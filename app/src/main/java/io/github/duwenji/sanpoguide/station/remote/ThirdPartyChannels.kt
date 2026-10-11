@@ -55,6 +55,8 @@ class ThirdPartyChannels(
     private val scope: CoroutineScope,
     /** Test tickets are read, and trial channels offered, only in developer mode (API-002 試用チケット). */
     private val developerMode: StateFlow<Boolean>,
+    /** The device's region and those around it, for what selectors draw from (API-004 P-6); null when unknown. */
+    region: () -> Set<String>? = { null },
 ) {
     private val connectivity = context.getSystemService(ConnectivityManager::class.java)
     private val sync = ChannelSync(
@@ -64,6 +66,7 @@ class ThirdPartyChannels(
         appVersion = BuildConfig.VERSION_CODE,
         now = Instant::now,
         allowLocalHttp = BuildConfig.DEBUG,
+        region = region,
     )
     private val lock = Mutex()
 
@@ -103,14 +106,14 @@ class ThirdPartyChannels(
 
     suspend fun setEnabled(providerId: String, enabled: Boolean) = exec { setEnabled(providerId, enabled) }
 
-    suspend fun install(providerId: String, channelId: String) = exec { install(providerId, channelId) }
+    suspend fun install(providerId: String, channelId: String) = exec { install(providerId, channelId, unmetered()) }
 
     suspend fun uninstall(providerId: String, channelId: String) = exec { uninstall(providerId, channelId) }
 
     suspend fun dismissNotices() = exec { dismissNotices() }
 
     /** Reads a test ticket; returns the trial channel's id. Throws [ChannelSyncException] with the reason to show. */
-    suspend fun loadTicket(json: String): String = exec { loadTicket(json, developerMode.value) }
+    suspend fun loadTicket(json: String): String = exec { loadTicket(json, developerMode.value, unmetered()) }
 
     suspend fun removeTrial(providerId: String, channelId: String) = exec { removeTrial(providerId, channelId) }
 

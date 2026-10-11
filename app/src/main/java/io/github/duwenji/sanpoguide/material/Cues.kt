@@ -54,13 +54,22 @@ class CueFinder(private val memory: CueMemory, private val zone: () -> ZoneId = 
     /**
      * The first cue on [poi], a spot within reach: by its OSM id, or by its name (the area and
      * the node of one place have different ids, and a spot of that name within reach is the one meant).
+     * A cue on any spot of its kind comes only when no cue names the spot, and counts per spot
+     * (API-003 1.2 題材を問わないきっかけ).
      */
-    fun spot(stationId: String, media: StationMedia, poi: Poi, distanceM: Int?, shownThisWalk: Set<String>, now: Long): CueFire? =
-        media.cues.firstNotNullOfOrNull { cue ->
-            val t = cue.trigger as? Trigger.Spot ?: return@firstNotNullOfOrNull null
-            if (t.osm != poi.id && (t.name == null || t.name != poi.name)) return@firstNotNullOfOrNull null
-            fire(stationId, cue, Subject.Spot(poi, distanceM), shownThisWalk, now)
+    fun spot(stationId: String, media: StationMedia, poi: Poi, distanceM: Int?, shownThisWalk: Set<String>, now: Long): CueFire? {
+        val subject = Subject.Spot(poi, distanceM)
+        val named = media.cues.filter { cue ->
+            val t = cue.trigger as? Trigger.Spot ?: return@filter false
+            t.osm == poi.id || (t.name != null && t.name == poi.name)
         }
+        if (named.isNotEmpty()) return named.firstNotNullOfOrNull { fire(stationId, it, subject, shownThisWalk, now) }
+        return media.cues.firstNotNullOfOrNull { cue ->
+            val t = cue.trigger as? Trigger.AnySpot ?: return@firstNotNullOfOrNull null
+            if (t.categories.none { it.category == poi.category }) return@firstNotNullOfOrNull null
+            fire(stationId, cue, subject, shownThisWalk, now, perSubject = poi.id)
+        }
+    }
 
     /** The first cue whose point the user is inside. */
     fun point(stationId: String, media: StationMedia, lat: Double, lon: Double, shownThisWalk: Set<String>, now: Long): CueFire? =
@@ -83,8 +92,8 @@ class CueFinder(private val memory: CueMemory, private val zone: () -> ZoneId = 
         if (fire.cue.repeat != Repeat.ONCE_PER_WALK) memory.record(fire.key, now)
     }
 
-    private fun fire(stationId: String, cue: Cue, subject: Subject, shownThisWalk: Set<String>, now: Long): CueFire? {
-        val key = "$stationId#${cue.id}"
+    private fun fire(stationId: String, cue: Cue, subject: Subject, shownThisWalk: Set<String>, now: Long, perSubject: String? = null): CueFire? {
+        val key = "$stationId#${cue.id}" + (perSubject?.let { "@$it" } ?: "")
         val allowed = when (cue.repeat) {
             Repeat.ONCE_PER_WALK -> key !in shownThisWalk
             Repeat.ONCE_PER_DAY -> key !in shownThisWalk && memory.lastShown(key)?.let { day(it) == day(now) } != true
@@ -133,7 +142,7 @@ class CuePresenter(
             val (producer, id) = when (ref) {
                 is Reference.Self -> own[SELF] to ref.id
                 is Reference.BuiltIn -> builtIns[ref.id] to null
-                // A collection that isn't usable, and a selector (ADR-002 T-8d), give nothing.
+                // A collection that isn't usable gives nothing; a selector is named by its alias alone.
                 is Reference.Alias -> own[ref.alias] to ref.id
             }
             if (producer == null) continue
@@ -164,7 +173,7 @@ class CuePresenter(
         return text.codePointCount(0, text.length) <= max
     }
 
-    /** The channel's own resources as `self`, and each usable collection by its alias. */
+    /** The channel's own resources as `self`, each usable collection by its alias, and each selector's producer (T-8d). */
     private fun producersOf(station: Station, materials: ChannelMaterials): Map<String, Producer> {
         val trial = station.source?.trial == true
         val own = ResourceProducer(SELF, materials.media.resources, { materials.text(it, null) }, { materials.bytes(it, null) }, trial, stage)
@@ -175,7 +184,12 @@ class CuePresenter(
                 trial, stage, producerName = usable.listed.producerName,
             )
         }
-        return mapOf(SELF to own) + collections
+        val selectors = materials.media.selectors.map { selector ->
+            selector.alias to SelectorProducer(
+                selector, materials.selected[selector.alias].orEmpty(), materials.lang, materials::bytes, trial, stage,
+            )
+        }
+        return mapOf(SELF to own) + collections + selectors
     }
 
     private companion object {

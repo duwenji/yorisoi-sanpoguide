@@ -1,6 +1,8 @@
 package io.github.duwenji.sanpoguide.station.remote
 
 import io.github.duwenji.sanpoguide.material.ChannelMaterials
+import io.github.duwenji.sanpoguide.material.SelectedCollection
+import io.github.duwenji.sanpoguide.material.SelectorPlan
 import io.github.duwenji.sanpoguide.material.MaterialPlan
 import io.github.duwenji.sanpoguide.material.Prefetch
 import io.github.duwenji.sanpoguide.material.format.CollectionCheck
@@ -70,6 +72,8 @@ data class ProviderView(
  * @param appVersion the app's versionCode, against `minAppVersion`.
  * @param allowLocalHttp debug builds may use `http://localhost` and `http://10.0.2.2` (the emulator's host).
  * @param mediaStage the material this app shows (API-003 M-1: 1 text and images, 2 audio, 3 video).
+ * @param region the device's region and the eight around it (API-004 P-6), for the collections
+ *   selectors draw from; null while the location is unknown.
  */
 class ChannelSync(
     private val store: ChannelStore,
@@ -79,6 +83,7 @@ class ChannelSync(
     private val now: () -> Instant,
     private val allowLocalHttp: Boolean = false,
     private val mediaStage: Int = MEDIA_STAGE,
+    private val region: () -> Set<String>? = { null },
 ) {
     companion object {
         /** The app shows text and images (ADR-002 T-8). */
@@ -136,6 +141,7 @@ class ChannelSync(
         for (p in state.providers) {
             if (p.enabled && (p.triedAt == null || Duration.between(p.triedAt, now()) >= REFRESH_EVERY)) refresh(p.id, unmetered)
         }
+        if (unmetered) fetchNearby()
         noticeExpiredLists()
         dropExpiredTrials()
     }
@@ -192,15 +198,15 @@ class ChannelSync(
                     collectGarbage()
                     notice("「${listed?.name ?: c.name.ifEmpty { c.id }}」は提供元（${info.name}）が取り下げました: ${revoked.reason}")
                 }
-                listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c, list) }
+                listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c, list, unmetered) }
             }
         }
         // New versions of collections, and material a metered network left behind, come on Wi-Fi (ADR-002 T-8a).
         if (unmetered) {
             for (c in state.installed.filter { it.provider == providerId }) {
-                open(c.sha256, ListedAs(c.id, c.version, c.publisher))?.let { fetchMaterials(providerId, list, it.pkg.media, c.publisher) }
+                open(c.sha256, ListedAs(c.id, c.version, c.publisher))?.let { fetchMaterials(providerId, list, it.pkg, c.publisher, unmetered) }
             }
-            for (t in state.trials.filter { it.provider == providerId }) open(t.sha256, null)?.let { fetchMaterials(providerId, list, it.pkg.media, t.publisher) }
+            for (t in state.trials.filter { it.provider == providerId }) open(t.sha256, null)?.let { fetchMaterials(providerId, list, it.pkg, t.publisher, unmetered) }
             collectGarbage()
         }
     }
@@ -208,13 +214,13 @@ class ChannelSync(
     // ---- channels ----
 
     /** Takes a listed channel onto the device: the package is fetched and checked when the user chooses it. */
-    fun install(providerId: String, channelId: String) {
+    fun install(providerId: String, channelId: String, unmetered: Boolean = false) {
         val (_, list) = validList(providerId) ?: throw ChannelSyncException("提供元のリストが有効ではありません。取得し直してください")
         val entry = list.channels.firstOrNull { it.id == channelId } ?: throw ChannelSyncException("リストにないチャンネルです")
         if (entry.pkg.format != 1) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
         if (entry.minAppVersion > appVersion) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
         val installed = state.installed.firstOrNull { it.provider == providerId && it.id == channelId }
-        download(providerId, entry, installed, list)
+        download(providerId, entry, installed, list, unmetered)
     }
 
     fun uninstall(providerId: String, channelId: String) {
@@ -229,7 +235,7 @@ class ChannelSync(
      * A new publisher is accepted only with the list's `publisherChange` from the one on the device (P-9).
      * The material its cues may show is fetched with it (API-003 F-10).
      */
-    private fun download(providerId: String, entry: ListedChannel, previous: InstalledChannel?, list: ChannelList) {
+    private fun download(providerId: String, entry: ListedChannel, previous: InstalledChannel?, list: ChannelList, unmetered: Boolean) {
         if (previous != null && entry.publisher != previous.publisher) {
             val change = entry.publisherChange
             if (change == null || change.from != previous.publisher) {
@@ -252,7 +258,7 @@ class ChannelSync(
         val next = InstalledChannel(providerId, entry.id, entry.version, entry.publisher, entry.pkg.sha256, name = entry.name)
         update { s -> s.copy(installed = s.installed.filter { !(it.provider == providerId && it.id == entry.id) } + next) }
         if (previous != null && previous.sha256 != next.sha256) store.deletePackage(previous.sha256)
-        fetchMaterials(providerId, list, check.station.media, entry.publisher)
+        fetchMaterials(providerId, list, check.station, entry.publisher, unmetered)
         collectGarbage()
         if (previous != null && entry.publisher != previous.publisher) {
             notice("「${entry.name}」の配信元の鍵が移し替えられました: ${entry.publisherChange!!.reason}")
@@ -314,7 +320,7 @@ class ChannelSync(
      * most), and only in developer mode. The package is fetched and checked like a listed one, and
      * must be the ticket's channel by the ticket's publisher. Returns the trial's station id.
      */
-    fun loadTicket(json: String, developerMode: Boolean): String {
+    fun loadTicket(json: String, developerMode: Boolean, unmetered: Boolean = false): String {
         if (!developerMode) throw ChannelSyncException("試用チケットは開発者モードのときだけ読み込めます（ticket_invalid）")
         val providerId = runCatching { ticketProvider(json) }.getOrNull() ?: throw ChannelSyncException("試用チケットとして読めません（ticket_invalid）")
         val record = state.providers.firstOrNull { it.id == providerId } ?: throw ChannelSyncException("この試用チケットの提供元（$providerId）を先に足してください")
@@ -344,7 +350,7 @@ class ChannelSync(
         val replaced = state.trials.filter { it.provider == providerId && it.id == ticket.channel }
         update { s -> s.copy(trials = s.trials - replaced.toSet() + trial) }
         replaced.filter { it.sha256 != trial.sha256 }.forEach { store.deletePackage(it.sha256) }
-        validList(providerId)?.let { (_, list) -> fetchMaterials(providerId, list, pkg.media, ticket.publisher) }
+        validList(providerId)?.let { (_, list) -> fetchMaterials(providerId, list, pkg, ticket.publisher, unmetered) }
         collectGarbage()
         return trialId(trial)
     }
@@ -423,24 +429,66 @@ class ChannelSync(
         val files = media.collections.mapNotNull { use ->
             kept[use.id]?.takeIf { statuses[use.alias] is CollectionStatus.Usable }?.let { use.alias to it.second }
         }.toMap()
-        return ChannelMaterials(media, statuses, opened.files, files, store::readResource)
+        val selected = list?.let { selected(media, it, publisher, kept) }.orEmpty()
+        return ChannelMaterials(media, statuses, opened.files, files, store::readResource, selected, opened.pkg.manifest.lang)
     }
 
     /**
-     * Fetches what [media] may show and the device doesn't have: the collections it declares, at
-     * the version [list] names, then the outside resources of [MaterialPlan]. Each failure leaves
-     * just that material out (its cue moves on to the next candidate) until the next try.
+     * The collections on the device each of [media]'s selectors may draw from now, best first, by
+     * alias: still candidates on [list], at its version, and agreeing with its copy of the grants.
      */
-    private fun fetchMaterials(providerId: String, list: ChannelList, media: StationMedia, publisher: String) {
+    private fun selected(
+        media: StationMedia, list: ChannelList, publisher: String, kept: Map<String, Pair<CollectionPackage, StationFiles>>,
+    ): Map<String, List<SelectedCollection>> = media.selectors.associate { selector ->
+        selector.alias to SelectorPlan.candidates(selector, list, publisher, appVersion).mapNotNull { listed ->
+            val (pkg, files) = kept[listed.id] ?: return@mapNotNull null
+            SelectedCollection(listed, pkg, files).takeIf { pkg.manifest.grants == listed.grants }
+        }
+    }
+
+    /**
+     * Fetches what [pkg] may show and the device doesn't have: the collections it declares, at
+     * the version [list] names; on an [unmetered] network, the collections its selectors draw
+     * from around here (API-004 P-6); then the outside resources of [MaterialPlan]. Each failure
+     * leaves just that material out (its cue moves on to the next candidate) until the next try.
+     */
+    private fun fetchMaterials(providerId: String, list: ChannelList, pkg: StationPackage, publisher: String, unmetered: Boolean) {
+        val media = pkg.media
         if (media.isEmpty) return
         fun resolved() = CollectionReferences.resolve(media, publisher, list, keptCollections(providerId, list).mapValues { it.value.first })
         for (status in resolved().statuses.values) {
             if (status is CollectionStatus.NotFetched) runCatching { fetchCollection(providerId, status.listed, list) }
         }
+        if (unmetered && media.selectors.isNotEmpty()) {
+            val kept = keptCollections(providerId, list)
+            for (listed in SelectorPlan.toFetch(media, list, publisher, appVersion, region())) {
+                if (listed.id !in kept) runCatching { fetchCollection(providerId, listed, list) }
+            }
+        }
         val usable = resolved().statuses.mapNotNull { (alias, s) -> (s as? CollectionStatus.Usable)?.let { alias to it.pkg } }.toMap()
-        for (item in MaterialPlan.prefetch(media, usable, mediaStage)) {
+        val selected = selected(media, list, publisher, keptCollections(providerId, list)).mapValues { e -> e.value.map { it.pkg } }
+        for (item in MaterialPlan.prefetch(media, usable, mediaStage, selected, pkg.manifest.lang)) {
             if (!store.hasResource(item.sha256)) runCatching { fetchResource(item) }
         }
+    }
+
+    /**
+     * On an unmetered network at start-up and when a walk starts: the collections the channels'
+     * selectors draw from where the device is now (API-004 P-6). Only the region is used, and
+     * nothing is fetched on coming near a spot (API-003 F-10).
+     */
+    private fun fetchNearby() {
+        for (c in state.installed) {
+            val (_, list) = validList(c.provider) ?: continue
+            val opened = open(c.sha256, ListedAs(c.id, c.version, c.publisher)) ?: continue
+            if (opened.pkg.media.selectors.isNotEmpty()) fetchMaterials(c.provider, list, opened.pkg, c.publisher, unmetered = true)
+        }
+        for (t in state.trials) {
+            val (_, list) = validList(t.provider) ?: continue
+            val opened = open(t.sha256, null) ?: continue
+            if (opened.pkg.media.selectors.isNotEmpty()) fetchMaterials(t.provider, list, opened.pkg, t.publisher, unmetered = true)
+        }
+        collectGarbage()
     }
 
     private fun fetchCollection(providerId: String, listed: ListedCollection, list: ChannelList) {
@@ -471,16 +519,36 @@ class ChannelSync(
     private fun collectGarbage() {
         val collections = HashSet<Pair<String, String>>()
         val resources = HashSet<String>()
-        val channels = state.installed.map { it.provider to open(it.sha256, ListedAs(it.id, it.version, it.publisher)) } +
-            state.trials.map { it.provider to open(it.sha256, null) }
-        for ((provider, opened) in channels) {
-            val media = opened?.pkg?.media ?: continue
+        val channels = state.installed.map { Triple(it.provider, it.publisher, open(it.sha256, ListedAs(it.id, it.version, it.publisher))) } +
+            state.trials.map { Triple(it.provider, it.publisher, open(it.sha256, null)) }
+        val here = region()
+        for ((provider, publisher, opened) in channels) {
+            val pkg = opened?.pkg ?: continue
+            val media = pkg.media
             media.collections.forEach { collections += provider to it.id }
             val byAlias = media.collections.mapNotNull { use ->
                 state.collections.firstOrNull { it.provider == provider && it.id == use.id }
                     ?.let { c -> openCollection(c.sha256)?.let { use.alias to it.first } }
             }.toMap()
-            MaterialPlan.prefetch(media, byAlias, mediaStage).forEach { resources += it.sha256 }
+            // A selector's collections stay while they are candidates around here; with no valid
+            // list, or no location, nothing can be told and they all stay.
+            var selected = emptyMap<String, List<CollectionPackage>>()
+            if (media.selectors.isNotEmpty()) {
+                val list = validList(provider)?.second
+                if (list == null) {
+                    state.collections.filter { it.provider == provider }.forEach { collections += provider to it.id }
+                } else {
+                    val keep = if (here == null) {
+                        media.selectors.flatMap { SelectorPlan.candidates(it, list, publisher, appVersion) }.map { it.id }.toSet()
+                    } else {
+                        SelectorPlan.toFetch(media, list, publisher, appVersion, here).map { it.id }.toSet()
+                    }
+                    keep.forEach { collections += provider to it }
+                    selected = selected(media, list, publisher, keptCollections(provider, list).filterKeys { it in keep })
+                        .mapValues { e -> e.value.map { it.pkg } }
+                }
+            }
+            MaterialPlan.prefetch(media, byAlias, mediaStage, selected, pkg.manifest.lang).forEach { resources += it.sha256 }
         }
         val dropped = state.collections.filter { (it.provider to it.id) !in collections }
         if (dropped.isNotEmpty()) {
