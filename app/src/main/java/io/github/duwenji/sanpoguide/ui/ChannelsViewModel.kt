@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** The providers the user added and the channels they deliver (API-002 設定画面の提供元). */
+/** The providers the user added and the channels they deliver (API-002 設定画面の運営). */
 class ChannelsViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as SanpoApp
     private val channels = app.channels

@@ -124,7 +124,7 @@ class ChannelSyncTest {
         sync.refreshAll(unmetered = false)
         assertTrue(sync.stations(standard).isEmpty())
         assertTrue(sync.state.installed.isEmpty())
-        assertEquals("「鎌倉歴史散歩」は提供元（検証用の提供元）が取り下げました: 審査基準に反する内容", sync.state.notices.single().text)
+        assertEquals("「鎌倉歴史散歩」は運営（検証用の提供元）が取り下げました: 審査基準に反する内容", sync.state.notices.single().text)
     }
 
     @Test

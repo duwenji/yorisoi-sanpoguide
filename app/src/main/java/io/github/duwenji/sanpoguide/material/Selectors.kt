@@ -18,7 +18,7 @@ import io.github.duwenji.sanpoguide.station.format.StationMedia
 class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackage, val files: StationFiles)
 
 /**
- * Which collections a channel's selectors draw from (API-004「基準で選ぶ制作元」): listed by the
+ * Which collections a channel's selectors draw from (API-004「基準で選ぶ素材提供者」): listed by the
  * channel's provider, not revoked, granted to its publisher (D-27), shown by this app, and
  * carrying the kind and a tag asked for. Best first (「複数の素材が当たったとき」): the producers
  * the selector names, in its order, then the most recently approved.
