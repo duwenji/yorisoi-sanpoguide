@@ -21,6 +21,8 @@ import io.github.duwenji.sanpoguide.data.WalkRoute
 import io.github.duwenji.sanpoguide.history.LatLon
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.Credit
+import io.github.duwenji.sanpoguide.material.CueDetail
+import io.github.duwenji.sanpoguide.material.Pace
 import io.github.duwenji.sanpoguide.material.MaterialResult
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.settings.GuideSettings
@@ -28,18 +30,26 @@ import io.github.duwenji.sanpoguide.settings.MapStyle
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.remote.ChannelNotice
 import io.github.duwenji.sanpoguide.walk.WalkService
+import android.os.Looper
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -101,6 +111,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val liveWalk: StateFlow<LiveWalk?> = app.feed.live
     val companionLines: StateFlow<List<Utterance>> = app.feed.lines
     val walked: StateFlow<List<LatLon>> = app.feed.walked
+
+    /** What a channel's cue holds, opened by a tap on its card or notification; null when closed. */
+    val openedCue: StateFlow<CueDetail?> = app.feed.opened
+    fun openCue(detail: CueDetail) = app.feed.open(detail)
+    fun openCue(id: String) = app.feed.open(id)
+    fun closeCue() = app.feed.close()
+
+    /**
+     * Whether the user is walking now: the full screen isn't shown then (API-003「見せ方」).
+     * Outside a walk the location is looked up only once, so while this is watched (a cue's
+     * sheet or full screen is open) it asks for its own updates.
+     */
+    @SuppressLint("MissingPermission") // The sheet opens only after the permission is granted.
+    val moving: StateFlow<Boolean> = combine(locationUpdates(), ticker(MOVING_CHECK_MS)) { l, _ ->
+        // Checked again now and then: a location that stops coming says nothing of walking.
+        l != null && Pace.walking(l.speed.takeIf { l.hasSpeed() }, System.currentTimeMillis() - l.time)
+    }.distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     val spots: StateFlow<List<SpotItem>> = combine(
         app.spots.spots, app.spots.location, app.history.walks,
@@ -335,11 +363,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stopSpeaking() = app.speaker.stop()
 
+    @SuppressLint("MissingPermission")
+    private fun locationUpdates() = callbackFlow<Location?> {
+        trySend(null)
+        val fused = LocationServices.getFusedLocationProviderClient(app)
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { trySend(it) }
+            }
+        }
+        try {
+            fused.requestLocationUpdates(LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, MOVING_CHECK_MS / 5).build(), callback, Looper.getMainLooper())
+        } catch (e: SecurityException) {
+            Log.w(TAG, "No location for the walking check", e)
+        }
+        awaitClose { fused.removeLocationUpdates(callback) }
+    }
+
     private companion object {
         const val TAG = "MainViewModel"
         /** Farther than this from the drawn route, the user has taken another way. */
         const val OFF_ROUTE_M = 30.0
         /** After a failed lookup, try again once the user has moved this far. */
         const val RETRY_AFTER_M = 100.0
+        const val MOVING_CHECK_MS = 10_000L
+
+        fun ticker(periodMs: Long) = flow {
+            while (true) {
+                emit(Unit)
+                delay(periodMs)
+            }
+        }
     }
 }

@@ -60,6 +60,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import io.github.duwenji.sanpoguide.material.Material
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -152,7 +156,7 @@ fun MainScreen(
             }
             if (walking || lines.isNotEmpty()) {
                 // The scene is part of walk mode, not something to look at while walking.
-                CompanionCard(liveWalk, lines, scene = mood.takeIf { settings.moodEnabled && walking })
+                CompanionCard(liveWalk, lines, scene = mood.takeIf { settings.moodEnabled && walking }, onOpen = viewModel::openCue)
             }
             if (!settings.isConfigured) {
                 Banner("AIのAPIキーが未設定のため、簡易解説で動作しています。タップして設定", onOpenSettings)
@@ -207,6 +211,19 @@ fun MainScreen(
                 }
             }
         }
+    }
+
+    val openedCue by viewModel.openedCue.collectAsStateWithLifecycle()
+    var fullscreen by remember { mutableStateOf<Material?>(null) }
+    if (openedCue != null || fullscreen != null) {
+        // Watched only while open: it keeps the location coming.
+        val moving by viewModel.moving.collectAsStateWithLifecycle()
+        openedCue?.let { detail ->
+            ModalBottomSheet(onDismissRequest = viewModel::closeCue) {
+                CueSheet(detail, moving, onFullscreen = { fullscreen = it })
+            }
+        }
+        fullscreen?.let { m -> FullscreenImage(m, moving, onClose = { fullscreen = null }) }
     }
 
     selected?.let { spot ->

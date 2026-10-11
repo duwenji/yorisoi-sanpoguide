@@ -30,6 +30,7 @@ import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.CueFire
+import io.github.duwenji.sanpoguide.material.CueLayout
 import io.github.duwenji.sanpoguide.material.MaterialContext
 import io.github.duwenji.sanpoguide.material.Shown
 import io.github.duwenji.sanpoguide.material.Subject
@@ -37,7 +38,6 @@ import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.sound.AmbientPlayer
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.format.CueEvent
-import io.github.duwenji.sanpoguide.station.format.PresentAs
 import io.github.duwenji.sanpoguide.station.format.TalkEventKind
 import io.github.duwenji.sanpoguide.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
@@ -374,25 +374,14 @@ class WalkService : LifecycleService() {
         app.cues.present(fire, station, MaterialContext(station, s, weather, app.mood.mood.value))
 
     /**
-     * Shows what a cue came to, in its order: spoken lines in the queue the companion speaks
-     * from (API-003 F-13), a card's text in the feed. Notifications, sheets and full screen
-     * come with T-8c. The cue counts as shown even when it came to nothing, so it isn't tried
-     * again on every tick.
+     * Shows what a cue came to, in its order ([CueShow]); its spoken lines go in the queue the
+     * companion speaks from (API-003 F-13). The cue counts as shown even when it came to
+     * nothing, so it isn't tried again on every tick.
      */
     private fun show(s: WalkSession, fire: CueFire, shown: List<Shown>, spotName: String?) {
-        app.cueFinder.record(fire, s.shownCues, System.currentTimeMillis())
-        var name = spotName
-        for (item in shown) {
-            val text = item.items.firstNotNullOfOrNull { (it.content as? Content.Text)?.text } ?: continue
-            when (item.presentAs) {
-                PresentAs.SPEAK -> {
-                    speakLine(text, name)
-                    name = null
-                }
-                PresentAs.CARD -> app.feed.add(Utterance(System.currentTimeMillis(), text, name))
-                else -> Unit
-            }
-        }
+        val now = System.currentTimeMillis()
+        app.cueFinder.record(fire, s.shownCues, now)
+        app.cueShow.show(CueLayout.of("${fire.key}@$now", shown), app.stations.current.value.name, spotName, ::speakLine)
     }
 
     /** The cues of the current channel for [event], each after the other. */
@@ -415,14 +404,16 @@ class WalkService : LifecycleService() {
         return FacilityAdvisor.relativeDirection(location.bearing, location.bearingTo(target))
     }
 
-    private fun speakLine(text: String, spotName: String? = null) {
+    private fun speakLine(text: String, spotName: String? = null) = speakLine(Utterance(System.currentTimeMillis(), text, spotName))
+
+    private fun speakLine(line: Utterance) {
         // A line that finishes generating after the walk ended is dropped, so it can't
         // re-post the ongoing walk notification.
         val s = session ?: return
-        s.remember(text)
-        app.feed.add(Utterance(System.currentTimeMillis(), text, spotName))
-        app.speaker.speak(if (spotName != null) "$spotName。$text" else text)
-        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, walkingNotification(text))
+        s.remember(line.text)
+        app.feed.add(line)
+        app.speaker.speak(CueShow.spoken(line))
+        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, walkingNotification(line.text))
     }
 
     private inline fun talk(block: () -> Unit) {
@@ -468,17 +459,7 @@ class WalkService : LifecycleService() {
                 app.speaker.speak(line)
             }
             // The channel's own cues for the end come after the summary (API-003 `event: finish`).
-            val media = station.materials?.media ?: return@launch
-            for (fire in app.cueFinder.events(station.id, media, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, System.currentTimeMillis())) {
-                app.cueFinder.record(fire, s.shownCues, System.currentTimeMillis())
-                val shown = app.cues.present(fire, station, MaterialContext(station, null, lastWeather))
-                for (item in shown) {
-                    val text = item.items.firstNotNullOfOrNull { (it.content as? Content.Text)?.text } ?: continue
-                    if (item.presentAs != PresentAs.SPEAK && item.presentAs != PresentAs.CARD) continue
-                    app.feed.add(Utterance(System.currentTimeMillis(), text))
-                    if (item.presentAs == PresentAs.SPEAK) app.speaker.speak(text)
-                }
-            }
+            app.showEventCues(station, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, MaterialContext(station, null, lastWeather))
         }
     }
 
