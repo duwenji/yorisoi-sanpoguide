@@ -10,8 +10,8 @@
 | 関連Skill | 020_api-contract-design |
 | 作成日 | 2026-10-03 |
 | 作成者 | Claude（開発者との検討） |
-| 承認者 | 開発者（2026-10-03） |
-| ステータス | 1.2 承認待ち（1.1 は承認済） |
+| 承認者 | 開発者（1.0・1.1: 2026-10-03、1.2: 2026-10-11） |
+| ステータス | 承認済 |
 | 版 | 1.2 |
 
 ## 目的・背景
@@ -472,3 +472,4 @@ sequenceDiagram
 | 2026-10-03 | 1.1 | P-8（リストは要約に署名。AWS KMS の 4,096 バイトの制限のため）、P-9（配信元の鍵の移し替えと `publisherChange`）を追加。V-03 を改め、V-15〜V-18 とエラー `publisher_changed` を追加。未決事項 No.6 の置き場所を決定 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.2 | 素材集（ADR-002）を追加: P-10〜P-14、`collections[]`・`revokedCollections[]`・`channels[].media`・`resourcesSize`、アプリの振る舞い、エラー `collection_rejected`・`producer_changed`、確認観点 V-19〜V-24。`format` は 1 のまま | Claude |
 | 2026-10-11 | 1.2（追記） | P-15（`collections[].tags`・`regions`・`grants`）、基準で選ぶ素材集の取得、確認観点 V-25・V-26 を追加（ADR-002 1.1） | Claude |
+| 2026-10-11 | 1.2 | 承認 | Claude（承認: 開発者） |
