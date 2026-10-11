@@ -50,7 +50,9 @@ class ResourceProducer(
                 // Audio and video come with later app stages.
                 else -> null
             } ?: continue
+            // A collection's text often has no credit of its own; whose it is is still shown.
             val credit = r.credit?.let { Credit(it.author, it.license, it.source, via = producerName) }
+                ?: producerName?.let { Credit(null, null, via = it) }
             return MaterialResult.Ready(Material(r.type, content, descriptor.id, credit, alt = r.alt))
         }
         // Not fetched yet (a metered network, or a failure): the next Wi-Fi brings it.

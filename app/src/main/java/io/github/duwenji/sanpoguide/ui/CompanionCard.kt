@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import io.github.duwenji.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.sanpoguide.companion.LiveWalk
 import io.github.duwenji.sanpoguide.companion.Utterance
+import io.github.duwenji.sanpoguide.material.CueDetail
 import io.github.duwenji.sanpoguide.mood.Mood
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -35,10 +40,11 @@ import java.util.Locale
 
 /**
  * The companion's latest words, plus live walk figures. Tap to see earlier lines.
- * With a [scene], the figures sit on a small picture of the current mood.
+ * With a [scene], the figures sit on a small picture of the current mood. A channel's line may
+ * carry an image and its credit, and a detail the user opens with [onOpen] (ADR-002 T-8c).
  */
 @Composable
-fun CompanionCard(live: LiveWalk?, lines: List<Utterance>, scene: Mood? = null) {
+fun CompanionCard(live: LiveWalk?, lines: List<Utterance>, scene: Mood? = null, onOpen: (CueDetail) -> Unit = {}) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val now by produceState(System.currentTimeMillis(), live) {
         while (live != null) {
@@ -87,13 +93,33 @@ fun CompanionCard(live: LiveWalk?, lines: List<Utterance>, scene: Mood? = null) 
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                     )
-                    Text(
-                        line.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        maxLines = if (expanded) Int.MAX_VALUE else 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    if (line.text.isNotBlank()) {
+                        Text(
+                            line.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            maxLines = if (expanded) Int.MAX_VALUE else 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    line.image?.let { image ->
+                        Spacer(Modifier.height(4.dp))
+                        MaterialImage(
+                            image, Modifier.fillMaxWidth().heightIn(max = 160.dp).clip(RoundedCornerShape(8.dp)), maxPx = 800,
+                        )
+                    }
+                    // An image's credit opens its source; a text's is only a line.
+                    if (line.image != null) {
+                        MaterialCredit(line.image, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                    } else {
+                        line.credit?.let {
+                            Text(
+                                it, style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                            )
+                        }
+                    }
+                    line.detail?.let { detail -> TextButton(onClick = { onOpen(detail) }) { Text("詳しく見る") } }
                 }
             }
         }

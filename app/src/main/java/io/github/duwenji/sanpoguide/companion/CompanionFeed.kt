@@ -2,13 +2,25 @@ package io.github.duwenji.sanpoguide.companion
 
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.sanpoguide.material.CueDetail
+import io.github.duwenji.sanpoguide.material.Material
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-/** A line the companion said, as shown in the app. */
-data class Utterance(val at: Long, val text: String, val spotName: String? = null)
+/**
+ * A line the companion said, as shown in the app. A channel's cue may add an [image] (a card's),
+ * the [credit] of its material, and a [detail] the user opens by tapping (ADR-002 T-8c).
+ */
+data class Utterance(
+    val at: Long,
+    val text: String,
+    val spotName: String? = null,
+    val image: Material? = null,
+    val credit: String? = null,
+    val detail: CueDetail? = null,
+)
 
 /** Live walk figures for the UI; null while not walking. */
 data class LiveWalk(val startedAt: Long, val distanceM: Double, val spotCount: Int)
@@ -69,6 +81,23 @@ class CompanionFeed {
     }
 
     fun add(line: Utterance) = _lines.update { (listOf(line) + it).take(MAX_LINES) }
+
+    private val _opened = MutableStateFlow<CueDetail?>(null)
+    /** The cue detail the user opened from a card or a notification; null when none is open. */
+    val opened: StateFlow<CueDetail?> = _opened.asStateFlow()
+
+    fun open(detail: CueDetail) {
+        _opened.value = detail
+    }
+
+    /** Opens the detail of a line still in the feed (a notification's); a detail gone from it is not opened. */
+    fun open(id: String) {
+        _lines.value.firstNotNullOfOrNull { it.detail?.takeIf { d -> d.id == id } }?.let(::open)
+    }
+
+    fun close() {
+        _opened.value = null
+    }
 
     private companion object {
         const val MAX_LINES = 30

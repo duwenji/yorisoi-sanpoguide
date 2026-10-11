@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
         } else {
             requestPermissions()
         }
+        if (savedInstanceState == null) openCue(intent)
 
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -96,6 +97,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        openCue(intent)
+    }
+
+    /** A channel's notification opens what its cue holds (ADR-002 T-8c). */
+    private fun openCue(intent: Intent?) {
+        intent?.getStringExtra(EXTRA_CUE)?.let(viewModel::openCue)
+    }
+
     override fun onResume() {
         super.onResume()
         if (hasLocationPermission) viewModel.recheckLocationSetting()
@@ -114,4 +125,9 @@ class MainActivity : ComponentActivity() {
 
     private fun isGranted(permission: String) =
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+    companion object {
+        /** The id of the cue detail a notification opens. */
+        const val EXTRA_CUE = "cue"
+    }
 }

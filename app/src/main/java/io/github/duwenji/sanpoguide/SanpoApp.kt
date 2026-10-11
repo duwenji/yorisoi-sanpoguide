@@ -20,19 +20,26 @@ import io.github.duwenji.sanpoguide.material.AiGuideProducer
 import io.github.duwenji.sanpoguide.material.AmbientProducer
 import io.github.duwenji.sanpoguide.material.CommonsPhotoProducer
 import io.github.duwenji.sanpoguide.material.CueFinder
+import io.github.duwenji.sanpoguide.material.CueLayout
 import io.github.duwenji.sanpoguide.material.CuePresenter
 import io.github.duwenji.sanpoguide.material.FileCueMemory
 import io.github.duwenji.sanpoguide.material.FallbackTextProducer
+import io.github.duwenji.sanpoguide.material.MaterialContext
 import io.github.duwenji.sanpoguide.material.MoodSceneProducer
 import io.github.duwenji.sanpoguide.material.Narration
 import io.github.duwenji.sanpoguide.material.Producers
+import io.github.duwenji.sanpoguide.material.Subject
 import io.github.duwenji.sanpoguide.mood.MoodSource
 import io.github.duwenji.sanpoguide.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.station.BuiltInStations
+import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.StationRepository
 import io.github.duwenji.sanpoguide.station.remote.ChannelSync
+import io.github.duwenji.sanpoguide.station.format.CueEvent
 import io.github.duwenji.sanpoguide.station.remote.ThirdPartyChannels
+import io.github.duwenji.sanpoguide.walk.CueShow
+import io.github.duwenji.sanpoguide.walk.WalkService
 import io.github.duwenji.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -40,9 +47,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.osmdroid.config.Configuration
 
 class SanpoApp : Application() {
@@ -76,6 +85,9 @@ class SanpoApp : Application() {
     lateinit var cueFinder: CueFinder
         private set
     lateinit var cues: CuePresenter
+        private set
+    /** Shows what a cue came to: speech, cards, notifications, and what opens by a tap (T-8c). */
+    lateinit var cueShow: CueShow
         private set
     lateinit var mood: MoodSource
         private set
@@ -131,9 +143,24 @@ class SanpoApp : Application() {
         narration = Narration(producers, station = { stations.current.value })
         cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
         cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE)
+        cueShow = CueShow(this, feed, speaker)
+        appScope.launch {
+            // A channel the user chooses outside a walk shows its cues for being chosen (API-003
+            // `event: select`); mid-walk, the walk shows them after the channel's greeting.
+            settings.settings.map { it.stationId }.distinctUntilChanged().drop(1).collect { id ->
+                if (WalkService.walking.value) return@collect
+                val station = withTimeoutOrNull(STATION_WAIT_MS) { stations.current.first { it.id == id } } ?: return@collect
+                showEventCues(station, CueEvent.SELECT, Subject.None, mutableSetOf(), MaterialContext(station, mood = mood.mood.value))
+            }
+        }
         appScope.launch { history.load() }
 
         getSystemService(NotificationManager::class.java).apply {
+            createNotificationChannel(
+                NotificationChannel(CHANNEL_CUE, "チャンネルの案内", NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = "選んだチャンネルが、場所や散歩の始まり・終わりに合わせて出すお知らせです"
+                }
+            )
             createNotificationChannel(
                 NotificationChannel(CHANNEL_WALK, "散策モード", NotificationManager.IMPORTANCE_LOW)
             )
@@ -149,7 +176,23 @@ class SanpoApp : Application() {
         }
     }
 
+    /**
+     * Shows the cues of [station] for [event], each after the other (API-003 `event`), outside
+     * the walk's own speech: at the end of a walk, or when a channel is chosen outside one.
+     */
+    suspend fun showEventCues(station: Station, event: CueEvent, subject: Subject, shownThisWalk: MutableSet<String>, context: MaterialContext) {
+        val media = station.materials?.media ?: return
+        for (fire in cueFinder.events(station.id, media, event, subject, shownThisWalk, System.currentTimeMillis())) {
+            val now = System.currentTimeMillis()
+            cueFinder.record(fire, shownThisWalk, now)
+            cueShow.show(CueLayout.of("${fire.key}@$now", cues.present(fire, station, context)), station.name, spotName = null)
+        }
+    }
+
     companion object {
+        // A chosen channel becomes the current one at once, unless its package is still being read.
+        private const val STATION_WAIT_MS = 10_000L
+        const val CHANNEL_CUE = "cue"
         const val CHANNEL_WALK = "walk"
         const val CHANNEL_SPOT = "spot"
         const val CHANNEL_ALERT = "weather_alert"
