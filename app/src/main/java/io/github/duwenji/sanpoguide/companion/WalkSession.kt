@@ -16,6 +16,9 @@ class WalkSession(val startedAt: Long = System.currentTimeMillis()) {
     private val route = mutableListOf<LatLon>()
     val visits = mutableListOf<SpotVisit>()
 
+    /** A channel's cues shown on this walk, by key (API-003 `repeat: oncePerWalk`). */
+    val shownCues = mutableSetOf<String>()
+
     /** Spots already talked about during this walk; each is mentioned once per walk. */
     val talkedAbout = mutableSetOf<String>()
 
@@ -52,6 +55,9 @@ class WalkSession(val startedAt: Long = System.currentTimeMillis()) {
 
     /** The new channel's greeting, to be said before anything else but weather warnings. */
     var pendingGreeting: String? = null
+
+    /** The channel chosen mid-walk still has its cues for being chosen to show, after its greeting. */
+    var pendingSelect = false
 
     /** The channel the walk starts on; a switch later goes through [switchStation]. */
     fun startStation(key: String) {
