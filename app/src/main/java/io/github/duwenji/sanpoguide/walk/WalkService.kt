@@ -28,10 +28,8 @@ import io.github.duwenji.sanpoguide.companion.WalkSession
 import io.github.duwenji.sanpoguide.companion.Weather
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.history.SpotVisit
-import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.sound.AmbientPlayer
-import io.github.duwenji.sanpoguide.sound.Soundscape
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.format.TalkEventKind
 import io.github.duwenji.sanpoguide.ui.MainActivity
@@ -138,7 +136,7 @@ class WalkService : LifecycleService() {
                 return@collect
             }
             player.set(
-                Soundscape.of(station.sound, mood).takeIf { settings.ambientEnabled },
+                if (settings.ambientEnabled) app.narration.ambient(station, mood) else null,
                 settings.ambientVolume, settings.ambientEarphonesOnly,
             )
         }
@@ -169,7 +167,7 @@ class WalkService : LifecycleService() {
                 greeted = true
                 refreshWeather(location)
                 if (app.stations.current.value.talksOn(TalkEventKind.START)) {
-                    talk { speakLine(app.companion.say(TalkEvent.Start, s, weather)) }
+                    talk { speakLine(app.narration.line(TalkEvent.Start, s, weather)) }
                 }
             }
             try {
@@ -199,7 +197,7 @@ class WalkService : LifecycleService() {
             talk {
                 // A thunderstorm warning also covers the rain that comes with it.
                 WeatherChangeKind.entries.filter { it >= change.kind }.forEach { s.weatherWarnedAt[it] = now }
-                val line = app.companion.say(TalkEvent.WeatherTurn(change), s, weather)
+                val line = app.narration.line(TalkEvent.WeatherTurn(change), s, weather)
                 // Without earphones the spoken warning goes unheard; lightning is worth a sound.
                 if (change.kind == WeatherChangeKind.THUNDER) {
                     getSystemService(NotificationManager::class.java).notify(ALERT_NOTIFICATION_ID, alertNotification(line))
@@ -250,7 +248,7 @@ class WalkService : LifecycleService() {
             if (minutesLeft in limits[Threshold.SUNSET_LATEST_MIN]..limits[Threshold.SUNSET_NOTICE_MIN]) {
                 talk {
                     s.sunsetWarned = true
-                    speakLine(app.companion.say(TalkEvent.Sunset(minutesLeft), s, weather))
+                    speakLine(app.narration.line(TalkEvent.Sunset(minutesLeft), s, weather))
                 }
                 return
             }
@@ -267,7 +265,7 @@ class WalkService : LifecycleService() {
                 s.mentionedFacilities += facility.facility.id
                 s.facilityMentionAt[facility.need] = now
                 val direction = directionTo(location, facility)
-                speakLine(app.companion.say(TalkEvent.NearFacility(facility, direction), s, weather))
+                speakLine(app.narration.line(TalkEvent.NearFacility(facility, direction), s, weather))
             }
             return
         }
@@ -279,7 +277,7 @@ class WalkService : LifecycleService() {
         if (level.remarkOnRest && station.talksOn(TalkEventKind.REST) && restMinutes >= REST_MINUTES && !s.restRemarked) {
             talk {
                 s.markRestRemarked()
-                speakLine(app.companion.say(TalkEvent.Rest(restMinutes), s, weather))
+                speakLine(app.narration.line(TalkEvent.Rest(restMinutes), s, weather))
             }
             return
         }
@@ -291,7 +289,7 @@ class WalkService : LifecycleService() {
                 talk {
                     s.lastMilestoneAt = now
                     s.lastMilestoneDistanceM = s.distanceM
-                    speakLine(app.companion.say(TalkEvent.Milestone, s, weather))
+                    speakLine(app.narration.line(TalkEvent.Milestone, s, weather))
                     saveProgress(s)
                 }
             } else {
@@ -307,14 +305,10 @@ class WalkService : LifecycleService() {
         s.talkedAbout += poi.id
         val past = app.history.visitsTo(poi, excludingWalk = s.id)
         val text = if (past.isEmpty()) {
-            try {
-                app.guides.guideFor(poi, distanceM)
-            } catch (e: Exception) {
-                Log.w(TAG, "Guide generation failed", e)
-                app.prompts.render(Prompts.Fallback.NEARBY, mapOf("name" to poi.name, "category" to poi.category))
-            }
+            // The AI, else a fixed line (a short "nearby" one when the AI failed).
+            app.narration.spotGuide(poi, distanceM)
         } else {
-            app.companion.say(TalkEvent.Revisit(poi, past), s, weather)
+            app.narration.line(TalkEvent.Revisit(poi, past), s, weather)
         }
         s.visits += SpotVisit(
             poi.id, poi.name, poi.category, System.currentTimeMillis(), text, poi.lat, poi.lon,
@@ -382,7 +376,7 @@ class WalkService : LifecycleService() {
         app.appScope.launch {
             app.history.save(record)
             if (!summarize) return@launch
-            val line = app.companion.say(TalkEvent.Finish(record), null, lastWeather)
+            val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
             app.feed.add(Utterance(System.currentTimeMillis(), line))
             app.speaker.speak(line)
         }

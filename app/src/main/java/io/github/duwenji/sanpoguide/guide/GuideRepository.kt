@@ -8,23 +8,23 @@ import io.github.duwenji.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.sanpoguide.station.Station
 import java.util.concurrent.ConcurrentHashMap
 
-/** Returns a narration for a spot, caching it so each spot is generated (and billed) once. */
+/**
+ * The AI service: narrations for spots, cached so each spot is generated (and billed) once, and
+ * free-form lines for the companion. The producers in `material/` decide what stands in without it.
+ */
 class GuideRepository(
     private val settingsRepo: SettingsRepository,
     private val prompts: PromptTemplates,
-    /** The channel in use; its slots and guide length shape the narration. */
-    private val station: () -> Station,
 ) {
     private val cache = ConcurrentHashMap<String, String>()
     private var client: Pair<GuideSettings, LlmClient>? = null
 
-    suspend fun guideFor(poi: Poi, distanceM: Int?): String {
+    /** The AI's narration of [poi] on [channel], whose slots and guide length shape it. Needs an AI set up. */
+    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station): String {
         val settings = settingsRepo.settings.value
-        // Without an API key, read out a plain summary built from the map tags.
-        if (!settings.isConfigured) return prompts.render(Prompts.Fallback.GUIDE, GuidePrompt.fallbackVars(poi))
+        check(settings.isConfigured) { "No AI service is set up" }
         val share = settings.shareLocationWithAi
         // Each channel narrates in its own way, so a narration made for one isn't reused by another.
-        val channel = station()
         val cacheKey = "${settings.provider}/${settings.model()}/${channel.key}/${channel.guideLength}/${poi.id}/$share"
         cache[cacheKey]?.let { return it }
         val text = clientFor(settings).generate(

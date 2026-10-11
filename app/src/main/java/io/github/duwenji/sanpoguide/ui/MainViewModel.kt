@@ -2,6 +2,7 @@ package io.github.duwenji.sanpoguide.ui
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationManager
 import android.util.Log
@@ -16,9 +17,11 @@ import io.github.duwenji.sanpoguide.data.GoogleMapsException
 import io.github.duwenji.sanpoguide.data.FacilityKind
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.sanpoguide.data.RouteGeometry
-import io.github.duwenji.sanpoguide.data.SpotPhoto
 import io.github.duwenji.sanpoguide.data.WalkRoute
 import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.sanpoguide.material.Content
+import io.github.duwenji.sanpoguide.material.Credit
+import io.github.duwenji.sanpoguide.material.MaterialResult
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.sanpoguide.settings.MapStyle
@@ -62,7 +65,8 @@ sealed interface PhotoState {
     data object Loading : PhotoState
     /** There is one, but the user only downloads photos on Wi-Fi. */
     data object WaitingForWifi : PhotoState
-    data class Ready(val photo: SpotPhoto) : PhotoState
+    /** [image] with the credit its license asks to be shown next to it. */
+    data class Ready(val image: Bitmap, val credit: Credit?) : PhotoState
 }
 
 /**
@@ -290,28 +294,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val photo = initialPhotoState(item.poi)
         _selected.value = SelectedSpot(item, GuideState.Loading, photo)
         viewModelScope.launch {
-            val state = try {
-                GuideState.Ready(app.guides.guideFor(item.poi, item.distanceM))
-            } catch (e: Exception) {
-                GuideState.Failed("解説の生成に失敗しました: ${e.message}")
+            val state = when (val result = app.narration.sheetGuide(item.poi, item.distanceM)) {
+                is MaterialResult.Ready -> GuideState.Ready((result.material.content as Content.Text).text)
+                is MaterialResult.Unavailable -> GuideState.Failed("解説の生成に失敗しました: ${result.detail}")
+                MaterialResult.None -> GuideState.Failed("解説の生成に失敗しました")
             }
             updateSelected(item) { it.copy(guide = state) }
         }
         if (photo == PhotoState.Loading) {
             viewModelScope.launch {
-                val found = app.photos.photoFor(item.poi)
-                updateSelected(item) { it.copy(photo = found?.let(PhotoState::Ready) ?: PhotoState.None) }
+                val found = app.narration.sheetPhoto(item.poi)
+                updateSelected(item) { it.copy(photo = photoState(found) ?: PhotoState.None) }
             }
         }
     }
 
-    private fun initialPhotoState(poi: Poi): PhotoState {
-        val s = settings.value
-        return when {
-            !s.spotPhotos || !app.photos.hasPhotoHint(poi) -> PhotoState.None
-            app.photos.isMetered() && !s.photosOnMobileData -> PhotoState.WaitingForWifi
-            else -> PhotoState.Loading
-        }
+    /** Known without fetching: no photo, or waiting for Wi-Fi; otherwise it's worth loading. */
+    private fun initialPhotoState(poi: Poi): PhotoState =
+        app.narration.peekSheetPhoto(poi)?.let(::photoState) ?: PhotoState.Loading
+
+    private fun photoState(result: MaterialResult): PhotoState? = when (result) {
+        is MaterialResult.Ready -> (result.material.content as? Content.Image)?.let { PhotoState.Ready(it.bitmap, result.material.credit) }
+        is MaterialResult.Unavailable -> if (result.reason == MaterialResult.Reason.METERED) PhotoState.WaitingForWifi else PhotoState.None
+        MaterialResult.None -> PhotoState.None
     }
 
     /** Ignores results for a spot the user has already moved on from. */
