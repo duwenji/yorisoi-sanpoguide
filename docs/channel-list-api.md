@@ -289,7 +289,7 @@ flowchart LR
 | `collections[].producerName` | string | 制作元の表示名。アプリは素材の出典の横に出す |
 | `collections[].producerChange` | object? | 制作元の鍵を移し替えたときだけ（P-13）。決まりは `publisherChange` と同じ |
 | `collections[].tags` | string[] | （P-15）素材に付いたタグの和集合（API-004「タグ」） |
-| `collections[].regions` | string[]? | （P-15）素材の題材（`about`）の位置を geohash の 3 文字にしたものの一覧。題材を持つ素材がなければ省略（地域を問わない） |
+| `collections[].regions` | string[]? | （P-15）素材の題材（`about`）の位置（スポットも地点も `lat`・`lon` を持つ。API-004 1.3）を geohash の 3 文字にしたものの一覧。重複なし・辞書順。題材を持つ素材がなければ省略（地域を問わない） |
 | `collections[].grants` | object | （P-15）`collection.json` の `grants` の写し。アプリは取得後に一致を確かめ、違えば `collection_rejected` |
 | `collections[].package` | object | 素材集のパッケージ（API-004「素材集の形式」）。`format` は素材集の形式の版 |
 | `collections[].media`・`resourcesSize` | | 素材集の全体での値 |
