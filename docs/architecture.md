@@ -3,7 +3,7 @@
 アプリ全体を 7 枚の図で説明する。最初に、アプリの中心にある「チャンネル」の考え方と関係者を示す。図 1 で「どこに何があるか」をつかみ、図 2〜7 で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追う。
 
 - ソース 90 ファイル / 約 11,940 行（アプリ 71 ファイル・9,505 行、チャンネルの形式のモジュール `:station-format` 19 ファイル・2,436 行。2026-10-12 時点）、アプリのパッケージ 11
-- 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネルの運営は設定で選んだときだけ）
+- 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネル・リストは設定で選んだときだけ）
 
 図はコードから手で書き起こしたもの。`WalkService` の判定順を変えたり、パッケージを追加したりしたときは、この文書も更新する。
 
@@ -30,7 +30,7 @@ flowchart LR
 
 | | 組み込みのチャンネル | 第三者のチャンネル |
 |---|---|---|
-| 作る人・届き方 | アプリの開発者・アプリの版 | チャンネル提供者（素材は素材提供者も）・運営のリスト |
+| 作る人・届き方 | アプリの開発者・アプリの版 | チャンネル提供者（素材は素材提供者も）・運営が出すリスト |
 | 散策者が変えられるか | 頻度・場面・解説の長さなど（設定画面） | 変えられない（使う・使わないだけ） |
 | チャンネルで止められないもの | 天気の急変・日の入り・施設の案内、AI への共通の指示（`shared/guard`）、見せ方の安全の決まり | 同じ |
 
@@ -45,7 +45,7 @@ flowchart TB
     MainScreen["MainScreen<br/>SpotMap・CompanionCard・StationPicker<br/>CueViews（解説の画面・全画面の画像）"] --> MainViewModel
     SettingsScreen --> SettingsViewModel
     HistoryScreen --> HistoryViewModel
-    ChannelsScreen["ChannelsScreen<br/>運営・配信されているチャンネル・試用チケット"] --> ChannelsViewModel
+    ChannelsScreen["ChannelsScreen<br/>リスト・配信されているチャンネル・試用チケット"] --> ChannelsViewModel
   end
 
   subgraph WALK["常駐処理（walk）"]
@@ -74,7 +74,7 @@ flowchart TB
     OpenMeteo["Open-Meteo<br/>天気・予報・日の入り"]
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
     GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
-    Provider["チャンネルの運営（任意）<br/>リスト・パッケージ・素材集<br/>例: sanpo-channel-console"]
+    Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: sanpo-channel-console"]
   end
 
   MainActivity -- "開始・終了" --> WalkService
@@ -223,7 +223,7 @@ flowchart LR
 ```mermaid
 flowchart LR
   Assets["sanpoguide/channels/{id}/<br/>channel.json・prompts/"] --> Check["BuiltInChannels・BuiltInStations<br/>StationValidator（:station-format）<br/>API-003 の確認"]
-  ThirdParty["第三者のチャンネル<br/>運営のリスト（API-002）・試用チケット<br/>ThirdPartyChannels・ChannelSync"] --> Check
+  ThirdParty["第三者のチャンネル<br/>リスト（API-002）・試用チケット<br/>ThirdPartyChannels・ChannelSync"] --> Check
   Check --> Repo["<b>StationRepository</b><br/>current: Station"]
   Settings["設定<br/>stationId・stationOverrides"] --> Repo
   Repo --> Guide["GuideRepository<br/>解説の役割・重点・長さ、キャッシュ"]
@@ -237,13 +237,13 @@ flowchart LR
 - `StationRepository.current` は、選んでいるチャンネルに散策者の変更（`StationOverrides`。初期値から変えた項目だけ）を重ねたもの。変えられるのは組み込みのチャンネルだけ。
 - プロンプトの `guide/system`・`companion/system` は枠で、チャンネルの文章は変数として入る（テンプレートとしては解釈されない）。最後に共通の指示 `shared/guard` が必ず付く。
 - 散歩中に切り替えると、`WalkService` が `current` の変化を見て、記録に区間を足し（`WalkSession.stations`）、一言を予約する。同じチャンネルの設定を変えただけでは切り替えとみなさない。
-- 第三者のチャンネルは、散策者が足した運営のリスト（API-002）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
+- 第三者のチャンネルは、散策者が足したリスト（API-002）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
 - 第三者のチャンネルは散策者が変えられない（使う・使わないだけ）。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せる
 - 天気の急変・日の入り・施設の案内は、チャンネルに項目がない（止められない）。
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
 
-チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[ADR-002](adr/ADR-002-material-producers.md)、[API-003](channel-package-format.md)・[API-004](material-producer-api.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・運営のリストに載った素材集から、共通の IF（`Producer`）で取り出す。
+チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[ADR-002](adr/ADR-002-material-producers.md)、[API-003](channel-package-format.md)・[API-004](material-producer-api.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
 
 ```mermaid
 flowchart LR
@@ -266,7 +266,7 @@ flowchart LR
 - 素材は、チャンネルを選んだときにまとめて取得し、端末で確かめてから使う（その後の更新は従量制でない回線のときだけ）。スポットに近づいてから取得することはない
 - 基準（種類・タグ）で素材集を選ぶチャンネルは、今いる地域と隣の地域（geohash 3 文字）と地域を持たない素材集を、従量制でない回線のときだけ、順番の上位から 50MB まで取得する。運営に渡るのは大まかな地域だけ（`Regions.around()`）
 - アプリが出せるのは第 1 段（文字と画像）まで（`ChannelSync.MEDIA_STAGE`）。音声・映像を指す候補は飛ばして次の候補へ進む
-- 見せ方の安全の決まりはアプリが強制する。全画面の画像はタップしたときだけ開き、歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・運営を添える（`MaterialCredit`）
+- 見せ方の安全の決まりはアプリが強制する。全画面の画像はタップしたときだけ開き、歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える（`MaterialCredit`）
 - 散歩の外でチャンネルを選んだときの `select` のきっかけは `SanpoApp.showEventCues()` が出す。散歩の終了のきっかけも同じ
 
 ## パッケージ一覧
@@ -275,7 +275,7 @@ flowchart LR
 
 | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---:|
-| `ui` | Compose の 4 画面、地図（種類の切り替え・ルート・向きを含む）、発言カード、チャンネルの選択、配信されているチャンネルと運営・試用チケット、きっかけの解説の画面と全画面の画像、雰囲気の配色と絵、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, SpotMap, StationPicker, CueViews, MapTiles, Heading, MoodScene, MainViewModel | 3,332 |
+| `ui` | Compose の 4 画面、地図（種類の切り替え・ルート・向きを含む）、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット、きっかけの解説の画面と全画面の画像、雰囲気の配色と絵、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, SpotMap, StationPicker, CueViews, MapTiles, Heading, MoodScene, MainViewModel | 3,332 |
 | `data` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、Google の地図タイルのセッションと出典 | OverpassClient, SpotRepository, SpotPhotos, RouteClient, GoogleMapTiles | 790 |
 | `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の取得と急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherClient | 758 |
 | `sound` | 背景音の選択・その場での合成・再生 | Soundscape, Voices, AmbientPlayer | 448 |
@@ -284,11 +284,11 @@ flowchart LR
 | `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、API キーの暗号化、話しかけの頻度の段階、しきい値、地図の種類 | SettingsRepository, StationMigration, OverrideCodec, KeyCipher, TalkLevel, Threshold, MapStyle | 409 |
 | `mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気 | Mood, PlaceGuess, MoodSource | 186 |
 | `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 193 |
-| `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: 運営の設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
+| `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
 | `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |
 | (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 204 |
 
-チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、運営の文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない別のモジュール `:station-format`（`station-format/`）にある。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.sanpoguide:station-format` として公開する）。ファイルは `station-format/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない別のモジュール `:station-format`（`station-format/`）にある。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.sanpoguide:station-format` として公開する）。ファイルは `station-format/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
@@ -311,7 +311,7 @@ flowchart LR
 | AI に送る位置情報を変える | `guide/GuidePrompt.kt`・`companion/WalkCompanion.kt`（設定 `shareLocationWithAi` で切り替え） |
 | 配色・絵・背景音の選び方を変える | `ui/MoodTheme.kt`・`ui/MoodScene.kt`・`sound/Soundscape.kt` |
 | 記録の保存形式や再訪の判定を変える | `history/HistoryStore.kt`（読み書きは `WalkJson`） |
-| 運営・リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:station-format` の `ProviderDocuments` |
+| リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:station-format` の `ProviderDocuments` |
 | きっかけの判定（いつ出すか）を変える | `material/Cues.kt` の `CueFinder`。散歩の中での順番は `walk/WalkService.kt` の `maybeTalk()` |
 | きっかけの見せ方（カード・通知・解説の画面）を変える | `material/CueLayout.kt`・`walk/CueShow.kt`・`ui/CueViews.kt` |
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers` |

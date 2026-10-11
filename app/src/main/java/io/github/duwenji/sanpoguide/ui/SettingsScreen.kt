@@ -183,7 +183,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             )
             station.source?.let { source ->
                 Text(
-                    "チャンネル提供者: ${source.publisherName}（運営: ${source.providerName}）。話しかけの頻度や場面はチャンネル提供者が決めます",
+                    "チャンネル提供者: ${source.publisherName}（リスト: ${source.providerName}）。話しかけの頻度や場面はチャンネル提供者が決めます",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -194,7 +194,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            OutlinedButton(onClick = onOpenChannels) { Text("配信されているチャンネル・運営") }
+            OutlinedButton(onClick = onOpenChannels) { Text("配信されているチャンネル・リスト") }
 
             // A third party's channel is as its publisher made it (ADR-001): nothing to adjust here.
             if (station.isBuiltIn) {

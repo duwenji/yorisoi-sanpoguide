@@ -108,14 +108,14 @@ class ChannelSync(
     fun addProvider(url: String, providerId: String) {
         val base = normalizeBase(url)
         val id = providerId.trim()
-        if (!ProviderIds.isWellFormed(id)) throw ChannelSyncException("運営IDの形が正しくありません（sc1 で始まる 35 文字）")
-        if (state.providers.any { it.id == id }) throw ChannelSyncException("この運営はもう登録されています")
+        if (!ProviderIds.isWellFormed(id)) throw ChannelSyncException("リストIDの形が正しくありません（sc1 で始まる 35 文字）")
+        if (state.providers.any { it.id == id }) throw ChannelSyncException("このリストはもう登録されています")
         val info = try {
             docs.discovery(String(http.get(base + DISCOVERY_PATH, MAX_DISCOVERY_BYTES), Charsets.UTF_8), id)
         } catch (e: ProviderException) {
-            throw ChannelSyncException("運営の情報を確かめられませんでした（${e.message}）")
+            throw ChannelSyncException("リストの情報を確かめられませんでした（${e.message}）")
         } catch (e: IOException) {
-            throw ChannelSyncException("運営に接続できませんでした（${e.message}）")
+            throw ChannelSyncException("リストに接続できませんでした（${e.message}）")
         }
         update { it.copy(providers = it.providers + ProviderRecord(id = id, url = base, name = info.name)) }
         refresh(id, unmetered = false)
@@ -196,7 +196,7 @@ class ChannelSync(
                     store.deletePackage(c.sha256)
                     update { s -> s.copy(installed = s.installed - c) }
                     collectGarbage()
-                    notice("「${listed?.name ?: c.name.ifEmpty { c.id }}」は運営（${info.name}）が取り下げました: ${revoked.reason}")
+                    notice("「${listed?.name ?: c.name.ifEmpty { c.id }}」はリスト（${info.name}）から取り下げられました: ${revoked.reason}")
                 }
                 listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c, list, unmetered) }
             }
@@ -215,7 +215,7 @@ class ChannelSync(
 
     /** Takes a listed channel onto the device: the package is fetched and checked when the user chooses it. */
     fun install(providerId: String, channelId: String, unmetered: Boolean = false) {
-        val (_, list) = validList(providerId) ?: throw ChannelSyncException("運営のリストが有効ではありません。取得し直してください")
+        val (_, list) = validList(providerId) ?: throw ChannelSyncException("リストが有効ではありません。取得し直してください")
         val entry = list.channels.firstOrNull { it.id == channelId } ?: throw ChannelSyncException("リストにないチャンネルです")
         if (entry.pkg.format != 1) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
         if (entry.minAppVersion > appVersion) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
@@ -323,9 +323,9 @@ class ChannelSync(
     fun loadTicket(json: String, developerMode: Boolean, unmetered: Boolean = false): String {
         if (!developerMode) throw ChannelSyncException("試用チケットは開発者モードのときだけ読み込めます（ticket_invalid）")
         val providerId = runCatching { ticketProvider(json) }.getOrNull() ?: throw ChannelSyncException("試用チケットとして読めません（ticket_invalid）")
-        val record = state.providers.firstOrNull { it.id == providerId } ?: throw ChannelSyncException("この試用チケットの運営（$providerId）を先に足してください")
+        val record = state.providers.firstOrNull { it.id == providerId } ?: throw ChannelSyncException("この試用チケットのリスト（$providerId）を先に足してください")
         val info = runCatching { docs.discovery(record.discovery ?: "", record.id) }.getOrNull()
-            ?: throw ChannelSyncException("運営の情報がまだありません。「今すぐ確かめる」を押してから読み込んでください")
+            ?: throw ChannelSyncException("リストの情報がまだありません。「今すぐ確かめる」を押してから読み込んでください")
         val ticket = try {
             docs.testTicket(json, info.keyset, now())
         } catch (e: ProviderException) {
@@ -584,7 +584,7 @@ class ChannelSync(
         for (p in state.providers) {
             if (p.list == null || p.expiryNoticed || validList(p.id) != null) continue
             if (state.installed.any { it.provider == p.id }) {
-                notice("運営（${p.name ?: p.id}）のリストの期限が切れたため、そのチャンネルは使えません。取得できるようになると戻ります")
+                notice("リスト（${p.name ?: p.id}）の期限が切れたため、そのチャンネルは使えません。取得できるようになると戻ります")
             }
             updateProvider(p.id) { it.copy(expiryNoticed = true) }
         }

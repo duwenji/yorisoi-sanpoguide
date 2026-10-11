@@ -102,7 +102,7 @@
 - 出来事の追加の指示は、出来事のプロンプトの後ろに `companion/station_event` を空行を挟んでつなげる（`WalkCompanion.say`）
 - 共通の指示 `shared/guard.md` を新しく作り、両方のシステムプロンプトの最後で読み込む
 - 解説の長さは変数 `length`（例: `200〜300字程度、2〜3段落`）で `guide/system` に渡す（`Station.lengthText`）。標準の値なら今と同じ文面になる
-- 解説のキャッシュのキーに、チャンネル（運営ID＋id＋version）と解説の長さを加える
+- 解説のキャッシュのキーに、チャンネル（リストID＋id＋version）と解説の長さを加える
 
 ## 素材・きっかけ・見せ方
 

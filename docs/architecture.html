@@ -97,7 +97,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
       <span>パッケージ <b>11</b></span>
       <span>画面 <b>4</b>（メイン・設定・記録・チャンネル）</span>
       <span>常駐サービス <b>1</b>（WalkService）</span>
-      <span>外部サービス <b>8</b>（Google マップ・チャンネルの運営は任意）</span>
+      <span>外部サービス <b>8</b>（Google マップ・チャンネル・リストは任意）</span>
     </div>
   </header>
 
@@ -139,7 +139,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
       <table>
         <thead><tr><th></th><th>組み込みのチャンネル</th><th>第三者のチャンネル</th></tr></thead>
         <tbody>
-          <tr><td>作る人・届き方</td><td>アプリの開発者・アプリの版</td><td>チャンネル提供者（素材は素材提供者も）・運営のリスト</td></tr>
+          <tr><td>作る人・届き方</td><td>アプリの開発者・アプリの版</td><td>チャンネル提供者（素材は素材提供者も）・運営が出すリスト</td></tr>
           <tr><td>散策者が変えられるか</td><td>頻度・場面・解説の長さなど（設定画面）</td><td>変えられない（使う・使わないだけ）</td></tr>
           <tr><td>AI の費用</td><td>散策者の API キー</td><td>散策者の API キー（頻度と解説の長さはチャンネル提供者が決める）</td></tr>
         </tbody>
@@ -156,7 +156,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     </div>
     <figure>
       <div class="scroll">
-      <svg viewBox="0 0 1000 616" role="img" aria-label="4 層の構造図。画面層の ViewModel と常駐処理の WalkService・CueShow が、SanpoApp の共有部品（プロンプト, history, settings, mood, material, data, guide, companion, station, sound）を参照し、共有部品が外部サービス（Overpass, Wikimedia, OSRM, AI サービス, Open-Meteo, チャンネルの運営）と端末へ通信する。">
+      <svg viewBox="0 0 1000 616" role="img" aria-label="4 層の構造図。画面層の ViewModel と常駐処理の WalkService・CueShow が、SanpoApp の共有部品（プロンプト, history, settings, mood, material, data, guide, companion, station, sound）を参照し、共有部品が外部サービス（Overpass, Wikimedia, OSRM, AI サービス, Open-Meteo, チャンネル・リスト）と端末へ通信する。">
         <defs>
           <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
           <marker id="a1h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--hot)"/></marker>
@@ -176,7 +176,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <rect class="bx" x="236" y="28" width="180" height="44" rx="8"/><text class="tm" x="326" y="47">MainScreen</text><text class="sm" x="326" y="63">SpotMap · CueViews</text>
         <rect class="bx" x="426" y="28" width="130" height="44" rx="8"/><text class="tm" x="491" y="55">SettingsScreen</text>
         <rect class="bx" x="566" y="28" width="120" height="44" rx="8"/><text class="tm" x="626" y="55">HistoryScreen</text>
-        <rect class="bx" x="696" y="28" width="140" height="44" rx="8"/><text class="tm" x="766" y="47">ChannelsScreen</text><text class="s" x="766" y="63">運営・試用チケット</text>
+        <rect class="bx" x="696" y="28" width="140" height="44" rx="8"/><text class="tm" x="766" y="47">ChannelsScreen</text><text class="s" x="766" y="63">リスト・試用チケット</text>
         <rect class="bx-ext" x="846" y="28" width="118" height="44" rx="8"/><text class="te" x="905" y="47">地図画像</text><text class="s" x="905" y="63">地理院 / Google</text>
         <rect class="bx" x="236" y="90" width="180" height="36" rx="8"/><text class="tm" x="326" y="113">MainViewModel</text>
         <rect class="bx" x="426" y="90" width="130" height="36" rx="8"/><text class="tm" x="491" y="112" style="font-size:11px">SettingsViewModel</text>
@@ -231,11 +231,11 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <rect class="bx-ext" x="292" y="520" width="70" height="64" rx="8"/><text class="te" x="327" y="546">OSRM</text><text class="s" x="327" y="564">徒歩ルート</text>
         <rect class="bx-ext" x="370" y="520" width="130" height="64" rx="8"/><text class="te" x="435" y="546">AI サービス</text><text class="s" x="435" y="564">Claude・OpenAI 互換</text>
         <rect class="bx-ext" x="508" y="520" width="120" height="64" rx="8"/><text class="te" x="568" y="546">Open-Meteo</text><text class="s" x="568" y="564">天気・予報・日の入り</text>
-        <rect class="bx-ext" x="636" y="520" width="156" height="64" rx="8"/><text class="te" x="714" y="546">チャンネルの運営</text><text class="s" x="714" y="564">リスト・パッケージ・素材集</text>
+        <rect class="bx-ext" x="636" y="520" width="156" height="64" rx="8"/><text class="te" x="714" y="546">チャンネル・リスト</text><text class="s" x="714" y="564">リスト・パッケージ・素材集</text>
         <rect class="bx-ext" x="800" y="520" width="164" height="64" rx="8"/><text class="te" x="882" y="542">端末</text><text class="s" x="882" y="559">TTS・音声出力</text><text class="s" x="882" y="574">GPS・方位センサー</text>
       </svg>
       </div>
-      <figcaption>橙色の <code>WalkService</code> がアプリの中心です。散策モード中は画面を閉じても動き続け、位置・天気・周辺スポットと、選んでいるチャンネル（緑の <code>station</code>、図 6）を見て「いま何を話すか」を決めます。チャンネルのきっかけは <code>CueShow</code> が読み上げ・カード・通知で出します。話す文・写真・背景音・チャンネルの素材は、緑の <code>material</code> の素材提供者を通して取り出します（図 7）。<code>station/remote</code> は、散策者が足したチャンネルの運営からリスト・パッケージ・素材集を取得します。チャンネルの形式とプロンプトは、Android に依存しない別モジュール <code>:station-format</code> にあります。点線の枠は外部サービスです。<code>sound</code> だけは SanpoApp ではなく WalkService が必要になったときに作ります。OSRM は FOSSGIS が運営する徒歩ルートの公開サーバーです。右上の地図画像は <code>SpotMap</code> が直接取得します。Google マップを選んだときだけ、<code>data</code> の <code>GoogleMapTiles</code> がセッションと出典を取りに行きます。方位センサーは画面（<code>rememberHeading()</code>）が直接読みます。</figcaption>
+      <figcaption>橙色の <code>WalkService</code> がアプリの中心です。散策モード中は画面を閉じても動き続け、位置・天気・周辺スポットと、選んでいるチャンネル（緑の <code>station</code>、図 6）を見て「いま何を話すか」を決めます。チャンネルのきっかけは <code>CueShow</code> が読み上げ・カード・通知で出します。話す文・写真・背景音・チャンネルの素材は、緑の <code>material</code> の素材提供者を通して取り出します（図 7）。<code>station/remote</code> は、散策者が足したチャンネル・リストの置き場所から、リスト・パッケージ・素材集を取得します。チャンネルの形式とプロンプトは、Android に依存しない別モジュール <code>:station-format</code> にあります。点線の枠は外部サービスです。<code>sound</code> だけは SanpoApp ではなく WalkService が必要になったときに作ります。OSRM は FOSSGIS が運営する徒歩ルートの公開サーバーです。右上の地図画像は <code>SpotMap</code> が直接取得します。Google マップを選んだときだけ、<code>data</code> の <code>GoogleMapTiles</code> がセッションと出典を取りに行きます。方位センサーは画面（<code>rememberHeading()</code>）が直接読みます。</figcaption>
     </figure>
   </section>
 
@@ -482,13 +482,13 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     </div>
     <figure>
       <div class="scroll">
-      <svg viewBox="0 0 1000 300" role="img" aria-label=":station-format の sanpoguide/channels の組み込みのチャンネルを BuiltInChannels と StationValidator が確認して読み込み、StationRepository が設定の選択と散策者の変更を重ねて現在のチャンネルを作る。現在のチャンネルは GuideRepository、WalkCompanion、WalkService、画面が使う。第三者のチャンネルは、運営のリストから ThirdPartyChannels と ChannelSync が取り込み、同じ確認を通す。">
+      <svg viewBox="0 0 1000 300" role="img" aria-label=":station-format の sanpoguide/channels の組み込みのチャンネルを BuiltInChannels と StationValidator が確認して読み込み、StationRepository が設定の選択と散策者の変更を重ねて現在のチャンネルを作る。現在のチャンネルは GuideRepository、WalkCompanion、WalkService、画面が使う。第三者のチャンネルは、リストから ThirdPartyChannels と ChannelSync が取り込み、同じ確認を通す。">
         <defs>
           <marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
         </defs>
         <!-- inputs -->
         <rect class="bx" x="20" y="20" width="200" height="56" rx="8"/><text class="tm" x="120" y="43">sanpoguide/channels/</text><text class="s" x="120" y="62">channel.json・prompts/（6 本）</text>
-        <rect class="bx-ext" x="20" y="100" width="200" height="56" rx="8"/><text class="te" x="120" y="121">第三者のチャンネル</text><text class="s" x="120" y="138">運営のリスト・試用チケット</text><text class="sm" x="120" y="152">ChannelSync</text>
+        <rect class="bx-ext" x="20" y="100" width="200" height="56" rx="8"/><text class="te" x="120" y="121">第三者のチャンネル</text><text class="s" x="120" y="138">リスト・試用チケット</text><text class="sm" x="120" y="152">ChannelSync</text>
         <rect class="bx" x="20" y="200" width="200" height="56" rx="8"/><text class="t" x="120" y="223">設定</text><text class="sm" x="120" y="242">stationId · stationOverrides</text>
         <!-- check -->
         <line class="ar" x1="220" y1="48" x2="258" y2="48" marker-end="url(#a6)"/>
@@ -519,7 +519,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <text class="lbl left" x="430" y="270">保存（変えた項目だけ）</text>
       </svg>
       </div>
-      <figcaption>組み込みのチャンネル（標準・歴史探訪・自然観察・グルメの旅・ショッピング・しずかに）は起動時に読み込み、第三者のパッケージと同じ確認を通します。第三者のチャンネルは、散策者が足した運営のリスト（API-002）から取り込みます。<code>ChannelSync</code> がリストの署名（要約）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、<code>StationValidator</code> を通したものだけを端末に保存します。リストは 24 時間ごとに取り直し、取り下げられたチャンネルは消して標準に戻します。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せます。<code>current</code> は、選んでいるチャンネルに散策者の変更（初期値から変えた項目だけ）を重ねたもので、変えられるのは組み込みのチャンネルだけです。プロンプトの枠にはチャンネルの文章が変数として入り、最後に共通の指示 <code>shared/guard</code> が必ず付きます。散歩中に切り替えると、<code>WalkService</code> が記録に区間を足し、一言を予約します。天気の急変・日の入り・施設の案内は、チャンネルに項目がなく止められません。</figcaption>
+      <figcaption>組み込みのチャンネル（標準・歴史探訪・自然観察・グルメの旅・ショッピング・しずかに）は起動時に読み込み、第三者のパッケージと同じ確認を通します。第三者のチャンネルは、散策者が足したリスト（API-002）から取り込みます。<code>ChannelSync</code> がリストの署名（要約）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、<code>StationValidator</code> を通したものだけを端末に保存します。リストは 24 時間ごとに取り直し、取り下げられたチャンネルは消して標準に戻します。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せます。<code>current</code> は、選んでいるチャンネルに散策者の変更（初期値から変えた項目だけ）を重ねたもので、変えられるのは組み込みのチャンネルだけです。プロンプトの枠にはチャンネルの文章が変数として入り、最後に共通の指示 <code>shared/guard</code> が必ず付きます。散歩中に切り替えると、<code>WalkService</code> が記録に区間を足し、一言を予約します。天気の急変・日の入り・施設の案内は、チャンネルに項目がなく止められません。</figcaption>
     </figure>
   </section>
 
@@ -528,7 +528,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <div class="sec-head">
       <div class="eyebrow">図 7 · 素材ときっかけ</div>
       <h2>チャンネルが決めた場面で、決めた素材を出す</h2>
-      <p>チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せます（<code>docs/adr/ADR-002-material-producers.md</code>、<code>docs/channel-package-format.md</code>・<code>docs/material-producer-api.md</code>）。素材は、組み込みの素材提供者・チャンネルに同梱の素材・運営のリストに載った素材集から、共通の IF（<code>Producer</code>）で取り出します。</p>
+      <p>チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せます（<code>docs/adr/ADR-002-material-producers.md</code>、<code>docs/channel-package-format.md</code>・<code>docs/material-producer-api.md</code>）。素材は、組み込みの素材提供者・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（<code>Producer</code>）で取り出します。</p>
     </div>
     <figure>
       <div class="scroll">
@@ -565,7 +565,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <rect class="bx" x="740" y="260" width="240" height="56" rx="8"/><text class="t" x="860" y="284">解説の画面・全画面の画像</text><text class="sm" x="860" y="302">ui/CueViews</text>
         <rect class="bx-dash" x="20" y="260" width="690" height="56" rx="8"/>
         <text class="it left" x="36" y="284">アプリが強制する決まり: 全画面はタップしたときだけ・歩いている間（0.5m/s 以上）は開けない</text>
-        <text class="s left" x="36" y="304">画像には作者・ライセンス・運営を添える（MaterialCredit）。散歩の外では SanpoApp.showEventCues() が出す</text>
+        <text class="s left" x="36" y="304">画像には作者・ライセンス・素材提供者を添える（MaterialCredit）。散歩の外では SanpoApp.showEventCues() が出す</text>
       </svg>
       </div>
       <figcaption>素材は、チャンネルを選んだときにまとめて取得し、端末で確かめてから使います（その後の更新は従量制でない回線のときだけ）。スポットに近づいてから取得することはありません。基準（種類・タグ）で素材集を選ぶチャンネルは、今いる地域と隣の地域（geohash 3 文字、約 150km 四方）と地域を持たない素材集を、従量制でない回線のときだけ、順番の上位から 50MB まで取得します。運営に渡るのは大まかな地域だけです。アプリが出せるのは第 1 段（文字と画像）までで、音声・映像を指す候補は飛ばして次の候補へ進みます。</figcaption>
@@ -583,7 +583,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
       <table>
         <thead><tr><th>パッケージ</th><th>役割</th><th>主なファイル</th><th>行数</th></tr></thead>
         <tbody>
-          <tr><td class="pk">ui</td><td>Compose の 4 画面、地図（種類の切り替え・ルート・向きを含む）、発言カード、チャンネルの選択、配信されているチャンネルと運営・試用チケット、きっかけの解説の画面と全画面の画像、雰囲気の配色と絵、ViewModel</td><td class="files">MainScreen, SettingsScreen, ChannelsScreen, SpotMap, StationPicker, CueViews, MapTiles, Heading, MoodScene, MainViewModel</td><td><div class="loc"><span class="bar" style="width:119px"></span>3,332</div></td></tr>
+          <tr><td class="pk">ui</td><td>Compose の 4 画面、地図（種類の切り替え・ルート・向きを含む）、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット、きっかけの解説の画面と全画面の画像、雰囲気の配色と絵、ViewModel</td><td class="files">MainScreen, SettingsScreen, ChannelsScreen, SpotMap, StationPicker, CueViews, MapTiles, Heading, MoodScene, MainViewModel</td><td><div class="loc"><span class="bar" style="width:119px"></span>3,332</div></td></tr>
           <tr><td class="pk">data</td><td>Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、Google の地図タイルのセッションと出典</td><td class="files">OverpassClient, SpotRepository, SpotPhotos, RouteClient, GoogleMapTiles</td><td><div class="loc"><span class="bar" style="width:28px"></span>790</div></td></tr>
           <tr><td class="pk">companion</td><td>散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の取得と急変判定、施設案内の判定、話題にするスポットの選択</td><td class="files">WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherClient</td><td><div class="loc"><span class="bar" style="width:27px"></span>758</div></td></tr>
           <tr><td class="pk">sound</td><td>背景音の選択・その場での合成・再生</td><td class="files">Soundscape, Voices, AmbientPlayer</td><td><div class="loc"><span class="bar" style="width:16px"></span>448</div></td></tr>
@@ -592,13 +592,13 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td class="pk">settings</td><td>設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、API キーの暗号化、話しかけの頻度の段階、しきい値、地図の種類</td><td class="files">SettingsRepository, StationMigration, OverrideCodec, KeyCipher, TalkLevel, Threshold, MapStyle</td><td><div class="loc"><span class="bar" style="width:15px"></span>409</div></td></tr>
           <tr><td class="pk">mood</td><td>雰囲気のモデル、場所の種類の推定、現在の雰囲気</td><td class="files">Mood, PlaceGuess, MoodSource</td><td><div class="loc"><span class="bar" style="width:7px"></span>186</div></td></tr>
           <tr><td class="pk">history</td><td>散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定</td><td class="files">HistoryStore（WalkJson）</td><td><div class="loc"><span class="bar" style="width:7px"></span>193</div></td></tr>
-          <tr><td class="pk">station</td><td>チャンネル。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。<code>station/remote</code> は第三者のチャンネル（運営の設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット）</td><td class="files">Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519</td><td><div class="loc"><span class="bar" style="width:43px"></span>1,193</div></td></tr>
+          <tr><td class="pk">station</td><td>チャンネル。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。<code>station/remote</code> は第三者のチャンネル（リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット）</td><td class="files">Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519</td><td><div class="loc"><span class="bar" style="width:43px"></span>1,193</div></td></tr>
           <tr><td class="pk">material</td><td>素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方</td><td class="files">Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout</td><td><div class="loc"><span class="bar" style="width:36px"></span>1,014</div></td></tr>
           <tr><td class="pk">(root)</td><td>共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ</td><td class="files">SanpoApp</td><td><div class="loc"><span class="bar" style="width:7px"></span>204</div></td></tr>
         </tbody>
       </table>
     </div>
-    <p>チャンネルの形式（API-003）の読み込みと確認、運営の文書（API-002）の確認、素材集の形式と参照の解決・地域の計算（API-004）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない別のモジュール <code>:station-format</code>（<code>station-format/</code>）にあります。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>station-format/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
+    <p>チャンネルの形式（API-003）の読み込みと確認、リストの文書（API-002）の確認、素材集の形式と参照の解決・地域の計算（API-004）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない別のモジュール <code>:station-format</code>（<code>station-format/</code>）にあります。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>station-format/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
   </section>
 
   <!-- where to change -->
@@ -627,7 +627,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td>AI に送る位置情報を変える</td><td><code>guide/GuidePrompt.kt</code>・<code>companion/WalkCompanion.kt</code>（設定 <code>shareLocationWithAi</code> で切り替え）</td></tr>
           <tr><td>配色・絵・背景音の選び方を変える</td><td><code>ui/MoodTheme.kt</code>・<code>ui/MoodScene.kt</code>・<code>sound/Soundscape.kt</code></td></tr>
           <tr><td>記録の保存形式や再訪の判定を変える</td><td><code>history/HistoryStore.kt</code>（読み書きは <code>WalkJson</code>）</td></tr>
-          <tr><td>運営・リストの取得や取り下げの扱いを変える</td><td><code>station/remote/ChannelSync.kt</code>（端末での保存は <code>ChannelStore.kt</code>）。文書の確認は <code>:station-format</code> の <code>ProviderDocuments</code></td></tr>
+          <tr><td>リストの取得や取り下げの扱いを変える</td><td><code>station/remote/ChannelSync.kt</code>（端末での保存は <code>ChannelStore.kt</code>）。文書の確認は <code>:station-format</code> の <code>ProviderDocuments</code></td></tr>
           <tr><td>きっかけの判定（いつ出すか）を変える</td><td><code>material/Cues.kt</code> の <code>CueFinder</code>。散歩の中での順番は <code>walk/WalkService.kt</code> の <code>maybeTalk()</code></td></tr>
           <tr><td>きっかけの見せ方（カード・通知・解説の画面）を変える</td><td><code>material/CueLayout.kt</code>・<code>walk/CueShow.kt</code>・<code>ui/CueViews.kt</code></td></tr>
           <tr><td>組み込みの素材提供者（AI・写真・背景音など）を足す・変える</td><td><code>material/BuiltIns.kt</code> と、<code>SanpoApp.onCreate()</code> の <code>Producers</code></td></tr>

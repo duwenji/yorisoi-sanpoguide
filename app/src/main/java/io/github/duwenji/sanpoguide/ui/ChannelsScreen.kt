@@ -50,7 +50,7 @@ import java.time.format.DateTimeFormatter
 
 private val TIME = DateTimeFormatter.ofPattern("M/d HH:mm").withZone(ZoneId.systemDefault())
 
-/** The channel providers and what they deliver (API-002 設定画面の運営). */
+/** The channel providers and what they deliver (API-002 設定画面のリスト). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
@@ -89,17 +89,17 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
                 }
             }
             Text(
-                "運営（チャンネルと素材を審査して配信する組織）が審査して署名したチャンネルだけを取り込みます。運営のリストは 1 日ごと（アプリの起動時と散策の開始時）に確かめます。" +
+                "チャンネル・リストは、運営（チャンネルと素材を審査する組織）が審査して署名したチャンネルの一覧です。足したリストは 1 日ごと（アプリの起動時と散策の開始時）に確かめます。" +
                     "天気の急変・日の入りの案内など、安全のための案内はどのチャンネルでも同じです。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (providers.isEmpty()) {
-                Text("運営はまだありません。アプリに内蔵の運営は、公開の準備ができてから加わります。", style = MaterialTheme.typography.bodyMedium)
+                Text("リストはまだありません。アプリに内蔵のリストは、公開の準備ができてから加わります。", style = MaterialTheme.typography.bodyMedium)
             }
             providers.forEach { ProviderCard(it, viewModel, enabled = !busy) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { adding = true }, enabled = !busy) { Text("運営を足す") }
+                OutlinedButton(onClick = { adding = true }, enabled = !busy) { Text("チャンネル・リストを足す") }
                 // Never during a walk (API-002 取得の時期).
                 OutlinedButton(onClick = viewModel::refresh, enabled = !busy && !walking && providers.isNotEmpty()) { Text("今すぐ確かめる") }
             }
@@ -138,14 +138,14 @@ private fun ProviderCard(view: ProviderView, viewModel: ChannelsViewModel, enabl
                     TextButton(onClick = { viewModel.remove(p.id, c.id) }, enabled = enabled) { Text("削除") }
                 }
             }
-            TextButton(onClick = { confirmRemove = true }, enabled = enabled) { Text("この運営を外す") }
+            TextButton(onClick = { confirmRemove = true }, enabled = enabled) { Text("このリストを外す") }
         }
     }
     if (confirmRemove) {
         AlertDialog(
             onDismissRequest = { confirmRemove = false },
-            title = { Text("運営を外しますか？") },
-            text = { Text("この運営のチャンネルは端末から消え、使えなくなります。") },
+            title = { Text("リストを外しますか？") },
+            text = { Text("このリストのチャンネルは端末から消え、使えなくなります。") },
             confirmButton = { TextButton(onClick = { confirmRemove = false; viewModel.removeProvider(p.id) }) { Text("外す") } },
             dismissButton = { TextButton(onClick = { confirmRemove = false }) { Text("やめる") } },
         )
@@ -182,7 +182,7 @@ private fun TrialSection(trials: List<TrialChannel>, viewModel: ChannelsViewMode
             Text("試用チケット（開発者向け）", style = MaterialTheme.typography.titleSmall)
             Text(
                 "管理システムのチャンネル提供者の画面で発行した QR コードを読み込むと、審査前のチャンネルを 7 日まで試せます。" +
-                    "チケットの運営を先に足しておいてください。試用中のチャンネルは「審査前の試用」と表示し、ほかの人とは共有できません。",
+                    "チケットのリストを先に足しておいてください。試用中のチャンネルは「審査前の試用」と表示し、ほかの人とは共有できません。",
                 style = MaterialTheme.typography.bodySmall,
             )
             Button(
@@ -210,15 +210,15 @@ private fun AddProviderDialog(onDismiss: () -> Unit, onAdd: (String, String) -> 
     var id by rememberSaveable { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("運営を足す") },
+        title = { Text("リストを足す") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "この運営が審査したチャンネルを信用することになります。運営IDは、運営のサイトなど、このアプリとは別の方法で確かめたものを入れてください。",
+                    "このリストの運営が審査したチャンネルを信用することになります。リストIDは、運営のサイトなど、このアプリとは別の方法で確かめたものを入れてください。",
                     style = MaterialTheme.typography.bodySmall,
                 )
                 OutlinedTextField(url, { url = it }, label = { Text("URL") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
-                OutlinedTextField(id, { id = it.trim() }, label = { Text("運営ID（sc1…）") }, singleLine = true)
+                OutlinedTextField(id, { id = it.trim() }, label = { Text("リストID（sc1…）") }, singleLine = true)
             }
         },
         confirmButton = { TextButton(onClick = { onAdd(url, id) }, enabled = url.length > 8 && id.isNotEmpty()) { Text("足す") } },
