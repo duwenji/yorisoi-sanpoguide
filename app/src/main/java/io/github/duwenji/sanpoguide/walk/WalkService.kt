@@ -37,8 +37,8 @@ import io.github.duwenji.sanpoguide.material.Subject
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.sound.AmbientPlayer
 import io.github.duwenji.sanpoguide.station.Station
-import io.github.duwenji.sanpoguide.station.format.CueEvent
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.CueEvent
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import io.github.duwenji.sanpoguide.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest

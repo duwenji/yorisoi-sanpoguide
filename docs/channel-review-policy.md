@@ -26,7 +26,7 @@ flowchart LR
 
 ## 1. 機械で確かめる項目
 
-[API-003](channel-package-format.md) の「確認の手順」をそのまま使います。アプリと同じ確認処理（`:station-format`）を審査用の道具でも動かすので、ここで合格すれば、アプリで形式の理由により拒まれることはありません。
+[API-003](channel-package-format.md) の「確認の手順」をそのまま使います。アプリと同じ確認処理（`:platform:core-format`）を審査用の道具でも動かすので、ここで合格すれば、アプリで形式の理由により拒まれることはありません。
 
 不合格のときは、API-003 のエラーコード（`unexpected_file`・`forbidden_text`・`slot_too_long` など）と詳細をチャンネル提供者に返します。主な項目は次のとおりです。
 

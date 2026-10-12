@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import io.github.duwenji.sanpoguide.BuildConfig
 import io.github.duwenji.sanpoguide.station.Station
-import io.github.duwenji.sanpoguide.station.format.StationPackage
+import io.github.duwenji.michizure.core.format.StationPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

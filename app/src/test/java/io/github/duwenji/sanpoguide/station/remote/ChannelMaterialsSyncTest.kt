@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.station.remote
 
 import io.github.duwenji.sanpoguide.station.BuiltInStations
-import io.github.duwenji.sanpoguide.station.format.CollectionStatus
-import io.github.duwenji.sanpoguide.station.format.RejectCode
+import io.github.duwenji.michizure.core.format.CollectionStatus
+import io.github.duwenji.michizure.core.format.RejectCode
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertArrayEquals

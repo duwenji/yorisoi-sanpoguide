@@ -3,13 +3,13 @@ package io.github.duwenji.sanpoguide.station
 import io.github.duwenji.sanpoguide.material.ChannelMaterials
 import io.github.duwenji.sanpoguide.prompt.StationPrompts
 import io.github.duwenji.sanpoguide.settings.TalkLevel
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.Slot
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.StationManifest
-import io.github.duwenji.sanpoguide.station.format.StationPackage
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.Slot
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.StationManifest
+import io.github.duwenji.michizure.core.format.StationPackage
+import io.github.duwenji.michizure.core.format.TalkEventKind
 
 /**
  * What the user changed in a built-in channel's settings. Only changed values are kept (null =

@@ -2,10 +2,10 @@ package io.github.duwenji.sanpoguide.settings
 
 import io.github.duwenji.sanpoguide.SanpoApp
 import io.github.duwenji.sanpoguide.guide.Provider
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

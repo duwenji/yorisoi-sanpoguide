@@ -9,7 +9,7 @@ import io.github.duwenji.sanpoguide.history.WalkRecord
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.mood.Season
 import io.github.duwenji.sanpoguide.mood.TimeOfDay
-import io.github.duwenji.sanpoguide.prompt.PromptTemplates
+import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.prompt.StationPrompts
 import io.github.duwenji.sanpoguide.station.Station
@@ -35,7 +35,7 @@ sealed interface TalkEvent {
  * weather, this walk, past walks) into one short, natural line.
  *
  * This class only gathers the values; all wording is in the prompt files under
- * `prompts/companion/` and `prompts/fallback/companion/` (resources of `:station-format`), plus
+ * `prompts/companion/` and `prompts/fallback/companion/` (resources of `:apps:sanpoguide:prompts`), plus
  * the slots of the channel in use; [StationPrompts] puts them together.
  */
 class WalkCompanion(

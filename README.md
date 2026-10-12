@@ -204,9 +204,9 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 
-チャンネルの形式（[docs/channel-package-format.md](docs/channel-package-format.md)）の読み込みと確認、プロンプトのファイル、組み込みのチャンネルは、Android に依存しない別モジュール `station-format/`（`:station-format`）にある。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（`io.github.duwenji.sanpoguide:station-format`。版は `gradle.properties` の `stationFormatVersion`、公開はタグ `station-format-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（[docs/channel-package-format.md](docs/channel-package-format.md)）の読み込みと確認は `platform/core-format/`（`:platform:core-format`）、プロンプトのテンプレートの仕組みは `platform/core-prompt/`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルは `apps/sanpoguide/prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール（[RFC-002](docs/refactoring/RFC-002-platform-stage1.md)）。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（`io.github.duwenji.michizure:core-format`・`core-prompt` は `gradle.properties` の `michizureCoreVersion`、タグ `michizure-core-v<版>`。`io.github.duwenji.sanpoguide:prompts` は `sanpoguidePromptsVersion`、タグ `sanpoguide-prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
 
-AI に送るプロンプトと定型文は、コードではなく `station-format/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
+AI に送るプロンプトと定型文は、コードではなく `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
 
 AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追加するだけでよい。独自 API の場合は `LlmClient` を実装し、`GuideRepository.createClient` に分岐を足す。
 

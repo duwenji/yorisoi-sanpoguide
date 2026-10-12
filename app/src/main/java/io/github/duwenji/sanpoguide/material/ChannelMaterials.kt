@@ -1,15 +1,15 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.sanpoguide.material.format.CollectionPackage
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.material.format.Resource
-import io.github.duwenji.sanpoguide.material.format.ResourceLocation
-import io.github.duwenji.sanpoguide.material.format.ResourceReader
-import io.github.duwenji.sanpoguide.station.format.CollectionStatus
-import io.github.duwenji.sanpoguide.station.format.Presentation
-import io.github.duwenji.sanpoguide.station.format.Reference
-import io.github.duwenji.sanpoguide.station.format.StationFiles
-import io.github.duwenji.sanpoguide.station.format.StationMedia
+import io.github.duwenji.michizure.core.format.material.CollectionPackage
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.format.material.Resource
+import io.github.duwenji.michizure.core.format.material.ResourceLocation
+import io.github.duwenji.michizure.core.format.material.ResourceReader
+import io.github.duwenji.michizure.core.format.CollectionStatus
+import io.github.duwenji.michizure.core.format.Presentation
+import io.github.duwenji.michizure.core.format.Reference
+import io.github.duwenji.michizure.core.format.StationFiles
+import io.github.duwenji.michizure.core.format.StationMedia
 
 /**
  * What a third party's channel can show on this device (ADR-002 T-8a): its own resources, the

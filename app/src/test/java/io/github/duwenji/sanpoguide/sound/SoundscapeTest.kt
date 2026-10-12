@@ -5,7 +5,7 @@ import io.github.duwenji.sanpoguide.mood.Place
 import io.github.duwenji.sanpoguide.mood.Season
 import io.github.duwenji.sanpoguide.mood.Sky
 import io.github.duwenji.sanpoguide.mood.TimeOfDay
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SoundChoice
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

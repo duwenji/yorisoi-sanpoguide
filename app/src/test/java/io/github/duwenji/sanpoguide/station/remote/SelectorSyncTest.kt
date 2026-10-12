@@ -9,8 +9,8 @@ import io.github.duwenji.sanpoguide.material.MaterialRequest
 import io.github.duwenji.sanpoguide.material.MaterialResult
 import io.github.duwenji.sanpoguide.material.SelectorProducer
 import io.github.duwenji.sanpoguide.material.Subject
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.material.format.Regions
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.format.material.Regions
 import io.github.duwenji.sanpoguide.station.BuiltInStations
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
@@ -204,7 +204,7 @@ class SelectorSyncTest {
 
         // A cue naming the spot is the only one shown there.
         val named = media.copy(cues = media.cues + media.cues.single().copy(
-            id = "hachimangu", trigger = io.github.duwenji.sanpoguide.station.format.Trigger.Spot(hachimangu.id, null),
+            id = "hachimangu", trigger = io.github.duwenji.michizure.core.format.Trigger.Spot(hachimangu.id, null),
         ))
         assertEquals("hachimangu", finder.spot("c", named, hachimangu, 30, mutableSetOf(), 0)!!.cue.id)
     }

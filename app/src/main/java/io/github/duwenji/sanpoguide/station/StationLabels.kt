@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.station
 
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.TalkEventKind
 
 /** How the channel format's values are named on screen. */
 object StationLabels {

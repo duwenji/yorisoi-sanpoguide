@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.data
 
 import android.util.Log
-import io.github.duwenji.sanpoguide.station.format.SpotKind
+import io.github.duwenji.michizure.core.format.SpotKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody

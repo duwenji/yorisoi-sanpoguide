@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.guide
 
 import io.github.duwenji.sanpoguide.data.Poi
-import io.github.duwenji.sanpoguide.prompt.PromptTemplates
+import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.sanpoguide.settings.SettingsRepository

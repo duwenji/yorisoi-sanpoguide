@@ -1,6 +1,6 @@
 # プロンプト一覧
 
-AI に送るプロンプトと、AI を使えないときの定型文は、すべて `station-format/src/main/resources/sanpoguide/prompts/` に置いてある（アプリはクラスパスから読む。チャンネル管理システムも同じファイルで審査の見本を作るため、`:station-format` に置いている）。コードにはプロンプトの文言を書かず、値（変数）を渡すだけにしている。
+AI に送るプロンプトと、AI を使えないときの定型文は、すべて `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/` に置いてある（アプリはクラスパスから読む。チャンネル管理システムも同じファイルで審査の見本を作るため、JVM のモジュール `:apps:sanpoguide:prompts`（SanpoGuide のプロンプト・パック）に置いている）。コードにはプロンプトの文言を書かず、値（変数）を渡すだけにしている。
 
 文言を変えるときは該当ファイルを編集し、アプリをビルドし直す。どの AI サービス（Claude / DeepSeek など）を選んでも同じファイルを使う。
 

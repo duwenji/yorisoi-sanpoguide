@@ -1,10 +1,10 @@
 package io.github.duwenji.sanpoguide.station
 
-import io.github.duwenji.sanpoguide.station.format.BuiltInChannels
-import io.github.duwenji.sanpoguide.station.format.StationFiles
+import io.github.duwenji.sanpoguide.prompt.BuiltInChannels
+import io.github.duwenji.michizure.core.format.StationFiles
 
 /**
- * The channels that ship with the app. Their files are resources of `:station-format`
+ * The channels that ship with the app. Their files are resources of `:apps:sanpoguide:prompts`
  * (`sanpoguide/channels/{id}/`, see [BuiltInChannels]) and go through the same checks as a
  * third-party package, so a mistake in the format shows up here first (and in
  * StationAssetsTest, before it ever reaches a phone).
