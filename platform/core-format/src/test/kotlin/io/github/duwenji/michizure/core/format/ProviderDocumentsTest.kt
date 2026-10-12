@@ -17,7 +17,7 @@ import java.util.Base64
 
 /**
  * API-002 as the app checks it, against documents the channel management system's own code signed
- * (`provider-vectors.json`, from sanpo-channel-console `conformance/src/app-vectors.ts`). The
+ * (`provider-vectors.json`, from michizure-console `conformance/src/app-vectors.ts`). The
  * rejections re-sign altered documents with the same fixed, public seeds (1 = root, 2 = signing).
  */
 class ProviderDocumentsTest {
