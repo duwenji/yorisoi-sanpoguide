@@ -10,9 +10,9 @@
 | 関連Skill | 020_api-contract-design |
 | 作成日 | 2026-10-03 |
 | 作成者 | Claude（開発者との検討） |
-| 承認者 | 開発者（1.0・1.1: 2026-10-03、1.2・1.3: 2026-10-11） |
-| ステータス | 承認済（1.3）。1.4 は改訂案（レビュー待ち） |
-| 版 | 1.4（案） |
+| 承認者 | 開発者（1.0・1.1: 2026-10-03、1.2・1.3: 2026-10-11、1.4: 2026-10-12） |
+| ステータス | 承認済 |
+| 版 | 1.4 |
 
 ## 目的・背景
 
@@ -104,11 +104,11 @@ Claude の提案を開発者が承認した。
 | P-17 | 古いアプリ | `format` は 1 のまま（項目の追加）。`promotional` を知らないアプリが表示なしで出さないよう、宣伝を含むチャンネル・素材集の `minAppVersion` は、表示に対応したアプリの版以上にする（D-36） |
 | P-18 | アプリの扱い | 「宣伝を含む」「宣伝: 素材提供者名」の表示と読み上げる前の一言（D-32）。宣伝の素材集は基準で選ばない（D-33）。散策者の設定で宣伝の素材を飛ばす（D-34） |
 
-### 決定事項（2026-10-12、エコシステム。版 1.4 の案）
+### 決定事項（2026-10-12、エコシステム。版 1.4）
 
 [ADR-003](adr/ADR-003-companion-app-platform.md) E-17（リストはエコシステムで 1 本、アプリが端末で絞り込む）と API-003 2.0 による。
 
-| No. | 論点 | 決定（案） |
+| No. | 論点 | 決定 |
 |---|---|---|
 | P-19 | 絞り込みの情報 | `channels[]` に `activities`・`genres`・`requires`（`features` の配列）を載せる。管理システムがパッケージの `channel.json` から写す（format 1 のパッケージは `["walk"]`・`[]`・`[]`。API-003 G-6）。アプリはパッケージを取得する前に、リストの値で絞り込める（API-003 G-4）。取得したあと、パッケージの値と一致するかを確かめる |
 | P-20 | アプリごとの必要な版 | アプリごとに versionCode が違うため、`channels[].minAppVersions`・`collections[].minAppVersions`（アプリの ID → versionCode）を足す。アプリの ID は `core-format` の一覧（最初は `sanpoguide`）。`minAppVersions` を知るアプリは自分の ID の値を使い、値がなければ版の条件はない。今の `minAppVersion` は SanpoGuide の値として残す（`minAppVersions` を知らない今の SanpoGuide のため） |
@@ -507,8 +507,9 @@ sequenceDiagram
 | 2026-10-03 | 1.0 | L-5 を追加。P-1〜P-7 を決定事項にして承認 | Claude（承認: 開発者） |
 | 2026-10-03 | 1.1 | P-8（リストは要約に署名。AWS KMS の 4,096 バイトの制限のため）、P-9（チャンネル提供者の鍵の移し替えと `publisherChange`）を追加。V-03 を改め、V-15〜V-18 とエラー `publisher_changed` を追加。未決事項 No.6 の置き場所を決定 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.2 | 素材集（ADR-002）を追加: P-10〜P-14、`collections[]`・`revokedCollections[]`・`channels[].media`・`resourcesSize`、アプリの振る舞い、エラー `collection_rejected`・`producer_changed`、確認観点 V-19〜V-24。`format` は 1 のまま | Claude |
+| 2026-10-12 | 1.4 | 承認 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.2（追記） | P-15（`collections[].tags`・`regions`・`grants`）、基準で選ぶ素材集の取得、確認観点 V-25・V-26 を追加（ADR-002 1.1） | Claude |
 | 2026-10-11 | 1.2 | 承認 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.3 | 宣伝（ADR-002 1.2）: P-16〜P-18、`channels[].promotional`・`collections[].promotional`、アプリの振る舞い。`format` は 1 のまま | Claude |
 | 2026-10-11 | 1.3 | 承認（PR #34 のマージによる） | Claude（承認: 開発者） |
-| 2026-10-12 | 1.4（案） | エコシステム（ADR-003）: P-19〜P-21、`channels[].activities`・`genres`・`requires`・`minAppVersions`、`collections[].minAppVersions`、確認観点 V-27〜V-30。`format` は 1 のまま | Claude |
+| 2026-10-12 | 1.4 | エコシステム（ADR-003）: P-19〜P-21、`channels[].activities`・`genres`・`requires`・`minAppVersions`、`collections[].minAppVersions`、確認観点 V-27〜V-30。`format` は 1 のまま | Claude |
