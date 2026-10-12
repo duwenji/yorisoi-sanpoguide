@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.guide
+package io.github.duwenji.michizure.kit.llm
 
 import com.anthropic.client.AnthropicClient
 import com.anthropic.client.okhttp.AnthropicOkHttpClient

@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.sound
+package io.github.duwenji.michizure.kit.voice
 
 import kotlin.math.PI
 import kotlin.math.abs

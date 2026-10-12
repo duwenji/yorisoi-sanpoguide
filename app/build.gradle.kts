@@ -86,6 +86,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.anthropic.java)
     implementation(project(":apps:sanpoguide:prompts"))
+    implementation(project(":platform:kit-voice"))
+    implementation(project(":platform:kit-llm"))
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // (ADR-001 T-5), and later API-001.
     implementation(libs.tink.android)

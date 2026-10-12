@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.guide
+package io.github.duwenji.michizure.kit.voice
 
 import android.content.Context
 import android.media.AudioAttributes

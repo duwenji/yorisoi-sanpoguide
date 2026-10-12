@@ -1,8 +1,9 @@
 package io.github.duwenji.sanpoguide.settings
 
+import io.github.duwenji.michizure.kit.llm.KeyCipher
 import android.content.Context
 import androidx.core.content.edit
-import io.github.duwenji.sanpoguide.guide.Provider
+import io.github.duwenji.michizure.kit.llm.Provider
 import io.github.duwenji.sanpoguide.station.StationOverrides
 import io.github.duwenji.michizure.core.format.GuideLength
 import io.github.duwenji.michizure.core.format.SoundChoice

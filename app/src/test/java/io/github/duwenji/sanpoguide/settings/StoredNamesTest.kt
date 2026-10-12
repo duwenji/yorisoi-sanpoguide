@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.settings
 
 import io.github.duwenji.sanpoguide.SanpoApp
-import io.github.duwenji.sanpoguide.guide.Provider
+import io.github.duwenji.michizure.kit.llm.Provider
 import io.github.duwenji.michizure.core.format.GuideLength
 import io.github.duwenji.michizure.core.format.SoundChoice
 import io.github.duwenji.michizure.core.format.SpotKind
@@ -12,14 +12,9 @@ import org.junit.Test
 /**
  * Names the phone has already stored (RFC-002 R-8). Moving these types to other modules or
  * packages must not rename them, or an update loses the user's settings, API keys or
- * notification preferences.
+ * notification preferences. The Keystore entry for API keys is pinned in kit-llm (KeyCipherTest).
  */
 class StoredNamesTest {
-    @Test
-    fun `api keys stay in the same Keystore entry`() {
-        assertEquals("sanpo_api_keys", KeyCipher.ALIAS)
-    }
-
     @Test
     fun `settings store these enum names`() {
         // `provider`, `api_key_{name}`, `model_{name}`

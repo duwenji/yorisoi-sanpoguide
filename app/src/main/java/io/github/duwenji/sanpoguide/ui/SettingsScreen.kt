@@ -58,7 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.sanpoguide.BuildConfig
-import io.github.duwenji.sanpoguide.guide.Provider
+import io.github.duwenji.michizure.kit.llm.Provider
 import io.github.duwenji.sanpoguide.settings.MapStyle
 import io.github.duwenji.sanpoguide.settings.TalkLevel
 import io.github.duwenji.sanpoguide.settings.Threshold
