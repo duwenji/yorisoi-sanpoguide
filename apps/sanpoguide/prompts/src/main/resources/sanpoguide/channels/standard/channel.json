@@ -1,10 +1,12 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "standard",
   "version": 1,
   "name": "標準",
   "summary": "いつもの散歩の友。スポットの解説と、状況に合わせた一言",
   "lang": "ja",
+  "activities": ["walk"],
+  "genres": ["general"],
   "greeting": "いつもの調子で歩きましょう。",
   "talk": {
     "level": "normal",

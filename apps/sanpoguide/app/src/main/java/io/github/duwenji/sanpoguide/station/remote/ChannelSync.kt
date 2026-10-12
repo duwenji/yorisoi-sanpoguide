@@ -1,5 +1,8 @@
 package io.github.duwenji.sanpoguide.station.remote
 
+import io.github.duwenji.michizure.core.format.AppProfile
+import io.github.duwenji.michizure.core.format.Compatibility
+import io.github.duwenji.michizure.core.format.Strictness
 import io.github.duwenji.sanpoguide.material.ChannelMaterials
 import io.github.duwenji.sanpoguide.material.SelectedCollection
 import io.github.duwenji.sanpoguide.material.SelectorPlan
@@ -9,6 +12,7 @@ import io.github.duwenji.michizure.core.format.material.CollectionCheck
 import io.github.duwenji.michizure.core.format.material.CollectionListedAs
 import io.github.duwenji.michizure.core.format.material.CollectionPackage
 import io.github.duwenji.michizure.core.format.material.CollectionValidator
+import io.github.duwenji.sanpoguide.station.SanpoProfile
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.StationSource
 import io.github.duwenji.michizure.core.format.ChannelList
@@ -74,6 +78,8 @@ data class ProviderView(
  * @param mediaStage the material this app shows (API-003 M-1: 1 text and images, 2 audio, 3 video).
  * @param region the device's region and the eight around it (API-004 P-6), for the collections
  *   selectors draw from; null while the location is unknown.
+ * @param profile what this app is, for choosing the channels it can use (API-003 2.0 G-4) and the
+ *   version it is against `minAppVersions` (API-002 1.4 P-20).
  */
 class ChannelSync(
     private val store: ChannelStore,
@@ -84,6 +90,7 @@ class ChannelSync(
     private val allowLocalHttp: Boolean = false,
     private val mediaStage: Int = MEDIA_STAGE,
     private val region: () -> Set<String>? = { null },
+    private val profile: AppProfile = SanpoProfile.of(appVersion),
 ) {
     companion object {
         /** The app shows text and images (ADR-002 T-8). */
@@ -217,8 +224,9 @@ class ChannelSync(
     fun install(providerId: String, channelId: String, unmetered: Boolean = false) {
         val (_, list) = validList(providerId) ?: throw ChannelSyncException("リストが有効ではありません。取得し直してください")
         val entry = list.channels.firstOrNull { it.id == channelId } ?: throw ChannelSyncException("リストにないチャンネルです")
-        if (entry.pkg.format != 1) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
-        if (entry.minAppVersion > appVersion) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
+        if (entry.pkg.format !in StationValidator.FORMATS) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
+        if (Compatibility.reasons(entry, profile).isNotEmpty()) throw ChannelSyncException("このアプリでは使えないチャンネルです")
+        if (needsUpdate(entry)) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
         val installed = state.installed.firstOrNull { it.provider == providerId && it.id == channelId }
         download(providerId, entry, installed, list, unmetered)
     }
@@ -250,9 +258,12 @@ class ChannelSync(
             throw ChannelSyncException("パッケージを取得できませんでした（${e.message}）")
         }
         if (bytes.size != entry.pkg.size || sha256(bytes) != entry.pkg.sha256) throw ChannelSyncException("パッケージがリストと一致しません（hash_mismatch）")
-        val check = StationValidator.checkArchive(bytes, ListedAs(entry.id, entry.version, entry.publisher), verifier, mediaStage)
+        val listedAs = ListedAs(entry.id, entry.version, entry.publisher, entry.activities, entry.genres, entry.requires)
+        val check = StationValidator.checkArchive(bytes, listedAs, verifier, mediaStage, Strictness.APP)
         if (check is StationCheck.Rejected) throw ChannelSyncException("パッケージの確認に失敗しました（package_rejected: ${check.code.json}）")
         check as StationCheck.Ok
+        // What the package holds may rule out this app where the list's copy couldn't (an unknown restriction).
+        if (Compatibility.reasons(check.station.manifest, profile).isNotEmpty()) throw ChannelSyncException("このアプリでは使えないチャンネルです")
 
         store.writePackage(entry.pkg.sha256, bytes)
         val next = InstalledChannel(providerId, entry.id, entry.version, entry.publisher, entry.pkg.sha256, name = entry.name)
@@ -277,6 +288,7 @@ class ChannelSync(
         val (info, list) = validList(c.provider) ?: return@mapNotNull null
         val entry = list.channels.firstOrNull { it.id == c.id } ?: return@mapNotNull null
         if (list.revoked.any { it.id == c.id && it.covers(c.version) }) return@mapNotNull null
+        if (Compatibility.reasons(entry, profile).isNotEmpty()) return@mapNotNull null
         val opened = open(c.sha256, ListedAs(c.id, c.version, c.publisher)) ?: return@mapNotNull null
         Station(
             opened.pkg, standard, key = "${c.provider}/${c.id}@${c.version}", id = "${c.provider}/${c.id}",
@@ -295,11 +307,12 @@ class ChannelSync(
             name = valid?.first?.name ?: p.name ?: p.id,
             listValid = valid != null,
             expiresAt = list?.expiresAt,
-            channels = list?.channels.orEmpty().map { entry ->
+            // Channels for another activity, or needing what this app lacks, aren't offered (API-003 G-4).
+            channels = list?.channels.orEmpty().filter { Compatibility.reasons(it, profile).isEmpty() }.map { entry ->
                 val installed = mine.firstOrNull { it.id == entry.id }
                 val status = when {
-                    entry.pkg.format != 1 -> ListedStatus.UNSUPPORTED
-                    entry.minAppVersion > appVersion -> ListedStatus.NEEDS_APP_UPDATE
+                    entry.pkg.format !in StationValidator.FORMATS -> ListedStatus.UNSUPPORTED
+                    needsUpdate(entry) -> ListedStatus.NEEDS_APP_UPDATE
                     installed == null -> ListedStatus.AVAILABLE
                     installed.blocked != null -> ListedStatus.BLOCKED
                     installed.version < entry.version -> ListedStatus.UPDATE_PENDING
@@ -338,10 +351,11 @@ class ChannelSync(
             throw ChannelSyncException("パッケージを取得できませんでした（${e.message}）")
         }
         if (bytes.size != ticket.pkg.size || sha256(bytes) != ticket.pkg.sha256) throw ChannelSyncException("パッケージがチケットと一致しません（hash_mismatch）")
-        val pkg = when (val check = StationValidator.checkArchive(bytes, null, verifier, mediaStage)) {
+        val pkg = when (val check = StationValidator.checkArchive(bytes, null, verifier, mediaStage, Strictness.APP)) {
             is StationCheck.Rejected -> throw ChannelSyncException("パッケージの確認に失敗しました（package_rejected: ${check.code.json}）")
             is StationCheck.Ok -> check.station
         }
+        if (Compatibility.reasons(pkg.manifest, profile).isNotEmpty()) throw ChannelSyncException("このアプリでは使えないチャンネルです")
         if (pkg.manifest.id != ticket.channel || pkg.manifest.publisher != ticket.publisher) {
             throw ChannelSyncException("パッケージがチケットのチャンネル・チャンネル提供者と違います（ticket_invalid）")
         }
@@ -396,9 +410,13 @@ class ChannelSync(
     /** A package on the device, checked again as it is used. */
     private fun open(sha256: String, listedAs: ListedAs?): Opened? {
         val zip = store.readPackage(sha256) ?: return null
-        val pkg = (StationValidator.checkArchive(zip, listedAs, verifier, mediaStage) as? StationCheck.Ok)?.station ?: return null
+        val pkg = (StationValidator.checkArchive(zip, listedAs, verifier, mediaStage, Strictness.APP) as? StationCheck.Ok)?.station ?: return null
+        if (Compatibility.reasons(pkg.manifest, profile).isNotEmpty()) return null
         return Opened(pkg, PackageArchive.open(zip))
     }
+
+    /** API-002 P-20: this app's own minimum, if the list has one. */
+    private fun needsUpdate(entry: ListedChannel): Boolean = (entry.minAppVersionFor(profile.id) ?: 0) > appVersion
 
     private val collectionCache = HashMap<String, Pair<CollectionPackage, StationFiles>>()
 
@@ -406,7 +424,7 @@ class ChannelSync(
     private fun openCollection(sha256: String): Pair<CollectionPackage, StationFiles>? = collectionCache.getOrPut(sha256) {
         val zip = store.readCollection(sha256) ?: return null
         val files = runCatching { PackageArchive.open(zip) }.getOrNull() ?: return null
-        val pkg = (CollectionValidator.check(files, null, verifier) as? CollectionCheck.Ok)?.collection ?: return null
+        val pkg = (CollectionValidator.check(files, null, verifier, Strictness.APP) as? CollectionCheck.Ok)?.collection ?: return null
         pkg to files
     }
 
@@ -425,7 +443,7 @@ class ChannelSync(
         val media = opened.pkg.media
         if (media.isEmpty) return null
         val kept = list?.let { keptCollections(providerId, it) }.orEmpty()
-        val statuses = list?.let { CollectionReferences.resolve(media, publisher, it, kept.mapValues { e -> e.value.first }).statuses }.orEmpty()
+        val statuses = list?.let { CollectionReferences.resolve(media, publisher, it, kept.mapValues { e -> e.value.first }, profile.id).statuses }.orEmpty()
         val files = media.collections.mapNotNull { use ->
             kept[use.id]?.takeIf { statuses[use.alias] is CollectionStatus.Usable }?.let { use.alias to it.second }
         }.toMap()
@@ -440,7 +458,7 @@ class ChannelSync(
     private fun selected(
         media: StationMedia, list: ChannelList, publisher: String, kept: Map<String, Pair<CollectionPackage, StationFiles>>,
     ): Map<String, List<SelectedCollection>> = media.selectors.associate { selector ->
-        selector.alias to SelectorPlan.candidates(selector, list, publisher, appVersion).mapNotNull { listed ->
+        selector.alias to SelectorPlan.candidates(selector, list, publisher, appVersion, profile.id).mapNotNull { listed ->
             val (pkg, files) = kept[listed.id] ?: return@mapNotNull null
             SelectedCollection(listed, pkg, files).takeIf { pkg.manifest.grants == listed.grants }
         }
@@ -455,13 +473,13 @@ class ChannelSync(
     private fun fetchMaterials(providerId: String, list: ChannelList, pkg: StationPackage, publisher: String, unmetered: Boolean) {
         val media = pkg.media
         if (media.isEmpty) return
-        fun resolved() = CollectionReferences.resolve(media, publisher, list, keptCollections(providerId, list).mapValues { it.value.first })
+        fun resolved() = CollectionReferences.resolve(media, publisher, list, keptCollections(providerId, list).mapValues { it.value.first }, profile.id)
         for (status in resolved().statuses.values) {
             if (status is CollectionStatus.NotFetched) runCatching { fetchCollection(providerId, status.listed, list) }
         }
         if (unmetered && media.selectors.isNotEmpty()) {
             val kept = keptCollections(providerId, list)
-            for (listed in SelectorPlan.toFetch(media, list, publisher, appVersion, region())) {
+            for (listed in SelectorPlan.toFetch(media, list, publisher, appVersion, region(), profile.id)) {
                 if (listed.id !in kept) runCatching { fetchCollection(providerId, listed, list) }
             }
         }
@@ -495,7 +513,7 @@ class ChannelSync(
         val bytes = http.get(checkedUrl(listed.pkg.url), minOf(listed.pkg.size, ProviderDocuments.MAX_PACKAGE_BYTES))
         if (bytes.size != listed.pkg.size || sha256(bytes) != listed.pkg.sha256) throw IOException("hash_mismatch")
         val listedAs = CollectionListedAs(listed.id, listed.version, listed.producer, list.formerProducerIds(listed.producer))
-        if (CollectionValidator.checkArchive(bytes, listedAs, verifier) !is CollectionCheck.Ok) throw IOException("collection_invalid")
+        if (CollectionValidator.checkArchive(bytes, listedAs, verifier, Strictness.APP) !is CollectionCheck.Ok) throw IOException("collection_invalid")
         store.writeCollection(listed.pkg.sha256, bytes)
         val next = FetchedCollection(providerId, listed.id, listed.version, listed.pkg.sha256)
         val previous = state.collections.filter { it.provider == providerId && it.id == listed.id }
@@ -539,9 +557,9 @@ class ChannelSync(
                     state.collections.filter { it.provider == provider }.forEach { collections += provider to it.id }
                 } else {
                     val keep = if (here == null) {
-                        media.selectors.flatMap { SelectorPlan.candidates(it, list, publisher, appVersion) }.map { it.id }.toSet()
+                        media.selectors.flatMap { SelectorPlan.candidates(it, list, publisher, appVersion, profile.id) }.map { it.id }.toSet()
                     } else {
-                        SelectorPlan.toFetch(media, list, publisher, appVersion, here).map { it.id }.toSet()
+                        SelectorPlan.toFetch(media, list, publisher, appVersion, here, profile.id).map { it.id }.toSet()
                     }
                     keep.forEach { collections += provider to it }
                     selected = selected(media, list, publisher, keptCollections(provider, list).filterKeys { it in keep })

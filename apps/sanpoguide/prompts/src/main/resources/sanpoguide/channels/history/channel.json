@@ -1,10 +1,12 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "history",
   "version": 1,
   "name": "歴史探訪",
   "summary": "寺社や史跡の由来、関わった人物の話を多めに。解説は長め",
   "lang": "ja",
+  "activities": ["walk"],
+  "genres": ["history"],
   "greeting": "ここからは、歴史の話を多めにしますね。",
   "talk": {
     "level": "normal",

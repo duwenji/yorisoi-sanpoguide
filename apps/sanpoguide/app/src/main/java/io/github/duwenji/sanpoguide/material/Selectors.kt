@@ -8,6 +8,7 @@ import io.github.duwenji.michizure.core.format.material.Resource
 import io.github.duwenji.michizure.core.format.material.ResourceReader
 import io.github.duwenji.michizure.core.format.material.SubjectKind
 import io.github.duwenji.michizure.core.format.material.Trust
+import io.github.duwenji.michizure.core.format.AppIds
 import io.github.duwenji.michizure.core.format.ChannelList
 import io.github.duwenji.michizure.core.format.ListedCollection
 import io.github.duwenji.michizure.core.format.Selector
@@ -19,17 +20,18 @@ class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackag
 
 /**
  * Which collections a channel's selectors draw from (API-004「基準で選ぶ素材提供者」): listed by the
- * channel's provider, not revoked, granted to its publisher (D-27), shown by this app, and
- * carrying the kind and a tag asked for. Best first (「複数の素材が当たったとき」): the producers
+ * channel's provider, not revoked, granted to its publisher (D-27) and to this app (API-004 1.5 I-11),
+ * shown by this app, and carrying the kind and a tag asked for. Best first (「複数の素材が当たったとき」): the producers
  * the selector names, in its order, then the most recently approved.
  */
 object SelectorPlan {
-    fun candidates(selector: Selector, list: ChannelList, publisher: String, appVersion: Int): List<ListedCollection> {
+    fun candidates(selector: Selector, list: ChannelList, publisher: String, appVersion: Int, appId: String = AppIds.SANPOGUIDE): List<ListedCollection> {
         val publishers = setOf(publisher) + list.formerPublisherIds(publisher)
         return list.collections.filter { c ->
             list.revokedCollections.none { it.id == c.id && it.covers(c.version) } &&
                 (c.grants.publishers == null || publishers.any(c.grants::allows)) &&
-                c.minAppVersion <= appVersion &&
+                c.grants.allowsApp(appId) &&
+                (c.minAppVersionFor(appId) ?: 0) <= appVersion &&
                 c.tags.any { it in selector.tags } &&
                 (c.media.isEmpty() || selector.type.json in c.media)
         }.sortedWith(
@@ -43,11 +45,13 @@ object SelectorPlan {
      * the device is in or one next to it, and those about nowhere in particular; best first,
      * up to 50MB in all. With no [region] (the location is unknown), only the latter.
      */
-    fun toFetch(media: StationMedia, list: ChannelList, publisher: String, appVersion: Int, region: Set<String>?): List<ListedCollection> {
+    fun toFetch(
+        media: StationMedia, list: ChannelList, publisher: String, appVersion: Int, region: Set<String>?, appId: String = AppIds.SANPOGUIDE,
+    ): List<ListedCollection> {
         val out = LinkedHashMap<String, ListedCollection>()
         var total = 0L
         for (selector in media.selectors) {
-            for (c in candidates(selector, list, publisher, appVersion)) {
+            for (c in candidates(selector, list, publisher, appVersion, appId)) {
                 if (c.id in out) continue
                 if (c.regions.isNotEmpty() && (region == null || c.regions.none { it in region })) continue
                 if (total + c.resourcesSize > ResourceReader.MAX_PREFETCH_TOTAL) continue
