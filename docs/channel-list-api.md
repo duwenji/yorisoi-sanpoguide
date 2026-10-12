@@ -513,3 +513,4 @@ sequenceDiagram
 | 2026-10-11 | 1.3 | 宣伝（ADR-002 1.2）: P-16〜P-18、`channels[].promotional`・`collections[].promotional`、アプリの振る舞い。`format` は 1 のまま | Claude |
 | 2026-10-11 | 1.3 | 承認（PR #34 のマージによる） | Claude（承認: 開発者） |
 | 2026-10-12 | 1.4 | エコシステム（ADR-003）: P-19〜P-21、`channels[].activities`・`genres`・`requires`・`minAppVersions`、`collections[].minAppVersions`、確認観点 V-27〜V-30。`format` は 1 のまま | Claude |
+| 2026-10-12 | 1.4 | 承認 | Claude（承認: 開発者） |
