@@ -6,7 +6,7 @@
 |---|---|
 | 文書ID | ADR-003 |
 | ドキュメント種別 | ADR |
-| 対象システム/機能 | SanpoGuide と sanpo-channel-console の全体。共通部分の切り出し、チャンネル・素材集のアプリをまたいだ扱い |
+| 対象システム/機能 | SanpoGuide と michizure-console の全体。共通部分の切り出し、チャンネル・素材集のアプリをまたいだ扱い |
 | 関連Skill | architecture-decision-record |
 | 作成日 | 2026-10-12 |
 | 作成者 | Claude（開発者との検討） |
@@ -53,7 +53,7 @@ SanpoGuide は散策向けのアプリだが、今の仕組み（チャンネル
 | API-002 | 承認済みチャンネル・リスト | エコシステムで 1 本のまま、互換性の宣言を載せる（E-17。T-5） |
 | API-003 | F-1〜F-7（スロット・選択肢・止められない出来事・ファイルの許可・署名） | format 2 で `activities`・`genres`・`requires` を足し、F-5 の当て方を変える（E-8・E-12。T-4） |
 | API-004 | 題材・タグ・利用許諾 | 題材の「出来事」の扱い、タグの共通化、`grants` のアプリ指定（T-6） |
-| sanpo-channel-console ADR-001 | 管理システムの構成 | 互換性の判定・審査の見本の作り方を変える（T-7） |
+| michizure-console ADR-001 | 管理システムの構成 | 互換性の判定・審査の見本の作り方を変える（T-7） |
 
 ## 方針・決定事項
 
@@ -101,7 +101,7 @@ SanpoGuide は散策向けのアプリだが、今の仕組み（チャンネル
 
 | No. | 論点 | 決定 |
 |---|---|---|
-| E-19 | リポジトリ | Kotlin 側は 1 つの Gradle モノレポにする（SanpoGuide のリポジトリを育てる）。`platform/`（コアとキット）、`apps/`（SanpoGuide と次のアプリ）、`templates/`（新しいアプリの雛形）。コアとアプリを同じ PR で直せるようにするため。管理システム（sanpo-channel-console）は別リポジトリのまま、公開したコアとプロンプト・パックを版で固定して使う（今の station-format と同じ関係） |
+| E-19 | リポジトリ | Kotlin 側は 1 つの Gradle モノレポにする（SanpoGuide のリポジトリを育てる）。`platform/`（コアとキット）、`apps/`（SanpoGuide と次のアプリ）、`templates/`（新しいアプリの雛形）。コアとアプリを同じ PR で直せるようにするため。管理システム（michizure-console）は別リポジトリのまま、公開したコアとプロンプト・パックを版で固定して使う（今の station-format と同じ関係） |
 | E-20 | 進め方 | 段階 1（動きを変えない切り出し）はすぐに進めてよい。話す判断のエンジン（段階 2）と format 2（段階 3）は、2 本目のアプリを具体的に決めてから詰める（散歩だけに合わせた抽象を固めないため）。段階は[追従タスク](#影響範囲追従タスク)の順 |
 | E-21 | 互換 | format 1 のチャンネルは「`activities: ["walk"]`・`requires` は今の SanpoGuide が実装しているもの」として読む。今の組み込みのチャンネル・第三者のチャンネル・素材集は書き換えなくてよい |
 
@@ -204,7 +204,7 @@ flowchart TB
 | T-4 | API-003 2.0（2026-10-12 承認。`core-format` 1.1.0 で実装）: format 2（`activities`（最初は `walk`・`cycle`。E-24）・`genres`・`requires`、エコシステム共通の語彙、知らない値の扱い E-12、format 1 の読み方 E-21） | Claude | T-3 と並行 |
 | T-5 | API-002 の改訂（1.4、2026-10-12 承認。`core-format` 1.1.0 で読み込みを実装）: チャンネルの `activities`・`genres`・`requires` をリストに載せる。アプリごとの必要な版 `minAppVersions` を足す（実装の検討で分かった。今の `minAppVersion` は SanpoGuide の versionCode を前提にしていた） | Claude | T-4 と同時 |
 | T-6 | API-004 の改訂（1.5、2026-10-12 承認。`core-format` 1.1.0 で実装）: タグの一覧のコアへの移動（E-15）、`grants` のアプリ指定（E-14）、題材の「出来事」の扱い（E-16） | Claude | T-4 と同時 |
-| T-7 | sanpo-channel-console: 新しいコアへの切り替え、互換性の判定と表示、プロンプト・パックでの組み立ての確認と `activities` ごとの見本（E-26）、`grants` のアプリ指定。ADR・DM-001・API-001 の改訂。`michizure-console` への改名（E-22） | Claude | T-4〜T-6 の後 |
+| T-7 | michizure-console: 新しいコアへの切り替え、互換性の判定と表示、プロンプト・パックでの組み立ての確認と `activities` ごとの見本（E-26）、`grants` のアプリ指定。ADR・DM-001・API-001 の改訂。`michizure-console` への改名（E-22）。改名は 2026-10-12 に実施（リポジトリ・パッケージ・AWS のスタック。管理システムの ADR-001 T-9） | Claude | T-4〜T-6 の後 |
 | T-8 | 新しいアプリの雛形（`templates/`）と、要望からプロファイル・ルール・プロンプト・組み込みのチャンネルを生成する Claude Code のスキル | Claude | T-3・T-4 の後 |
 | T-9 | サイクリングのアプリ（E-23）を作り、合わなかった抽象を直す。代表のアプリとして `cycle` の見本に使う | 開発者・Claude | T-8 の後 |
 | T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、sanpo-tutorial 第 5 部 | Claude | 段階ごと |

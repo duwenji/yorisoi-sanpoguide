@@ -17,7 +17,7 @@
 flowchart LR
   CP["チャンネル提供者"] -- "チャンネル（署名つき）" --> OPS
   MP["素材提供者"] -- "素材集（署名つき）" --> OPS
-  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>sanpo-channel-console"] -- "API-002" --> Sync
+  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>michizure-console"] -- "API-002" --> Sync
   subgraph APP["アプリ"]
     BuiltIn["組み込みのチャンネル・素材"] --> Repo
     Sync["ChannelSync<br/>署名・ハッシュ・形式を確かめる"] --> Repo["StationRepository.current"]
@@ -74,7 +74,7 @@ flowchart TB
     OpenMeteo["Open-Meteo<br/>天気・予報・日の入り"]
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
     GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
-    Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: sanpo-channel-console"]
+    Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: michizure-console"]
   end
 
   MainActivity -- "開始・終了" --> WalkService
