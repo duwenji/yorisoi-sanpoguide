@@ -21,7 +21,7 @@ class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackag
 /**
  * Which collections a channel's selectors draw from (API-004「基準で選ぶ素材提供者」): listed by the
  * channel's provider, not revoked, granted to its publisher (D-27) and to this app (API-004 1.5 I-11),
- * shown by this app, and carrying the kind and a tag asked for. Best first (「複数の素材が当たったとき」): the producers
+ * shown by this app, not promotional (ADR-002 D-33: only a channel naming it may use one), and carrying the kind and a tag asked for. Best first (「複数の素材が当たったとき」): the producers
  * the selector names, in its order, then the most recently approved.
  */
 object SelectorPlan {
@@ -31,6 +31,7 @@ object SelectorPlan {
             list.revokedCollections.none { it.id == c.id && it.covers(c.version) } &&
                 (c.grants.publishers == null || publishers.any(c.grants::allows)) &&
                 c.grants.allowsApp(appId) &&
+                !c.promotional &&
                 (c.minAppVersionFor(appId) ?: 0) <= appVersion &&
                 c.tags.any { it in selector.tags } &&
                 (c.media.isEmpty() || selector.type.json in c.media)

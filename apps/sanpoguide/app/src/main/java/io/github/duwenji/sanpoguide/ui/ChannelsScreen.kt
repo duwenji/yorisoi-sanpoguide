@@ -159,6 +159,8 @@ private fun ChannelRow(providerId: String, view: ListedView, viewModel: Channels
         Text(c.name, style = MaterialTheme.typography.bodyLarge)
         Text("${c.summary}（チャンネル提供者: ${c.publisherName}、版 ${c.version}）", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         c.publisherChange?.let { Text("チャンネル提供者の鍵が移し替えられました: ${it.reason}", style = MaterialTheme.typography.bodySmall) }
+        // ADR-002 D-32.
+        if (c.promotional) Text("宣伝を含む", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             when (view.status) {
                 ListedStatus.AVAILABLE -> Button(onClick = { viewModel.use(providerId, c.id) }, enabled = enabled) { Text("取り込んで使う") }

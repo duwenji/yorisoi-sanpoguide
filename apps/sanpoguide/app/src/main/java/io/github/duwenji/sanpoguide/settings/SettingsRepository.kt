@@ -40,6 +40,8 @@ data class GuideSettings(
     val spotPhotos: Boolean = true,
     /** Download photos on mobile data too, not only on Wi-Fi. */
     val photosOnMobileData: Boolean = false,
+    /** Pass over promotional material for the next candidate (ADR-002 D-34, API-004 I-7). Off by default. */
+    val hidePromotions: Boolean = false,
     /**
      * Send coordinates (the spot's, the user's and the route walked) to the AI service.
      * Off by default: without it the AI gets names, distances and figures only.
@@ -100,6 +102,7 @@ class SettingsRepository(context: Context) {
             putBoolean(KEY_AMBIENT_EARPHONES_ONLY, settings.ambientEarphonesOnly)
             putBoolean(KEY_SPOT_PHOTOS, settings.spotPhotos)
             putBoolean(KEY_PHOTOS_ON_MOBILE, settings.photosOnMobileData)
+            putBoolean(KEY_HIDE_PROMOTIONS, settings.hidePromotions)
             putBoolean(KEY_SHARE_LOCATION_WITH_AI, settings.shareLocationWithAi)
             putString(KEY_MAP_STYLE, settings.mapStyle.name)
             val mapsKey = settings.googleMapsApiKey.trim()
@@ -145,6 +148,7 @@ class SettingsRepository(context: Context) {
             ambientEarphonesOnly = prefs.getBoolean(KEY_AMBIENT_EARPHONES_ONLY, DEFAULTS.ambientEarphonesOnly),
             spotPhotos = prefs.getBoolean(KEY_SPOT_PHOTOS, DEFAULTS.spotPhotos),
             photosOnMobileData = prefs.getBoolean(KEY_PHOTOS_ON_MOBILE, DEFAULTS.photosOnMobileData),
+            hidePromotions = prefs.getBoolean(KEY_HIDE_PROMOTIONS, DEFAULTS.hidePromotions),
             shareLocationWithAi = prefs.getBoolean(KEY_SHARE_LOCATION_WITH_AI, DEFAULTS.shareLocationWithAi),
             mapStyle = prefs.getString(KEY_MAP_STYLE, null)
                 ?.let { name -> MapStyle.entries.firstOrNull { it.name == name } }
@@ -216,6 +220,7 @@ class SettingsRepository(context: Context) {
         const val KEY_AMBIENT_EARPHONES_ONLY = "ambient_earphones_only"
         const val KEY_SPOT_PHOTOS = "spot_photos"
         const val KEY_PHOTOS_ON_MOBILE = "photos_on_mobile"
+        const val KEY_HIDE_PROMOTIONS = "hide_promotions"
         const val KEY_SHARE_LOCATION_WITH_AI = "share_location_with_ai"
         const val KEY_MAP_STYLE = "map_style"
         const val KEY_GOOGLE_MAPS_KEY = "google_maps_api_key"

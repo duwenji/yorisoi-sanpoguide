@@ -146,7 +146,7 @@ class SanpoApp : Application() {
         )
         narration = Narration(producers, station = { stations.current.value })
         cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
-        cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE)
+        cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE, hidePromotions = { settings.settings.value.hidePromotions })
         cueShow = CueShow(this, feed, speaker)
         appScope.launch {
             // A channel the user chooses outside a walk shows its cues for being chosen (API-003

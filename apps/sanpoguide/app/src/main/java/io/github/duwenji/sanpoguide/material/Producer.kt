@@ -66,8 +66,14 @@ sealed interface Content {
 /** Who made it and under what license (API-003 F-11). [via] names the service it came through. */
 data class Credit(val author: String?, val license: String?, val source: String? = null, val via: String? = null)
 
-/** One piece of material with where it came from (API-004「素材」); [alt] describes an image in words (API-003 F-11). */
-data class Material(val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null, val alt: String? = null)
+/**
+ * One piece of material with where it came from (API-004「素材」); [alt] describes an image in words (API-003 F-11).
+ * [promotedBy] names whose promotion it is, shown and said with it (ADR-002 D-32); null when it isn't.
+ */
+data class Material(
+    val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null, val alt: String? = null,
+    val promotedBy: String? = null,
+)
 
 /** What a producer gave back (API-004「結果」). Producers return these instead of throwing. */
 sealed interface MaterialResult {
