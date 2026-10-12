@@ -6,13 +6,13 @@
 |---|---|
 | 文書ID | API-002 |
 | ドキュメント種別 | API契約書 |
-| 対象システム/機能 | SanpoGuide 第三者のチャンネルの配信（チャンネル管理システムが公開し、アプリが取得する承認済みチャンネル・リスト） |
+| 対象システム/機能 | 付き添いアプリのエコシステム（[ADR-003](adr/ADR-003-companion-app-platform.md)。最初のアプリは SanpoGuide）の第三者のチャンネルの配信（チャンネル管理システムが公開し、アプリが取得する承認済みチャンネル・リスト） |
 | 関連Skill | 020_api-contract-design |
 | 作成日 | 2026-10-03 |
 | 作成者 | Claude（開発者との検討） |
 | 承認者 | 開発者（1.0・1.1: 2026-10-03、1.2・1.3: 2026-10-11） |
-| ステータス | 承認済 |
-| 版 | 1.3 |
+| ステータス | 承認済（1.3）。1.4 は改訂案（レビュー待ち） |
+| 版 | 1.4（案） |
 
 ## 目的・背景
 
@@ -103,6 +103,16 @@ Claude の提案を開発者が承認した。
 | P-16 | 宣伝の印 | `channels[].promotional`・`collections[].promotional`（真偽値。省略は偽）。素材集は素材提供者の申告を運営が確かめたもの。チャンネルは、チャンネル提供者の申告を運営が確かめたとき、または宣伝の素材集を `collections` で宣言しているときに真 |
 | P-17 | 古いアプリ | `format` は 1 のまま（項目の追加）。`promotional` を知らないアプリが表示なしで出さないよう、宣伝を含むチャンネル・素材集の `minAppVersion` は、表示に対応したアプリの版以上にする（D-36） |
 | P-18 | アプリの扱い | 「宣伝を含む」「宣伝: 素材提供者名」の表示と読み上げる前の一言（D-32）。宣伝の素材集は基準で選ばない（D-33）。散策者の設定で宣伝の素材を飛ばす（D-34） |
+
+### 決定事項（2026-10-12、エコシステム。版 1.4 の案）
+
+[ADR-003](adr/ADR-003-companion-app-platform.md) E-17（リストはエコシステムで 1 本、アプリが端末で絞り込む）と API-003 2.0 による。
+
+| No. | 論点 | 決定（案） |
+|---|---|---|
+| P-19 | 絞り込みの情報 | `channels[]` に `activities`・`genres`・`requires`（`features` の配列）を載せる。管理システムがパッケージの `channel.json` から写す（format 1 のパッケージは `["walk"]`・`[]`・`[]`。API-003 G-6）。アプリはパッケージを取得する前に、リストの値で絞り込める（API-003 G-4）。取得したあと、パッケージの値と一致するかを確かめる |
+| P-20 | アプリごとの必要な版 | アプリごとに versionCode が違うため、`channels[].minAppVersions`・`collections[].minAppVersions`（アプリの ID → versionCode）を足す。アプリの ID は `core-format` の一覧（最初は `sanpoguide`）。`minAppVersions` を知るアプリは自分の ID の値を使い、値がなければ版の条件はない。今の `minAppVersion` は SanpoGuide の値として残す（`minAppVersions` を知らない今の SanpoGuide のため） |
+| P-21 | 古いアプリ | `format` は 1 のまま（項目の追加）。format 2 のパッケージは `package.format` で古いアプリの一覧に出ない（API-003 G-7）。素材集の `grants.apps`（API-004 1.5）が SanpoGuide を含まないとき、管理システムはその素材集の `minAppVersion` を、どのアプリにもない版にする（宣伝の P-17 と同じやり方） |
 
 ### 全体の構成
 
@@ -243,10 +253,14 @@ flowchart LR
       "tags": ["history", "temple"],
       "regions": ["xn7"],
       "icon": { "url": "https://cdn.example.com/icons/kamakura-history-3.png", "sha256": "<hex>" },
-      "package": { "url": "https://cdn.example.com/pkg/kamakura-history-3.zip", "sha256": "<hex>", "size": 18342, "format": 1 },
+      "package": { "url": "https://cdn.example.com/pkg/kamakura-history-3.zip", "sha256": "<hex>", "size": 18342, "format": 2 },
+      "activities": ["walk", "cycle"],
+      "genres": ["history"],
+      "requires": ["slot:guide"],
       "media": ["text", "image", "audio"],
       "resourcesSize": 4820000,
       "minAppVersion": 12,
+      "minAppVersions": { "sanpoguide": 12 },
       "approvedAt": "2026-10-02T09:00:00Z"
     }
   ],
@@ -288,7 +302,11 @@ flowchart LR
 | `channels[].publisherChange` | object? | 運営がチャンネル提供者の鍵を移し替えた（P-9・ADR-001 C-11）ときだけ付ける。`from` は前のアカウントID、`at` は移し替えた日時、`reason` は散策者に見せる理由。移し替え後の最初の版から、少なくとも 90 日は載せ続ける |
 | `channels[].regions` | string[]? | 地域に限ったチャンネルの geohash の接頭辞。省略するとどこでも使える。アプリは一覧の並び順に使うだけで、地域の外でも使える |
 | `channels[].package.format` | int | パッケージの形式の版（API-003）。アプリが知らない版のチャンネルは一覧に出さない |
-| `channels[].minAppVersion` | int | 必要なアプリの versionCode。満たさなければ一覧に「アプリの更新が必要」と出す |
+| `channels[].minAppVersion` | int | 必要なアプリの versionCode。満たさなければ一覧に「アプリの更新が必要」と出す。（1.4）SanpoGuide の値。`minAppVersions` を知るアプリはそちらを使う |
+| `channels[].minAppVersions` | object? | （1.4、P-20）アプリの ID → 必要な versionCode。自分の ID の値がなければ版の条件はない |
+| `channels[].activities` | string[]? | （1.4、P-19）パッケージの `activities`（format 1 は `["walk"]`）。省略は `["walk"]` として読む（1.3 以前のリスト） |
+| `channels[].genres` | string[]? | （1.4、P-19）パッケージの `genres` |
+| `channels[].requires` | string[]? | （1.4、P-19）パッケージの `requires.features` |
 | `revoked[]` | object[] | 問題があって止めたチャンネル。`versions` を省略するとすべての版 |
 | `channels[].media` | string[]? | （1.2）チャンネルが使う素材の種類（`text`・`image`・`audio`・`video`）。同梱の素材と、宣言した素材集の参照する素材を合わせたもの。組み込みの素材提供者の分は含めない |
 | `channels[].resourcesSize` | int? | （1.2）チャンネルを選んだときに前もって取得する大きさの合計（バイト）。パッケージの外の素材のうち、きっかけで使うもの（映像を除く）と、宣言した素材集のパッケージ・素材を含む。リストに載っている素材集の版で計算する。基準で選ぶ素材（`selectors`）は含めない（取得する地域で変わるため。上限は API-004 P-6） |
@@ -304,7 +322,8 @@ flowchart LR
 | `collections[].grants` | object | （P-15）`collection.json` の `grants` の写し。アプリは取得後に一致を確かめ、違えば `collection_rejected` |
 | `collections[].package` | object | 素材集のパッケージ（API-004「素材集の形式」）。`format` は素材集の形式の版 |
 | `collections[].media`・`resourcesSize` | | 素材集の全体での値 |
-| `collections[].minAppVersion` | int | 必要なアプリの versionCode。満たさない素材集は、使うチャンネルの候補として「出せない」になる |
+| `collections[].minAppVersion` | int | 必要なアプリの versionCode。満たさない素材集は、使うチャンネルの候補として「出せない」になる。（1.4）SanpoGuide の値（P-20・P-21） |
+| `collections[].minAppVersions` | object? | （1.4、P-20）`channels[].minAppVersions` と同じ |
 | `collections[].promotional` | bool? | （1.3）宣伝を目的とした素材集（P-16）。基準で選ぶ対象にしない。素材を出すときは「宣伝: 素材提供者名」と示す |
 | `revokedCollections[]` | object[]? | （1.2）問題があって止めた素材集（P-11）。`versions` を省略するとすべての版。取り下げから 7 日載せる（チャンネルと同じ） |
 
@@ -438,6 +457,10 @@ sequenceDiagram
 | V-24 | （1.2）アプリ: `producerChange` の裏付けがある素材提供者の変更は受け入れ、裏付けのない変更は `producer_changed` で拒む |
 | V-25 | （1.2）`collections[].tags`・`regions`・`grants` が、素材集のパッケージから計算した値と一致する |
 | V-26 | （1.2）アプリ: 基準で選ぶ素材集の取得の要求が、今いる地域と隣の地域のものだけで、散歩中・従量制の回線では起きない |
+| V-27 | （1.4）`channels[].activities`・`genres`・`requires` が、パッケージの `channel.json` の値と一致する（format 1 は `["walk"]`・`[]`・`[]`） |
+| V-28 | （1.4）アプリ: リストの `activities`・`requires` で合わないチャンネルのパッケージを取得しない |
+| V-29 | （1.4）アプリ: `minAppVersions` に自分の ID があればその値で、なければ版の条件なしで判断する。`minAppVersions` を知らないアプリ（今の SanpoGuide）は `minAppVersion` で判断する |
+| V-30 | （1.4）`grants.apps` が SanpoGuide を含まない素材集の `minAppVersion` が、どのアプリにもない版になっている |
 
 ## 互換性方針・移行メモ
 
@@ -488,3 +511,4 @@ sequenceDiagram
 | 2026-10-11 | 1.2 | 承認 | Claude（承認: 開発者） |
 | 2026-10-11 | 1.3 | 宣伝（ADR-002 1.2）: P-16〜P-18、`channels[].promotional`・`collections[].promotional`、アプリの振る舞い。`format` は 1 のまま | Claude |
 | 2026-10-11 | 1.3 | 承認（PR #34 のマージによる） | Claude（承認: 開発者） |
+| 2026-10-12 | 1.4（案） | エコシステム（ADR-003）: P-19〜P-21、`channels[].activities`・`genres`・`requires`・`minAppVersions`、`collections[].minAppVersions`、確認観点 V-27〜V-30。`format` は 1 のまま | Claude |
