@@ -2,6 +2,7 @@ package io.github.duwenji.michizure.core.format.material
 
 import io.github.duwenji.michizure.core.format.JcaEd25519
 import io.github.duwenji.michizure.core.format.RejectCode
+import io.github.duwenji.michizure.core.format.Strictness
 import io.github.duwenji.michizure.core.format.TestPublisher
 import io.github.duwenji.michizure.core.format.zip
 import org.json.JSONArray
@@ -91,6 +92,22 @@ class CollectionValidatorTest {
         assertEquals(RejectCode.BAD_VALUE, code(check(signed(files(manifest { put("grants", JSONObject().put("publishers", JSONArray())) })))))
         assertEquals(RejectCode.BAD_VALUE, code(check(signed(files(manifest { put("grants", JSONObject().put("publishers", JSONArray().put("someone"))) })))))
         assertEquals(RejectCode.BAD_MANIFEST, code(check(signed(files(manifest { remove("grants") })))))
+    }
+
+    @Test
+    fun `grants may name the apps that may use the collection (API-004 1_5 I-11, W-20)`() {
+        fun grants(vararg apps: String) = JSONObject().put("publishers", "*").put("apps", JSONArray().apply { apps.forEach { put(it) } })
+        val forSanpo = (check(signed(files(manifest { put("grants", grants("sanpoguide")) }))) as CollectionCheck.Ok).collection.manifest.grants
+        assertEquals(setOf("sanpoguide"), forSanpo.apps)
+        assertTrue(forSanpo.allowsApp("sanpoguide"))
+        assertFalse(forSanpo.allowsApp("cycle"))
+        assertTrue((check(signed(files())) as CollectionCheck.Ok).collection.manifest.grants.allowsApp("cycle"))
+        assertEquals(RejectCode.BAD_VALUE, code(check(signed(files(manifest { put("grants", grants()) })))))
+        // Review knows every app; an app reads ids of apps newer than itself.
+        val newer = signed(files(manifest { put("grants", grants("sanpoguide", "boat")) }))
+        assertEquals(RejectCode.BAD_VALUE, code(check(newer)))
+        val read = CollectionValidator.checkArchive(zip(newer.toList()), listed, JcaEd25519, Strictness.APP)
+        assertEquals(setOf("sanpoguide", "boat"), (read as CollectionCheck.Ok).collection.manifest.grants.apps)
     }
 
     @Test

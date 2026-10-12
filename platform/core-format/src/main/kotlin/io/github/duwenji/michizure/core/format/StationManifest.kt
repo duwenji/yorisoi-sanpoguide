@@ -20,6 +20,17 @@ data class StationManifest(
     val guideLength: GuideLength,
     val moodTone: Boolean,
     val sound: SoundChoice,
+    /** API-003 2.0: what the channel is for. A format 1 channel is a walking one (G-6). */
+    val activities: Set<Activity> = setOf(Activity.WALK),
+    val genres: Set<Genre> = emptySet(),
+    /** API-003 2.0: what an app must implement for this channel to make sense. */
+    val requires: Set<Feature> = emptySet(),
+    /**
+     * Values read with [Strictness.APP] that this core-format doesn't know, where they'd restrict
+     * the channel (API-003 2.0「アプリでの知らない値」). An app doesn't use such a channel
+     * ([Compatibility]); empty with [Strictness.REVIEW], which turns such values away instead.
+     */
+    val unknownRestrictions: List<String> = emptyList(),
 )
 
 /** A value of an enumerated field, with its spelling in `channel.json`. */

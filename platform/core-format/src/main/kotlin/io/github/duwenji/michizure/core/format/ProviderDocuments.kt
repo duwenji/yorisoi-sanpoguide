@@ -91,7 +91,20 @@ class ListedChannel(
     val media: List<String> = emptyList(),
     /** Bytes fetched ahead when the channel is chosen, collections included (P-14); null in older lists. */
     val resourcesSize: Long? = null,
-)
+    /** API-002 1.4 P-19: as the package writes them; `["walk"]` in older lists (API-003 G-6). */
+    val activities: List<String> = listOf(Activity.WALK.json),
+    val genres: List<String> = emptyList(),
+    val requires: List<String> = emptyList(),
+    /** API-002 1.4 P-20: the version each app needs, by app id; null in older lists. */
+    val minAppVersions: Map<String, Int>? = null,
+) {
+    /** The version [appId] needs, or null if none (API-002 P-20). */
+    fun minAppVersionFor(appId: String): Int? = minAppVersionFor(appId, minAppVersions, minAppVersion)
+}
+
+/** API-002 P-20: an app's own entry; without the map (an older list), [legacy] is SanpoGuide's. */
+internal fun minAppVersionFor(appId: String, byApp: Map<String, Int>?, legacy: Int): Int? =
+    if (byApp != null) byApp[appId] else legacy.takeIf { appId == AppIds.SANPOGUIDE }
 
 /** One entry of `collections[]` (API-002 1.2 P-10・P-15). */
 class ListedCollection(
@@ -113,7 +126,11 @@ class ListedCollection(
     val pkg: PackageRef,
     val minAppVersion: Int,
     val approvedAt: Instant,
-)
+    /** API-002 1.4 P-20; null in older lists. */
+    val minAppVersions: Map<String, Int>? = null,
+) {
+    fun minAppVersionFor(appId: String): Int? = minAppVersionFor(appId, minAppVersions, minAppVersion)
+}
 
 class RevokedCollection(val id: String, val versions: List<Int>?, val reason: String, val revokedAt: Instant) {
     fun covers(version: Int): Boolean = versions == null || version in versions
@@ -315,7 +332,14 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
         approvedAt = instant(c.getString("approvedAt")),
         media = c.optJSONArray("media")?.strings().orEmpty(),
         resourcesSize = if (c.has("resourcesSize")) c.getLong("resourcesSize") else null,
+        activities = c.optJSONArray("activities")?.strings() ?: listOf(Activity.WALK.json),
+        genres = c.optJSONArray("genres")?.strings().orEmpty(),
+        requires = c.optJSONArray("requires")?.strings().orEmpty(),
+        minAppVersions = c.optJSONObject("minAppVersions")?.let(::versionsByApp),
     )
+
+    private fun versionsByApp(o: JSONObject): Map<String, Int> =
+        o.keys().asSequence().associateWith { o.getInt(it) } // keys(): Android's org.json has no keySet()
 
     private fun listedCollection(c: JSONObject) = ListedCollection(
         id = c.getString("id"),
@@ -330,15 +354,19 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
         tags = c.getJSONArray("tags").strings(),
         regions = c.optJSONArray("regions")?.strings().orEmpty(),
         grants = c.getJSONObject("grants").let { g ->
-            when (val publishers = g.get("publishers")) {
-                "*" -> Grants.EVERYONE
-                is JSONArray -> Grants(publishers.strings().toSet())
-                else -> fail(ProviderError.BAD_DOCUMENT, "grants.publishers of ${c.getString("id")}")
-            }
+            Grants(
+                publishers = when (val publishers = g.get("publishers")) {
+                    "*" -> null
+                    is JSONArray -> publishers.strings().toSet()
+                    else -> fail(ProviderError.BAD_DOCUMENT, "grants.publishers of ${c.getString("id")}")
+                },
+                apps = g.optJSONArray("apps")?.strings()?.toSet(),
+            )
         },
         pkg = packageRef(c.getJSONObject("package")),
         minAppVersion = c.getInt("minAppVersion"),
         approvedAt = instant(c.getString("approvedAt")),
+        minAppVersions = c.optJSONObject("minAppVersions")?.let(::versionsByApp),
     )
 
     private fun packageRef(p: JSONObject) = PackageRef(p.getString("url"), p.getString("sha256"), p.getInt("size"), p.getInt("format"))

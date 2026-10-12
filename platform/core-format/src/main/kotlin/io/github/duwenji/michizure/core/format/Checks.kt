@@ -11,7 +11,15 @@ import java.nio.charset.CodingErrorAction
 // rule into a rejection, and reading JSON fields strictly.
 
 /** A broken rule, caught at the top of a check and returned as its result. */
-internal class Reject(val code: RejectCode, detail: String) : Exception(detail)
+internal open class Reject(val code: RejectCode, detail: String) : Exception(detail)
+
+/**
+ * A value outside the ecosystem's lists in a cue (API-003 2.0「アプリでの知らない値」): rejected in
+ * review, but an app reading a format 2 package leaves out the cue or presentation that holds it.
+ */
+internal class UnknownValue(code: RejectCode, detail: String) : Reject(code, detail)
+
+internal fun unknownValue(code: RejectCode, detail: String): Nothing = throw UnknownValue(code, detail)
 
 internal fun reject(code: RejectCode, detail: String): Nothing = throw Reject(code, detail)
 
