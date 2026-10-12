@@ -97,6 +97,8 @@ class ListedChannel(
     val requires: List<String> = emptyList(),
     /** API-002 1.4 P-20: the version each app needs, by app id; null in older lists. */
     val minAppVersions: Map<String, Int>? = null,
+    /** API-002 1.3 P-16: the channel carries promotion; false in older lists. */
+    val promotional: Boolean = false,
 ) {
     /** The version [appId] needs, or null if none (API-002 P-20). */
     fun minAppVersionFor(appId: String): Int? = minAppVersionFor(appId, minAppVersions, minAppVersion)
@@ -128,6 +130,8 @@ class ListedCollection(
     val approvedAt: Instant,
     /** API-002 1.4 P-20; null in older lists. */
     val minAppVersions: Map<String, Int>? = null,
+    /** API-002 1.3 P-16: made to promote, so selectors never choose it (API-004); false in older lists. */
+    val promotional: Boolean = false,
 ) {
     fun minAppVersionFor(appId: String): Int? = minAppVersionFor(appId, minAppVersions, minAppVersion)
 }
@@ -336,6 +340,7 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
         genres = c.optJSONArray("genres")?.strings().orEmpty(),
         requires = c.optJSONArray("requires")?.strings().orEmpty(),
         minAppVersions = c.optJSONObject("minAppVersions")?.let(::versionsByApp),
+        promotional = c.optBoolean("promotional", false),
     )
 
     private fun versionsByApp(o: JSONObject): Map<String, Int> =
@@ -367,6 +372,7 @@ class ProviderDocuments(private val ed25519: Ed25519Verifier) {
         minAppVersion = c.getInt("minAppVersion"),
         approvedAt = instant(c.getString("approvedAt")),
         minAppVersions = c.optJSONObject("minAppVersions")?.let(::versionsByApp),
+        promotional = c.optBoolean("promotional", false),
     )
 
     private fun packageRef(p: JSONObject) = PackageRef(p.getString("url"), p.getString("sha256"), p.getInt("size"), p.getInt("format"))
