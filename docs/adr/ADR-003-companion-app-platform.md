@@ -201,9 +201,9 @@ flowchart TB
 | T-1 | [RFC-002](../refactoring/RFC-002-platform-stage1.md)（2026-10-12 承認・実施済）: 段階 1（動きを変えない切り出し）の計画書。依存を調べた結果、`core-material`・`core-trust` は段階 1 では `core-format` の中のパッケージとし、`kit-material`・`kit-channels` は段階 2・3 に回す提案（RFC-002 R-2・R-5）。プラットフォームのパッケージは `io.github.duwenji.michizure`（E-22）。station-format を `core-*` に分け、依存の少ない順（`kit-voice`・`kit-llm`・`kit-geo` → `kit-mood`・`kit-material` → `kit-channels`）にモジュールへ移す。保証は RFC-001 と同じ（プロンプトの組み立て結果が 1 文字も変わらない、既存のテストが通る、エミュレータで散策できる） | Claude | 本書の承認後すぐ |
 | T-2 | 判定順の場面テスト: `maybeTalk()` の判定を、場面ごとに期待する発言を並べた表のテストにする（T-3 の前に作り、置き換え前後で一致させる） | Claude | T-1 と並行 |
 | T-3 | 話す判断のエンジン（`kit-companion`）の設計と実装（[RFC-003](../refactoring/RFC-003-talk-decision.md)、2026-10-12 実施済）。サイクリング（E-23）の判定も表せることを確かめる | 開発者・Claude | T-1・T-2 の後 |
-| T-4 | API-003 2.0: format 2（`activities`（最初は `walk`・`cycle`。E-24）・`genres`・`requires`、エコシステム共通の語彙、知らない値の扱い E-12、format 1 の読み方 E-21） | Claude | T-3 と並行 |
-| T-5 | API-002 の改訂: チャンネルの `activities`・`genres`・`requires` をリストに載せる | Claude | T-4 と同時 |
-| T-6 | API-004 の改訂: タグの一覧のコアへの移動（E-15）、`grants` のアプリ指定（E-14）、題材の「出来事」の扱い（E-16） | Claude | T-4 と同時 |
+| T-4 | API-003 2.0（2026-10-12 承認。`core-format` 1.1.0 で実装）: format 2（`activities`（最初は `walk`・`cycle`。E-24）・`genres`・`requires`、エコシステム共通の語彙、知らない値の扱い E-12、format 1 の読み方 E-21） | Claude | T-3 と並行 |
+| T-5 | API-002 の改訂（1.4、2026-10-12 承認。`core-format` 1.1.0 で読み込みを実装）: チャンネルの `activities`・`genres`・`requires` をリストに載せる。アプリごとの必要な版 `minAppVersions` を足す（実装の検討で分かった。今の `minAppVersion` は SanpoGuide の versionCode を前提にしていた） | Claude | T-4 と同時 |
+| T-6 | API-004 の改訂（1.5、2026-10-12 承認。`core-format` 1.1.0 で実装）: タグの一覧のコアへの移動（E-15）、`grants` のアプリ指定（E-14）、題材の「出来事」の扱い（E-16） | Claude | T-4 と同時 |
 | T-7 | sanpo-channel-console: 新しいコアへの切り替え、互換性の判定と表示、プロンプト・パックでの組み立ての確認と `activities` ごとの見本（E-26）、`grants` のアプリ指定。ADR・DM-001・API-001 の改訂。`michizure-console` への改名（E-22） | Claude | T-4〜T-6 の後 |
 | T-8 | 新しいアプリの雛形（`templates/`）と、要望からプロファイル・ルール・プロンプト・組み込みのチャンネルを生成する Claude Code のスキル | Claude | T-3・T-4 の後 |
 | T-9 | サイクリングのアプリ（E-23）を作り、合わなかった抽象を直す。代表のアプリとして `cycle` の見本に使う | 開発者・Claude | T-8 の後 |

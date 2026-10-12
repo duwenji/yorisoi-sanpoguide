@@ -1,6 +1,7 @@
 package io.github.duwenji.michizure.core.format.material
 
 import io.github.duwenji.michizure.core.format.ACCOUNT_ID_PATTERN
+import io.github.duwenji.michizure.core.format.AppIds
 import io.github.duwenji.michizure.core.format.ArchiveException
 import io.github.duwenji.michizure.core.format.Ed25519Verifier
 import io.github.duwenji.michizure.core.format.ID_PATTERN
@@ -9,19 +10,29 @@ import io.github.duwenji.michizure.core.format.Reject
 import io.github.duwenji.michizure.core.format.RejectCode
 import io.github.duwenji.michizure.core.format.SignedKind
 import io.github.duwenji.michizure.core.format.StationFiles
+import io.github.duwenji.michizure.core.format.Strictness
 import io.github.duwenji.michizure.core.format.checkLength
 import io.github.duwenji.michizure.core.format.int
+import io.github.duwenji.michizure.core.format.list
 import io.github.duwenji.michizure.core.format.obj
+import io.github.duwenji.michizure.core.format.optNullable
 import io.github.duwenji.michizure.core.format.readJson
 import io.github.duwenji.michizure.core.format.reject
 import io.github.duwenji.michizure.core.format.required
 import io.github.duwenji.michizure.core.format.string
+import io.github.duwenji.michizure.core.format.strings
 import io.github.duwenji.michizure.core.format.verifyPackageSignature
 import org.json.JSONArray
 
-/** Which publishers may use a collection (API-004 `grants`, ADR-002 D-9). Null [publishers] means anyone. */
-data class Grants(val publishers: Set<String>?) {
+/**
+ * Which publishers may use a collection (API-004 `grants`, ADR-002 D-9), and in which apps (API-004
+ * 1.5 I-11). Null means any.
+ */
+data class Grants(val publishers: Set<String>?, val apps: Set<String>? = null) {
     fun allows(publisher: String): Boolean = publishers == null || publisher in publishers
+
+    /** Whether the app [appId] may use the collection at all. */
+    fun allowsApp(appId: String): Boolean = apps == null || appId in apps
 
     companion object {
         val EVERYONE = Grants(null)
@@ -66,22 +77,26 @@ object CollectionValidator {
     private const val MANIFEST = "collection.json"
     private const val SIGNATURE = "signature.json"
 
-    fun check(files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionCheck = try {
-        CollectionCheck.Ok(validate(files, listedAs, verifier))
+    fun check(
+        files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier, strictness: Strictness = Strictness.REVIEW,
+    ): CollectionCheck = try {
+        CollectionCheck.Ok(validate(files, listedAs, verifier, strictness))
     } catch (e: Reject) {
         CollectionCheck.Rejected(e.code, e.message.orEmpty())
     }
 
-    fun checkArchive(zip: ByteArray, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionCheck {
+    fun checkArchive(
+        zip: ByteArray, listedAs: CollectionListedAs?, verifier: Ed25519Verifier, strictness: Strictness = Strictness.REVIEW,
+    ): CollectionCheck {
         val files = try {
             PackageArchive.open(zip)
         } catch (e: ArchiveException) {
             return CollectionCheck.Rejected(RejectCode.BAD_ARCHIVE, e.message.orEmpty())
         }
-        return check(files, listedAs, verifier)
+        return check(files, listedAs, verifier, strictness)
     }
 
-    private fun validate(files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier): CollectionPackage {
+    private fun validate(files: StationFiles, listedAs: CollectionListedAs?, verifier: Ed25519Verifier, strictness: Strictness): CollectionPackage {
         val paths = files.list()
         val json = readJson(files, MANIFEST, RejectCode.BAD_MANIFEST)
         paths.firstOrNull { it != MANIFEST && it != SIGNATURE && !it.startsWith(ResourceReader.RESOURCES_DIR) }
@@ -89,7 +104,7 @@ object CollectionValidator {
         if (SIGNATURE !in paths) reject(RejectCode.BAD_SIGNATURE, "no $SIGNATURE")
         val signed = verifyPackageSignature(files, paths, verifier, SignedKind.COLLECTION)
 
-        val manifest = readManifest(json)
+        val manifest = readManifest(json, strictness)
         if (signed.subject != manifest.id || signed.version != manifest.version) {
             reject(RejectCode.BAD_SIGNATURE, "signed for ${signed.subject}@${signed.version}, not ${manifest.id}@${manifest.version}")
         }
@@ -113,7 +128,7 @@ object CollectionValidator {
         return CollectionPackage(manifest, resources)
     }
 
-    private fun readManifest(json: org.json.JSONObject): CollectionManifest {
+    private fun readManifest(json: org.json.JSONObject, strictness: Strictness): CollectionManifest {
         val format = json.int("format")
         if (format != FORMAT) reject(RejectCode.UNSUPPORTED_FORMAT, "format $format")
         val id = json.string("id")
@@ -129,19 +144,29 @@ object CollectionValidator {
             name = json.string("name").also { checkLength("name", it, 1, 20) },
             summary = json.string("summary").also { checkLength("summary", it, 1, 60) },
             lang = lang,
-            grants = readGrants(json.obj("grants")),
+            grants = readGrants(json.obj("grants"), strictness),
         )
     }
 
-    /** `"*"` for anyone, or 1–50 publishers' account ids. */
-    private fun readGrants(g: org.json.JSONObject): Grants = when (val publishers = g.required("publishers")) {
-        "*" -> Grants.EVERYONE
-        is JSONArray -> {
-            val ids = (0 until publishers.length()).map { publishers.opt(it) as? String ?: reject(RejectCode.BAD_MANIFEST, "grants.publishers has a non-string item") }
-            if (ids.size !in 1..50) reject(RejectCode.BAD_VALUE, "grants.publishers has ${ids.size} ids (1..50)")
-            ids.firstOrNull { !ACCOUNT_ID_PATTERN.matches(it) }?.let { reject(RejectCode.BAD_VALUE, "grants.publishers \"$it\"") }
-            Grants(ids.toSet())
+    /** `"*"` for anyone, or 1–50 publishers' account ids; and optionally 1–20 app ids (API-004 1.5 I-11). */
+    private fun readGrants(g: org.json.JSONObject, strictness: Strictness): Grants {
+        val publishers = when (val publishers = g.required("publishers")) {
+            "*" -> null
+            is JSONArray -> {
+                val ids = (0 until publishers.length()).map { publishers.opt(it) as? String ?: reject(RejectCode.BAD_MANIFEST, "grants.publishers has a non-string item") }
+                if (ids.size !in 1..50) reject(RejectCode.BAD_VALUE, "grants.publishers has ${ids.size} ids (1..50)")
+                ids.firstOrNull { !ACCOUNT_ID_PATTERN.matches(it) }?.let { reject(RejectCode.BAD_VALUE, "grants.publishers \"$it\"") }
+                ids.toSet()
+            }
+            else -> reject(RejectCode.BAD_MANIFEST, "grants.publishers is neither \"*\" nor a list")
         }
-        else -> reject(RejectCode.BAD_MANIFEST, "grants.publishers is neither \"*\" nor a list")
+        val apps = g.optNullable("apps")?.let {
+            val ids = g.list("apps").strings("grants.apps", RejectCode.BAD_MANIFEST)
+            if (ids.size !in 1..20) reject(RejectCode.BAD_VALUE, "grants.apps has ${ids.size} ids (1..20)")
+            // Review knows every app; an app needn't know the ones that came after it.
+            if (strictness == Strictness.REVIEW) ids.firstOrNull { it !in AppIds.KNOWN }?.let { reject(RejectCode.BAD_VALUE, "grants.apps \"$it\"") }
+            ids.toSet()
+        }
+        return Grants(publishers, apps)
     }
 }

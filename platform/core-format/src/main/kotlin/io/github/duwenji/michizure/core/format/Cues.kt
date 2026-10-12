@@ -115,7 +115,11 @@ internal object CueReader {
     private val ALIAS = Regex("[a-z0-9-]{1,20}")
     private val OSM = Regex("(node|way|relation)/[1-9][0-9]*")
 
-    fun read(json: JSONObject, resources: Resources): StationMedia {
+    /**
+     * @param lenient an app reading a format 2 package (API-003 G-3): a cue with a trigger it doesn't
+     *   know is left out, and so is a presentation it doesn't know (and the cue, if none is left)
+     */
+    fun read(json: JSONObject, resources: Resources, lenient: Boolean = false): StationMedia {
         val collections = readCollections(json)
         val selectors = readSelectors(json)
         val aliases = collections.map { it.alias } + selectors.map { it.alias }
@@ -123,12 +127,20 @@ internal object CueReader {
 
         val cueItems = json.optList("cues", RejectCode.BAD_CUE).objects("cues", RejectCode.BAD_CUE)
         if (cueItems.size > MAX_CUES) reject(RejectCode.BAD_CUE, "${cueItems.size} cues (max $MAX_CUES)")
-        val cues = cueItems.map { readCue(it, resources, collections, selectors) }
+        val cues = cueItems.mapNotNull { c ->
+            try {
+                readCue(c, resources, collections, selectors, lenient)
+            } catch (e: UnknownValue) {
+                if (lenient) null else throw e
+            }
+        }
         cues.groupBy { it.id }.values.firstOrNull { it.size > 1 }?.let { reject(RejectCode.BAD_CUE, "cue id \"${it[0].id}\" twice") }
         val anySpot = cues.count { it.trigger is Trigger.AnySpot }
         if (anySpot > MAX_ANY_SPOT_CUES) reject(RejectCode.BAD_CUE, "$anySpot cues for any spot (max $MAX_ANY_SPOT_CUES)")
 
-        // Every declared collection and selector must be used by some cue.
+        // Every declared collection and selector must be used by some cue (once the cues an app
+        // left out are gone, that may no longer hold, and needn't).
+        if (lenient) return StationMedia(resources, collections, selectors, cues)
         val used = cues.flatMap { c -> c.present.flatMap { p -> p.items.flatten() } }.filterIsInstance<Reference.Alias>().map { it.alias }.toSet()
         (aliases - used).firstOrNull()?.let { reject(RejectCode.BAD_CUE, "\"$it\" is declared but no cue uses it") }
         return StationMedia(resources, collections, selectors, cues)
@@ -176,7 +188,7 @@ internal object CueReader {
         return alias
     }
 
-    private fun readCue(c: JSONObject, resources: Resources, collections: List<CollectionUse>, selectors: List<Selector>): Cue {
+    private fun readCue(c: JSONObject, resources: Resources, collections: List<CollectionUse>, selectors: List<Selector>, lenient: Boolean): Cue {
         val id = c.string("id", RejectCode.BAD_CUE)
         if (!CUE_ID.matches(id)) reject(RejectCode.BAD_CUE, "cue id \"$id\"")
         val trigger = readTrigger(id, c.obj("trigger", RejectCode.BAD_CUE))
@@ -186,7 +198,14 @@ internal object CueReader {
             ?: Repeat.ONCE_PER_WALK
         val present = c.list("present", RejectCode.BAD_CUE).objects("$id present", RejectCode.BAD_CUE)
         if (present.size !in 1..4) reject(RejectCode.BAD_CUE, "$id: ${present.size} presentations (1..4)")
-        val presentations = present.map { readPresentation(id, it, resources, collections, selectors) }
+        val presentations = present.mapNotNull { p ->
+            try {
+                readPresentation(id, p, resources, collections, selectors)
+            } catch (e: UnknownValue) {
+                if (lenient) null else throw e
+            }
+        }
+        if (presentations.isEmpty()) unknownValue(RejectCode.BAD_CUE, "$id: no presentation this app knows")
         val asksAi = presentations.any { p -> p.items.flatten().contains(Reference.BuiltIn(BuiltInProducers.AI_GUIDE.id)) }
         if (asksAi && narration != null) reject(RejectCode.BAD_CUE, "$id: a cue that asks builtin:ai-guide can't also set narration")
         return Cue(id, trigger, narration, repeat, presentations)
@@ -196,7 +215,7 @@ internal object CueReader {
         "spot" -> if (t.optNullable("any") == true) {
             if (t.has("osm")) reject(RejectCode.BAD_CUE, "$id: osm and any together")
             val kinds = t.list("categories", RejectCode.BAD_CUE).strings("$id categories", RejectCode.BAD_CUE)
-                .map { parseEnum<SpotKind>(it) ?: reject(RejectCode.BAD_CUE, "$id: category \"$it\"") }
+                .map { parseEnum<SpotKind>(it) ?: unknownValue(RejectCode.BAD_CUE, "$id: category \"$it\"") }
             if (kinds.size !in 1..8 || kinds.toSet().size != kinds.size) reject(RejectCode.BAD_CUE, "$id: categories must be 1..8 different kinds")
             Trigger.AnySpot(kinds)
         } else {
@@ -213,14 +232,16 @@ internal object CueReader {
             if (radius !in 20..300) reject(RejectCode.BAD_CUE, "$id: radiusM $radius (20..300)")
             Trigger.Point(lat, lon, radius)
         }
-        "event" -> Trigger.Event(t.enum<CueEvent>("event", RejectCode.BAD_CUE))
-        else -> reject(RejectCode.BAD_CUE, "$id: trigger type \"$type\"")
+        "event" -> t.string("event", RejectCode.BAD_CUE).let { e ->
+            Trigger.Event(parseEnum<CueEvent>(e) ?: unknownValue(RejectCode.BAD_CUE, "event \"$e\""))
+        }
+        else -> unknownValue(RejectCode.BAD_CUE, "$id: trigger type \"$type\"")
     }
 
     private fun readPresentation(
         cue: String, p: JSONObject, resources: Resources, collections: List<CollectionUse>, selectors: List<Selector>,
     ): Presentation {
-        val presentAs = p.enum<PresentAs>("as", RejectCode.BAD_CUE)
+        val presentAs = p.string("as", RejectCode.BAD_CUE).let { parseEnum<PresentAs>(it) ?: unknownValue(RejectCode.BAD_CUE, "as \"$it\"") }
         val written = listOf("resource", "resources", "source", "sources").filter { p.optNullable(it) != null }
         if (written.size != 1) reject(RejectCode.BAD_CUE, "$cue: ${presentAs.json} needs one of resource, resources, source or sources")
         val many = written[0] == "resources" || written[0] == "sources"

@@ -38,8 +38,19 @@ sealed interface StationCheck {
 
 enum class StationOrigin { BUILT_IN, THIRD_PARTY }
 
-/** What the approved channel list says about a package; the package must agree. */
-data class ListedAs(val id: String, val version: Int, val publisher: String)
+/**
+ * What the approved channel list says about a package; the package must agree. [activities],
+ * [genres] and [requires] are the list's values as written (API-002 1.4 P-19); null skips the check
+ * (an older list, or a caller that doesn't have them).
+ */
+data class ListedAs(
+    val id: String,
+    val version: Int,
+    val publisher: String,
+    val activities: List<String>? = null,
+    val genres: List<String>? = null,
+    val requires: List<String>? = null,
+)
 
 /**
  * The checks of API-003 ("確認の手順"), shared by the app and the review tools.
@@ -55,13 +66,16 @@ data class ListedAs(val id: String, val version: Int, val publisher: String)
  * is turned away without reading it. The review tools pass [ALL_STAGES] to check everything.
  */
 object StationValidator {
-    const val FORMAT = 1
+    /** The package formats this core-format reads (API-003 1.x and 2.0). */
+    val FORMATS = 1..2
+    const val LATEST_FORMAT = 2
     const val MAX_FILES = 100
     const val MAX_TOTAL_BYTES = 2 * 1024 * 1024
     /** Every stage of API-003 M-1; what the review tools check with. */
     const val ALL_STAGES = 3
     private const val MANIFEST = "channel.json"
     private const val SIGNATURE = "signature.json"
+    private const val PROMPTS_DIR = "prompts/"
     private val MEDIA_FIELDS = listOf("resources", "collections", "selectors", "cues")
 
     /**
@@ -70,36 +84,46 @@ object StationValidator {
      */
     fun check(
         files: StationFiles, origin: StationOrigin, listedAs: ListedAs? = null, verifier: Ed25519Verifier? = null, mediaStage: Int = 0,
+        strictness: Strictness = Strictness.REVIEW,
     ): StationCheck = try {
-        StationCheck.Ok(validate(files, origin, listedAs, verifier, mediaStage))
+        StationCheck.Ok(validate(files, origin, listedAs, verifier, mediaStage, strictness))
     } catch (e: Reject) {
         StationCheck.Rejected(e.code, e.message.orEmpty())
     }
 
     /** Unpacks a third-party package (API-003 確認の手順 2) and checks it like [check]. */
-    fun checkArchive(zip: ByteArray, listedAs: ListedAs? = null, verifier: Ed25519Verifier, mediaStage: Int = 0): StationCheck {
+    fun checkArchive(
+        zip: ByteArray, listedAs: ListedAs? = null, verifier: Ed25519Verifier, mediaStage: Int = 0, strictness: Strictness = Strictness.REVIEW,
+    ): StationCheck {
         val files = try {
             PackageArchive.open(zip)
         } catch (e: ArchiveException) {
             return StationCheck.Rejected(RejectCode.BAD_ARCHIVE, e.message.orEmpty())
         }
-        return check(files, StationOrigin.THIRD_PARTY, listedAs, verifier, mediaStage)
+        return check(files, StationOrigin.THIRD_PARTY, listedAs, verifier, mediaStage, strictness)
     }
 
-    private fun validate(files: StationFiles, origin: StationOrigin, listedAs: ListedAs?, verifier: Ed25519Verifier?, mediaStage: Int): StationPackage {
+    private fun validate(
+        files: StationFiles, origin: StationOrigin, listedAs: ListedAs?, verifier: Ed25519Verifier?, mediaStage: Int, strictness: Strictness,
+    ): StationPackage {
         val paths = files.list()
         if (paths.size > MAX_FILES) reject(RejectCode.BAD_ARCHIVE, "${paths.size} files (max $MAX_FILES)")
         val totalBytes = paths.sumOf { files.read(it)?.size ?: 0 }
         if (totalBytes > MAX_TOTAL_BYTES) reject(RejectCode.BAD_ARCHIVE, "$totalBytes bytes (max $MAX_TOTAL_BYTES)")
 
         val json = readJson(files, MANIFEST, RejectCode.BAD_MANIFEST)
+        val format = json.int("format")
+        if (format !in FORMATS) reject(RejectCode.UNSUPPORTED_FORMAT, "format $format")
+        // API-003 G-3: an app reads a format 2 package expecting values newer than it knows.
+        val lenient = strictness == Strictness.APP && format >= 2
         val allowed = buildSet {
             add(MANIFEST)
             Slot.entries.forEach { add(it.path) }
             if (origin == StationOrigin.THIRD_PARTY) add(SIGNATURE)
         }
         // Files under resources/ are allowed when a resource points at them; checked with the material below.
-        paths.firstOrNull { it !in allowed && !it.startsWith(ResourceReader.RESOURCES_DIR) }
+        // A slot this app doesn't have is left unused (API-003 2.0); any other unknown file is not allowed.
+        paths.firstOrNull { it !in allowed && !it.startsWith(ResourceReader.RESOURCES_DIR) && !(lenient && it.startsWith(PROMPTS_DIR)) }
             ?.let { reject(RejectCode.UNEXPECTED_FILE, it) }
         if (origin == StationOrigin.THIRD_PARTY && SIGNATURE !in paths) reject(RejectCode.BAD_SIGNATURE, "no $SIGNATURE")
         val signed = if (origin == StationOrigin.THIRD_PARTY) {
@@ -109,7 +133,7 @@ object StationValidator {
             null
         }
 
-        val manifest = readManifest(json, origin)
+        val manifest = readManifest(json, origin, format, lenient)
         if (signed != null) {
             if (signed.subject != manifest.id || signed.version != manifest.version) {
                 reject(RejectCode.BAD_SIGNATURE, "signed for ${signed.subject}@${signed.version}, not ${manifest.id}@${manifest.version}")
@@ -124,13 +148,20 @@ object StationValidator {
                 reject(RejectCode.BAD_MANIFEST, "${manifest.id}@${manifest.version} is listed as ${listedAs.id}@${listedAs.version}")
             }
             if (manifest.publisher != listedAs.publisher) reject(RejectCode.PUBLISHER_MISMATCH, "publisher ${manifest.publisher}")
+            // API-002 P-19: the list's values are copied from the package, as written.
+            val written = writtenEcosystemValues(json, format)
+            listOf("activities" to listedAs.activities, "genres" to listedAs.genres, "requires" to listedAs.requires).forEach { (field, listed) ->
+                if (listed != null && listed.toSet() != written.getValue(field).toSet()) {
+                    reject(RejectCode.BAD_MANIFEST, "$field ${written.getValue(field)} is listed as $listed")
+                }
+            }
         }
-        val media = readMedia(json, files, paths, mediaStage)
+        val media = readMedia(json, files, paths, mediaStage, lenient)
         return StationPackage(manifest, readSlots(files, paths), media)
     }
 
     /** The material (手順 8・9・10). Without any stage, a channel that has some can't be shown and isn't read. */
-    private fun readMedia(json: JSONObject, files: StationFiles, paths: List<String>, mediaStage: Int): StationMedia {
+    private fun readMedia(json: JSONObject, files: StationFiles, paths: List<String>, mediaStage: Int, lenient: Boolean): StationMedia {
         if (mediaStage <= 0) {
             MEDIA_FIELDS.firstOrNull { json.optList(it).isNotEmpty() }?.let { reject(RejectCode.UNSUPPORTED_RESOURCE, "$it are not supported yet") }
             paths.firstOrNull { it.startsWith(ResourceReader.RESOURCES_DIR) }?.let { reject(RejectCode.UNEXPECTED_FILE, it) }
@@ -139,16 +170,22 @@ object StationValidator {
         val resources = ResourceReader.read(json, files, inCollection = false)
         val pointed = ResourceReader.files(resources)
         paths.firstOrNull { it.startsWith(ResourceReader.RESOURCES_DIR) && it !in pointed }?.let { reject(RejectCode.UNEXPECTED_FILE, it) }
-        val media = CueReader.read(json, resources)
+        val media = CueReader.read(json, resources, lenient)
         // Collections are known only from the list, so what they bring is counted when they are (API-004 手順 3・4).
         val needed = MediaStage.required(media)
         if (needed > mediaStage) reject(RejectCode.UNSUPPORTED_RESOURCE, "needs app stage $needed (this one shows up to $mediaStage)")
         return media
     }
 
-    private fun readManifest(json: JSONObject, origin: StationOrigin): StationManifest {
-        val format = json.int("format")
-        if (format != FORMAT) reject(RejectCode.UNSUPPORTED_FORMAT, "format $format")
+    private fun readManifest(json: JSONObject, origin: StationOrigin, format: Int, lenient: Boolean): StationManifest {
+        // API-003 2.0「アプリでの知らない値」: restricting values the app doesn't know are noted, and the
+        // channel isn't used (Compatibility); other unknown values are left out. Without leniency they're rejected.
+        val unknownRestrictions = mutableListOf<String>()
+        fun unknown(field: String, value: String, restricts: Boolean): Nothing? {
+            if (!lenient) reject(RejectCode.BAD_VALUE, "$field \"$value\"")
+            if (restricts) unknownRestrictions += "$field \"$value\""
+            return null
+        }
         val id = json.string("id")
         if (!ID_PATTERN.matches(id)) reject(RejectCode.BAD_VALUE, "id \"$id\"")
         val version = json.int("version")
@@ -166,11 +203,32 @@ object StationValidator {
         val talk = json.obj("talk")
         val events = talk.obj("events")
         val spots = json.obj("spots")
-        val prefer = spots.kinds("prefer")
-        val skip = spots.kinds("skip")
+        val prefer = spots.kinds("prefer") { unknown("spots.prefer", it, restricts = false) }
+        val skip = spots.kinds("skip") { unknown("spots.skip", it, restricts = true) }
         if (prefer.size > 8) reject(RejectCode.BAD_VALUE, "spots.prefer has ${prefer.size} kinds (max 8)")
         (prefer intersect skip.toSet()).firstOrNull()?.let { reject(RejectCode.BAD_VALUE, "${it.json} is both preferred and skipped") }
         val mood = json.obj("mood")
+        val activities: Set<Activity>
+        val genres: Set<Genre>
+        val requires: Set<Feature>
+        if (format >= 2) {
+            val written = json.list("activities").strings("activities", RejectCode.BAD_MANIFEST)
+            if (written.size !in 1..4) reject(RejectCode.BAD_VALUE, "activities has ${written.size} values (1..4)")
+            activities = written.distinctOrReject("activities").mapNotNull { parseEnum<Activity>(it) ?: unknown("activities", it, restricts = false) }.toSet()
+            val g = json.optList("genres").strings("genres", RejectCode.BAD_MANIFEST)
+            if (g.size > 3) reject(RejectCode.BAD_VALUE, "genres has ${g.size} values (max 3)")
+            genres = g.distinctOrReject("genres").mapNotNull { parseEnum<Genre>(it) ?: unknown("genres", it, restricts = false) }.toSet()
+            val f = (json.optNullable("requires")?.let { json.obj("requires").optList("features") } ?: emptyList()).strings("requires.features", RejectCode.BAD_MANIFEST)
+            if (f.size > 20) reject(RejectCode.BAD_VALUE, "requires.features has ${f.size} values (max 20)")
+            requires = f.distinctOrReject("requires.features").mapNotNull { parseEnum<Feature>(it) ?: unknown("requires.features", it, restricts = true) }.toSet()
+        } else {
+            activities = setOf(Activity.WALK)
+            genres = emptySet()
+            requires = emptySet()
+        }
+        val talkLevel = talk.string("level").let { parseEnum<TalkLevel>(it) ?: unknown("talk.level", it, restricts = true) ?: TalkLevel.QUIET }
+        val guideLength = json.obj("guide").string("length").let { parseEnum<GuideLength>(it) ?: unknown("guide.length", it, restricts = true) ?: GuideLength.SHORT }
+        val sound = mood.string("sound").let { parseEnum<SoundChoice>(it) ?: unknown("mood.sound", it, restricts = false) ?: SoundChoice.AUTO }
 
         return StationManifest(
             format = format,
@@ -181,13 +239,17 @@ object StationValidator {
             summary = json.string("summary").also { checkLength("summary", it, 1, 60) },
             lang = lang,
             greeting = json.string("greeting").also { checkLength("greeting", it, 1, 60) },
-            talkLevel = talk.enum<TalkLevel>("level"),
+            talkLevel = talkLevel,
             events = TalkEventKind.entries.filter { events.bool(it.json) }.toSet(),
             prefer = prefer,
             skip = skip,
-            guideLength = json.obj("guide").enum<GuideLength>("length"),
+            guideLength = guideLength,
             moodTone = mood.bool("tone"),
-            sound = mood.enum<SoundChoice>("sound"),
+            sound = sound,
+            activities = activities,
+            genres = genres,
+            requires = requires,
+            unknownRestrictions = unknownRestrictions,
         )
     }
 
@@ -210,12 +272,24 @@ object StationValidator {
         return slots
     }
 
-    private fun JSONObject.kinds(key: String): List<SpotKind> {
-        val kinds = list(key).strings(key, RejectCode.BAD_MANIFEST).map { value ->
-            parseEnum<SpotKind>(value) ?: reject(RejectCode.BAD_VALUE, "$key \"$value\"")
-        }
-        if (kinds.toSet().size != kinds.size) reject(RejectCode.BAD_VALUE, "$key has duplicates")
-        return kinds
+    private fun JSONObject.kinds(key: String, unknown: (String) -> Nothing?): List<SpotKind> {
+        val written = list(key).strings(key, RejectCode.BAD_MANIFEST).distinctOrReject(key)
+        return written.mapNotNull { value -> parseEnum<SpotKind>(value) ?: unknown(value) }
+    }
+
+    private fun List<String>.distinctOrReject(field: String): List<String> =
+        also { if (toSet().size != size) reject(RejectCode.BAD_VALUE, "$field has duplicates") }
+
+    /** `activities`, `genres` and `requires.features` as written; what format 1 means by them (API-003 G-6). */
+    private fun writtenEcosystemValues(json: JSONObject, format: Int): Map<String, List<String>> = if (format >= 2) {
+        mapOf(
+            "activities" to json.list("activities").strings("activities", RejectCode.BAD_MANIFEST),
+            "genres" to json.optList("genres").strings("genres", RejectCode.BAD_MANIFEST),
+            "requires" to (json.optNullable("requires")?.let { json.obj("requires").optList("features") } ?: emptyList())
+                .strings("requires.features", RejectCode.BAD_MANIFEST),
+        )
+    } else {
+        mapOf("activities" to listOf(Activity.WALK.json), "genres" to emptyList(), "requires" to emptyList())
     }
 }
 

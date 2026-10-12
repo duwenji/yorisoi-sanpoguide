@@ -100,7 +100,7 @@ class StationValidatorTest {
 
     @Test
     fun `an unknown format is rejected`() {
-        assertEquals(RejectCode.UNSUPPORTED_FORMAT, rejected(files(manifest { put("format", 2) })))
+        assertEquals(RejectCode.UNSUPPORTED_FORMAT, rejected(files(manifest { put("format", 3) })))
     }
 
     @Test
