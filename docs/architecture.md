@@ -56,14 +56,14 @@ flowchart TB
   subgraph APP["共有部品（SanpoApp.onCreate() で生成）"]
     prompt["プロンプト（:apps:sanpoguide:prompts・:platform:core-prompt）<br/>PromptTemplates・StationPrompts<br/>← sanpoguide/prompts/*.md"]
     history["history<br/>HistoryStore<br/>walk_history.json（端末内）"]
-    settings["settings<br/>SettingsRepository<br/>KeyCipher・Threshold"]
-    mood["mood<br/>MoodSource・Mood・PlaceGuess"]
+    settings["settings<br/>SettingsRepository・Threshold<br/>（API キーの暗号化は kit-llm の KeyCipher）"]
+    mood["kit-mood<br/>MoodSource・Mood・PlaceGuess"]
     station["station<br/>StationRepository・Station<br/>← sanpoguide/channels/（:platform:core-format で確認）<br/>station/remote: ThirdPartyChannels・ChannelSync"]
     material["material<br/>Producers・Narration<br/>CueFinder・CuePresenter・ChannelMaterials"]
-    data["data<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・GoogleMapTiles"]
-    guide["guide<br/>GuideRepository・Speaker<br/>LlmClient・Provider"]
-    companion["companion<br/>WalkCompanion・CompanionFeed<br/>WeatherClient ほか"]
-    sound["sound<br/>AmbientPlayer・Voices<br/>※ WalkService が生成"]
+    data["kit-geo<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・WeatherClient・GoogleMapTiles"]
+    guide["guide・kit-llm・kit-voice<br/>GuideRepository・Speaker<br/>LlmClient・Provider"]
+    companion["companion<br/>WalkCompanion・CompanionFeed<br/>WeatherChange ほか"]
+    sound["kit-voice<br/>AmbientPlayer・Voices<br/>※ WalkService が生成"]
   end
 
   subgraph EXT["外部・端末"]
@@ -80,10 +80,9 @@ flowchart TB
   MainActivity -- "開始・終了" --> WalkService
   MainViewModel & SettingsViewModel & HistoryViewModel & ChannelsViewModel -- "app.◯◯ で参照" --> APP
   WalkService -- "app.◯◯ で参照" --> APP
-  data --> Overpass & Wikimedia & OSRM
+  data --> Overpass & Wikimedia & OSRM & OpenMeteo
   data -. "セッション・出典" .-> GSI
   guide --> AI
-  companion --> OpenMeteo
   station --> Provider
   material --> guide & companion & data
   sound --> Device
@@ -164,9 +163,9 @@ flowchart LR
   Spots["周辺スポット<br/>SpotRepository → 場所の種類"] --> MS
   Weather["天気（散策中のみ）<br/>CompanionFeed → 空模様"] --> MS
   MS["<b>MoodSource</b><br/>場所は 3 分続いたら切り替え"]
-  MS --> Theme["配色・書体<br/>ui/MoodTheme"]
-  MS --> Scene["カード上部の絵<br/>ui/MoodScene"]
-  MS --> Sound["背景音の選択<br/>sound/Soundscape"]
+  MS --> Theme["配色・書体<br/>kit-mood/MoodTheme"]
+  MS --> Scene["カード上部の絵<br/>kit-mood/MoodScene"]
+  MS --> Sound["背景音の選択<br/>kit-mood/SoundscapeChoice"]
   MS --> Tone["話しかけのトーン<br/>WalkCompanion"]
 ```
 
@@ -200,7 +199,7 @@ flowchart LR
 
 設定の「地図」（`GuideSettings.mapStyle`）で、国土地理院の 4 種類（標準・淡色・写真・標高）と Google マップの 2 種類（地図・航空写真）を選ぶ。
 
-- 設定値は `MainViewModel.map` が `MapTiles` に変換し、`SpotMap` が osmdroid の地図画像（`ui/MapTiles.kt`）を差し替える。
+- 設定値は `MainViewModel.map` が `MapTiles` に変換し、`SpotMap` が osmdroid の地図画像（`kit-geo` の `map/MapTiles.kt`）を差し替える。
 - Google は散策者自身の API キーで Map Tiles API のセッションを作り（`GoogleMapTiles.session()`、2 週間有効）、地図画像の URL に付ける。
 - Google の地図を表示している間は、規約に従い左下にロゴ、右下に表示範囲の出典を出す。出典は地図の移動が止まってから viewport API で取得する（`onMapViewport()`）。
 - キーが未設定・無効・接続できないときは地理院の標準地図にし、理由を地図の上に出す。
@@ -271,22 +270,33 @@ flowchart LR
 
 ## パッケージ一覧
 
-パスは `app/src/main/java/io/github/duwenji/sanpoguide/` からの相対。行数は空行・コメントを含む。
+アプリのパスは `apps/sanpoguide/app/src/main/java/io/github/duwenji/sanpoguide/` からの相対。行数は空行・コメントを含む。
+
+アプリ（`:apps:sanpoguide:app`）のパッケージ（2026-10-12、RFC-002 の段階 1 の後）:
 
 | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---:|
-| `ui` | Compose の 4 画面、地図（種類の切り替え・ルート・向きを含む）、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット、きっかけの解説の画面と全画面の画像、雰囲気の配色と絵、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, SpotMap, StationPicker, CueViews, MapTiles, Heading, MoodScene, MainViewModel | 3,332 |
-| `data` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、Google の地図タイルのセッションと出典 | OverpassClient, SpotRepository, SpotPhotos, RouteClient, GoogleMapTiles | 790 |
-| `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の取得と急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherClient | 758 |
-| `sound` | 背景音の選択・その場での合成・再生 | Soundscape, Voices, AmbientPlayer | 448 |
+| `ui` | Compose の 4 画面、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット、きっかけの解説の画面と全画面の画像、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, StationPicker, CueViews, CompanionCard, MainViewModel | 2,500 |
+| `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherChange | 650 |
 | `walk` | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知 | WalkService, CueShow | 624 |
-| `guide` | AI サービスの抽象と実装、スポット解説とキャッシュ、TTS | GuideRepository, ClaudeClient, OpenAiCompatibleClient, Speaker | 354 |
-| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、API キーの暗号化、話しかけの頻度の段階、しきい値、地図の種類 | SettingsRepository, StationMigration, OverrideCodec, KeyCipher, TalkLevel, Threshold, MapStyle | 409 |
-| `mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気 | Mood, PlaceGuess, MoodSource | 186 |
-| `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 193 |
+| `guide` | スポット解説とキャッシュ、AI サービスへの接続の生成 | GuideRepository, GuidePrompt | 96 |
+| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、話しかけの頻度の段階、しきい値 | SettingsRepository, StationMigration, OverrideCodec, TalkLevel, Threshold | 339 |
+| `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 192 |
 | `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
 | `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |
 | (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 204 |
+
+共通の部品（`platform/`。[ADR-003](adr/ADR-003-companion-app-platform.md)・[RFC-002](refactoring/RFC-002-platform-stage1.md)）と SanpoGuide のプロンプト・パック:
+
+| モジュール | パッケージ | 役割 | 主なファイル | 行数 |
+|---|---|---|---|---:|
+| `:platform:core-format`（JVM） | `io.github.duwenji.michizure.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など） | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions | 2,078 |
+| `:platform:core-prompt`（JVM） | `…core.prompt` | プロンプトのテンプレート | PromptTemplates | 90 |
+| `:platform:kit-voice` | `io.github.duwenji.michizure.kit.voice` | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生 | Speaker, AmbientPlayer, Voices, Soundscape | 500 |
+| `:platform:kit-llm` | `…kit.llm` | AI サービスの抽象と実装、API キーの暗号化 | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, KeyCipher | 221 |
+| `:platform:kit-geo` | `…kit.geo`・`.weather`・`.map` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
+| `:platform:kit-mood` | `…kit.mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方 | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice | 622 |
+| `:apps:sanpoguide:prompts`（JVM） | `io.github.duwenji.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
 
 チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `:platform:core-format`、`PromptTemplates` は `:platform:core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:apps:sanpoguide:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.michizure:core-format`・`core-prompt` と `io.github.duwenji.sanpoguide:prompts` として公開する）。ファイルは `apps/sanpoguide/prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
@@ -302,14 +312,14 @@ flowchart LR
 | 距離・時間・気温などの既定値を変える | `settings/Threshold.kt` |
 | 話しかけの頻度の段階を変える | `settings/TalkLevel.kt` |
 | 施設案内の条件を変える | `companion/FacilityAdvisor.kt` |
-| AI サービスを追加する | OpenAI 互換なら `guide/Provider.kt` に 1 行。独自 API なら `LlmClient` を実装して `GuideRepository.createClient` に分岐を足す |
-| 検索するスポットの種類を変える | `data/OverpassClient.kt` |
-| 地図の歩いた道の表示を変える | `companion/CompanionFeed.kt` の `walked`（いつ更新するか）・`ui/SpotMap.kt`（描画） |
-| 地図のルート表示（対象・再検索の条件）を変える | `ui/MainViewModel.kt` の `updateRoute()`。経路サービスは `data/RouteClient.kt` |
-| 地図の種類を追加・変更する | `settings/MapStyle.kt`（設定の選択肢）・`ui/MapTiles.kt`（地図画像の URL と出典）。Google は `data/GoogleMapTiles.kt` |
-| 地図の向きの表示を変える | `ui/Heading.kt`（向きの取得）・`ui/SpotMap.kt`（描画） |
+| AI サービスを追加する | OpenAI 互換なら `platform/kit-llm` の `Provider.kt` に 1 行。独自 API なら `LlmClient` を実装して `GuideRepository.createClient` に分岐を足す |
+| 検索するスポットの種類を変える | `platform/kit-geo` の `OverpassClient.kt`（種類の語彙は `platform/core-format` の `SpotKind`） |
+| 地図の歩いた道の表示を変える | `companion/CompanionFeed.kt` の `walked`（いつ更新するか）・`platform/kit-geo` の `map/SpotMap.kt`（描画） |
+| 地図のルート表示（対象・再検索の条件）を変える | `ui/MainViewModel.kt` の `updateRoute()`。経路サービスは `platform/kit-geo` の `RouteClient.kt` |
+| 地図の種類を追加・変更する | `platform/kit-geo` の `map/MapStyle.kt`（設定の選択肢）・`map/MapTiles.kt`（地図画像の URL と出典）。Google は `map/GoogleMapTiles.kt` |
+| 地図の向きの表示を変える | `platform/kit-geo` の `map/Heading.kt`（向きの取得）・`map/SpotMap.kt`（描画） |
 | AI に送る位置情報を変える | `guide/GuidePrompt.kt`・`companion/WalkCompanion.kt`（設定 `shareLocationWithAi` で切り替え） |
-| 配色・絵・背景音の選び方を変える | `ui/MoodTheme.kt`・`ui/MoodScene.kt`・`sound/Soundscape.kt` |
+| 配色・絵・背景音の選び方を変える | `platform/kit-mood` の `MoodTheme.kt`・`MoodScene.kt`・`SoundscapeChoice.kt`（音の合成は `platform/kit-voice` の `Voices.kt`） |
 | 記録の保存形式や再訪の判定を変える | `history/HistoryStore.kt`（読み書きは `WalkJson`） |
 | リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:platform:core-format` の `ProviderDocuments` |
 | きっかけの判定（いつ出すか）を変える | `material/Cues.kt` の `CueFinder`。散歩の中での順番は `walk/WalkService.kt` の `maybeTalk()` |

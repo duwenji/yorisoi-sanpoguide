@@ -198,7 +198,7 @@ flowchart TB
 
 | ID | 追従タスク | 担当 | 時期 |
 |---|---|---|---|
-| T-1 | [RFC-002](../refactoring/RFC-002-platform-stage1.md)（2026-10-12 承認）: 段階 1（動きを変えない切り出し）の計画書。依存を調べた結果、`core-material`・`core-trust` は段階 1 では `core-format` の中のパッケージとし、`kit-material`・`kit-channels` は段階 2・3 に回す提案（RFC-002 R-2・R-5）。プラットフォームのパッケージは `io.github.duwenji.michizure`（E-22）。station-format を `core-*` に分け、依存の少ない順（`kit-voice`・`kit-llm`・`kit-geo` → `kit-mood`・`kit-material` → `kit-channels`）にモジュールへ移す。保証は RFC-001 と同じ（プロンプトの組み立て結果が 1 文字も変わらない、既存のテストが通る、エミュレータで散策できる） | Claude | 本書の承認後すぐ |
+| T-1 | [RFC-002](../refactoring/RFC-002-platform-stage1.md)（2026-10-12 承認・実施済）: 段階 1（動きを変えない切り出し）の計画書。依存を調べた結果、`core-material`・`core-trust` は段階 1 では `core-format` の中のパッケージとし、`kit-material`・`kit-channels` は段階 2・3 に回す提案（RFC-002 R-2・R-5）。プラットフォームのパッケージは `io.github.duwenji.michizure`（E-22）。station-format を `core-*` に分け、依存の少ない順（`kit-voice`・`kit-llm`・`kit-geo` → `kit-mood`・`kit-material` → `kit-channels`）にモジュールへ移す。保証は RFC-001 と同じ（プロンプトの組み立て結果が 1 文字も変わらない、既存のテストが通る、エミュレータで散策できる） | Claude | 本書の承認後すぐ |
 | T-2 | 判定順の場面テスト: `maybeTalk()` の判定を、場面ごとに期待する発言を並べた表のテストにする（T-3 の前に作り、置き換え前後で一致させる） | Claude | T-1 と並行 |
 | T-3 | 話す判断のエンジン（`kit-companion`）の設計と実装。サイクリング（E-23）の判定も表せることを確かめる | 開発者・Claude | T-1・T-2 の後 |
 | T-4 | API-003 2.0: format 2（`activities`（最初は `walk`・`cycle`。E-24）・`genres`・`requires`、エコシステム共通の語彙、知らない値の扱い E-12、format 1 の読み方 E-21） | Claude | T-3 と並行 |

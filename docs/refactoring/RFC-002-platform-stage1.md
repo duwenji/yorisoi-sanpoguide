@@ -11,8 +11,8 @@
 | 作成日 | 2026-10-12 |
 | 作成者 | Claude（開発者との検討） |
 | 承認者 | 開発者（1.0: 2026-10-12。実施結果は PR でレビュー） |
-| ステータス | 承認済（実施中） |
-| 版 | 1.0 |
+| ステータス | 実施済（2026-10-12） |
+| 版 | 1.1 |
 
 ## 目的・背景
 
@@ -122,6 +122,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 | 2 | 2026-10-12 | `kit-voice`（`Speaker`・`AmbientPlayer`・`Voices`・`Soundscape` の enum）と `kit-llm`（`Provider`・`LlmClient`・`GuideException`・`ClaudeClient`・`OpenAiCompatibleClient`・`KeyCipher`）を作った。`Soundscape` を enum と `SoundscapeChoice` に分けた（上の注記）。`KeyCipher` はアプリから使うため `internal` から公開にし、Keystore の別名のテストを `kit-llm` の `KeyCipherTest` に、音の合成のテスト `VoicesTest` を `kit-voice` に移した。結果: テストは app 129・kit-llm 1・kit-voice 2（計 132 で手順 0 と同じ）、形式とプロンプトは変更なし。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身が手順 0 の基準と同じ。エミュレータでの確認は未実施（AVD がない） |
 | 3 | 2026-10-12 | `kit-geo` を作った。パッケージは `…kit.geo`（場所・ルート・写真・`LatLon`）・`…kit.geo.weather`（`WeatherClient`）・`…kit.geo.map`（`GoogleMapTiles`・`MapStyle`・`SpotMap`・`MapTiles`・`Heading`・`MapItems`）。`SpotMap` が描く `SpotItem`・`FacilityItem`・`RouteToSpot` を `MainViewModel.kt` から `MapItems.kt` に移した。ライブラリ単体の lint が `SpotPhotos` の回線の判定に `ACCESS_NETWORK_STATE` を求めたので、`kit-geo` のマニフェストに `INTERNET`・`ACCESS_NETWORK_STATE` を宣言した（アプリにもともとあり、APK の権限は変わらない）。結果: テストは app 108・kit-geo 21（計 129。kit-llm・kit-voice と合わせ 132 で手順 0 と同じ）。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身と権限が手順 0 と同じ。エミュレータ（Android 11、AVD `sanpo30`、手順 2 のデータを残した上書きインストール）: 地図・スポットと施設のマーカー・現在地・施設のチップ（押すと地図が動く）、前回の散歩の訪問回数と記録の画面、地図の種類の切り替え（地理院 写真。保存した値がアプリを開き直しても残る）、散策の開始（天気を取得して雰囲気が「晴れ」）。落ちない。気づいたこと: Overpass の予備のサーバー（`overpass.private.coffee`・`maps.mail.ru`）の証明書は、Android 11 にないルート（Let's Encrypt の新しい階層・HARICA）につながっていて、主のサーバーが失敗したときの検索が証明書のエラーになる。移動とは関係しない（別に調べる） |
 | 4 | 2026-10-12 | `kit-mood`（`io.github.duwenji.michizure.kit.mood`）を作り、`Mood`・`MoodSource`・`PlaceGuess`・`SoundscapeChoice`・`MoodTheme`・`MoodScene` とテスト（`MoodTest`・`SoundscapeTest`）を移した。アプリの `mood`・`sound` パッケージはなくなった。`kit-mood` は `kit-geo`（天気・周辺のスポット）・`kit-voice`（`Soundscape`）・`core-format`（`SoundChoice`）を使う。結果: テストは app 93・kit-mood 15（計 108 で手順 3 の app と同じ。全体で 132）。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身が手順 0 と同じ。エミュレータ（上書きインストール）: 散策中の絵（秋の朝・晴れ・寺社の近く: 鳥居・朝日・紅葉）と明朝体、端末の時刻を 19:30 に進めると 1 分ほどで夜の配色と夜空の絵（星・月）に変わる。前回までの散歩の訪問回数が読める。落ちない |
+| 5 | 2026-10-12 | `app` を `apps/sanpoguide/app`（`:apps:sanpoguide:app`）に `git mv` で移した。テストが読むプロンプト・パックの相対パス、`.gitattributes`、`settings.gradle.kts`（コアとキット、SanpoGuide の順に並べた）、README のビルドの手順、architecture.md（図 1・パッケージ一覧・変更の入口。手順 2〜4 で移した部品の置き場所もここでまとめて直した）、prompts.md・channels.md の出力先を直した。結果: テストは app 93（ほかは変更なし。全体で 132）。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身が手順 0 と同じ。エミュレータ: `:apps:sanpoguide:app:installDebug` で入れて起動し、保存した地図の種類が残っている。スポットの検索は Overpass の 3 つのサーバーがすべて失敗（504・500・証明書）していて確かめられなかった（コードは変えていない）。**段階 1 はこれで終わり** |
 
 ### 戻し方
 
@@ -165,3 +166,4 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 |---|---|---|---|
 | 2026-10-12 | 0.1 | 草案 | Claude |
 | 2026-10-12 | 1.0 | 承認（R-2・R-5・R-12 を含む） | Claude（承認: 開発者） |
+| 2026-10-12 | 1.1 | 手順 0〜5 を実施（#37〜#39・#41〜#43）。実施の記録と、実施で変えたこと（R-2 のパッケージ、`Soundscape` の分け方、地図用のデータクラス）を記録 | Claude |

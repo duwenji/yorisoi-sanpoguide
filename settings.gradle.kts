@@ -13,11 +13,13 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "SanpoGuide"
-include(":app")
+// The platform (ADR-003): core libraries (plain JVM) and Android kits.
 include(":platform:core-format")
 include(":platform:core-prompt")
-include(":apps:sanpoguide:prompts")
 include(":platform:kit-voice")
 include(":platform:kit-llm")
 include(":platform:kit-geo")
 include(":platform:kit-mood")
+// SanpoGuide: the app and its prompt pack.
+include(":apps:sanpoguide:app")
+include(":apps:sanpoguide:prompts")

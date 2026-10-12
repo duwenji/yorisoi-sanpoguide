@@ -160,8 +160,10 @@ API キーが未設定の場合は、地図データのタグから作る簡易�
 必要な環境: JDK 17、Android SDK（compileSdk 35）。対応端末は Android 8.0（API 26）以上。
 
 ```sh
-./gradlew installDebug
+./gradlew :apps:sanpoguide:app:installDebug
 ```
+
+アプリは `apps/sanpoguide/app/`（Gradle では `:apps:sanpoguide:app`）、共通の部品は `platform/` にある（[RFC-002](docs/refactoring/RFC-002-platform-stage1.md)）。
 
 アプリの設定画面で API キーを入力し、「接続テスト」で確認してから保存する。
 
@@ -176,7 +178,7 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 ./gradlew assembleRelease
 ```
 
-出力: `app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
+出力: `apps/sanpoguide/app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
 
 ### アプリが求める権限
 
