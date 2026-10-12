@@ -1,6 +1,9 @@
 package io.github.duwenji.sanpoguide.companion
 
 import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.michizure.kit.companion.TalkEngine
+import io.github.duwenji.michizure.kit.companion.TalkGates
+import io.github.duwenji.michizure.kit.companion.TalkRule
 import io.github.duwenji.michizure.kit.geo.Facility
 import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.michizure.kit.geo.weather.Weather
@@ -59,7 +62,29 @@ data class TalkSituation(
     val pendingGreeting: String?,
     val pendingSelect: Boolean,
     val justSwitched: Boolean,
-)
+) : TalkGates<WalkGate> {
+    override fun isOpen(gate: WalkGate): Boolean = when (gate) {
+        WalkGate.SPOT_GAP -> now - lastSpotTalkAt >= level.spotGapMs
+        WalkGate.CHAT_GAP -> now - lastSpokeAt >= level.minGapMs
+        // While the user stands still, don't run through every spot within reach one by one;
+        // the spot they arrived at has been introduced, and a rest remark may be due instead.
+        WalkGate.MOVING -> restMinutes < TalkDecider.STATIONARY_MINUTES
+        // Right after a switch the new channel's greeting has the floor.
+        WalkGate.SETTLED -> !justSwitched
+    }
+}
+
+/** When a kind of talk may come up on a walk (RFC-003 D-10). The situation says which are open. */
+enum class WalkGate {
+    /** The talk level's gap since the last spot talk has passed. */
+    SPOT_GAP,
+    /** The talk level's gap since the companion last said anything has passed. */
+    CHAT_GAP,
+    /** The user isn't standing still. */
+    MOVING,
+    /** Not right after a channel switch. */
+    SETTLED,
+}
 
 /** What to say now, one per tick (RFC-003 D-3). The walk service carries it out. */
 sealed interface TalkDecision {
@@ -81,9 +106,12 @@ sealed interface TalkDecision {
     data object Nothing : TalkDecision
 }
 
+private typealias Rule = TalkRule<TalkSituation, TalkDecision, WalkGate>
+
 /**
- * Decides whether anything is worth saying right now, most important first (architecture.md 図 2).
- * Pure: the walk service gathers a [TalkSituation] and carries out the [TalkDecision].
+ * Decides whether anything is worth saying right now, most important first (architecture.md 図 2):
+ * the walk's rules in order, each behind its gates (RFC-003 D-10〜D-12). Pure: the walk service
+ * gathers a [TalkSituation] and carries out the [TalkDecision].
  */
 object TalkDecider {
     /** Spot talks cover this far from the user (measured from the user, not around each spot). */
@@ -93,73 +121,62 @@ object TalkDecider {
     /** A rest remark comes after standing this long. */
     const val REST_MINUTES = 4
 
-    fun decide(s: TalkSituation): TalkDecision {
-        val now = s.now
-        val level = s.level
-        val limits = s.limits
-
+    /** The walk's rules, in the order they are asked. [TalkRule.safety]: a channel can't switch it off. */
+    val rules: List<Rule> = listOf(
         // A turn in the weather comes first, regardless of the talk level: it's about safety.
-        val change = s.weather?.let { WeatherChangeDetector.detect(it, now, limits) }
-        val warnedAt = change?.let { s.weatherWarnedAt[it.kind] }
-        if (change != null && (warnedAt == null || now - warnedAt >= limits.ms(Threshold.WEATHER_REPEAT_MIN))) {
-            return TalkDecision.WeatherTurn(change)
-        }
-
+        Rule("weather", safety = true) { s ->
+            val change = s.weather?.let { WeatherChangeDetector.detect(it, s.now, s.limits) }
+            val warnedAt = change?.let { s.weatherWarnedAt[it.kind] }
+            change?.takeIf { warnedAt == null || s.now - warnedAt >= s.limits.ms(Threshold.WEATHER_REPEAT_MIN) }
+                ?.let(TalkDecision::WeatherTurn)
+        },
         // The user just switched channels: the new one says hello before anything else. No AI, so it's instant.
-        s.pendingGreeting?.let { return TalkDecision.Greeting(it, s.pendingSelect) }
-
-        // While the user stands still, don't run through every spot within reach one by one;
-        // the spot they arrived at has been introduced, and a rest remark may be due instead.
-        val stationary = s.restMinutes >= STATIONARY_MINUTES
-        if (!stationary && !s.justSwitched && now - s.lastSpotTalkAt >= level.spotGapMs) {
+        Rule("greeting") { s -> s.pendingGreeting?.let { TalkDecision.Greeting(it, s.pendingSelect) } },
+        Rule("spot", setOf(WalkGate.SPOT_GAP, WalkGate.MOVING, WalkGate.SETTLED)) { s ->
             val nearby = s.spots
                 .filter { !it.alreadyThisWalk && it.distanceM <= ANNOUNCE_RADIUS_M }
                 .sortedBy { it.distanceM }
             // A spot the channel put a cue on comes first, even of a kind it skips or with spot talk
             // off: the channel placed it on purpose (API-003「きっかけ」). The spacing still holds.
-            nearby.firstOrNull { it.cue != null }?.let { return TalkDecision.SpotCue(it.poi, it.distanceM.toInt(), it.cue!!) }
-            // One spot per tick, by distance from the user (spots' distances to each other don't matter).
-            val spot = SpotChooser.pick(
-                nearby.map { SpotCandidate(it.poi, it.distanceM, it.visitedBefore) },
-                s.preferredCategories, s.skippedCategories,
-                newSpots = TalkEventKind.SPOT in s.events, revisits = TalkEventKind.REVISIT in s.events,
-            )
-            if (spot != null) return TalkDecision.Spot(spot.poi, spot.distanceM.toInt())
-        }
-
+            nearby.firstOrNull { it.cue != null }?.let { TalkDecision.SpotCue(it.poi, it.distanceM.toInt(), it.cue!!) }
+                // One spot per tick, by distance from the user (spots' distances to each other don't matter).
+                ?: SpotChooser.pick(
+                    nearby.map { SpotCandidate(it.poi, it.distanceM, it.visitedBefore) },
+                    s.preferredCategories, s.skippedCategories,
+                    newSpots = TalkEventKind.SPOT in s.events, revisits = TalkEventKind.REVISIT in s.events,
+                )?.let { TalkDecision.Spot(it.poi, it.distanceM.toInt()) }
+        },
         // A point the channel put a cue on, as for spots: not while standing still (API-003「きっかけ」).
-        if (!stationary && !s.justSwitched && s.pointCue != null) return TalkDecision.PointCue(s.pointCue)
-
+        Rule("point", setOf(WalkGate.MOVING, WalkGate.SETTLED)) { s -> s.pointCue?.let(TalkDecision::PointCue) },
         // Heads-up before dark, regardless of the talk level: it's about getting home, not chat.
-        val sunsetAt = s.weather?.sunsetAt
-        if (sunsetAt != null && !s.sunsetWarned) {
-            val minutesLeft = ((sunsetAt - now) / 60_000).toInt()
+        Rule("sunset", safety = true) { s ->
+            val sunsetAt = s.weather?.sunsetAt
+            val minutesLeft = sunsetAt?.let { ((it - s.now) / 60_000).toInt() }
             // Too close to be useful below the latest minute; an empty range if the settings cross.
-            if (minutesLeft in limits[Threshold.SUNSET_LATEST_MIN]..limits[Threshold.SUNSET_NOTICE_MIN]) {
-                return TalkDecision.Sunset(minutesLeft)
-            }
-        }
-
-        if (now - s.lastSpokeAt < level.minGapMs) return TalkDecision.Nothing
-
-        val facility = FacilityAdvisor.pick(
-            s.facilities, s.elapsedMs, s.weather, s.mentionedFacilities, s.facilityMentionAt, now, limits,
-        )
-        if (facility != null) return TalkDecision.NearFacility(facility)
-
+            minutesLeft?.takeIf { !s.sunsetWarned && it in s.limits[Threshold.SUNSET_LATEST_MIN]..s.limits[Threshold.SUNSET_NOTICE_MIN] }
+                ?.let(TalkDecision::Sunset)
+        },
+        // From here on the small-talk gap holds. Facilities still come up right after a switch.
+        Rule("facility", setOf(WalkGate.CHAT_GAP), safety = true) { s ->
+            FacilityAdvisor.pick(s.facilities, s.elapsedMs, s.weather, s.mentionedFacilities, s.facilityMentionAt, s.now, s.limits)
+                ?.let(TalkDecision::NearFacility)
+        },
         // Small talk right after the greeting would crowd it.
-        if (s.justSwitched) return TalkDecision.Nothing
-
-        if (level.remarkOnRest && TalkEventKind.REST in s.events && s.restMinutes >= REST_MINUTES && !s.restRemarked) {
-            return TalkDecision.Rest(s.restMinutes)
-        }
-        val walkedSinceMilestone = s.distanceM - s.lastMilestoneDistanceM
-        if (walkedSinceMilestone >= level.milestoneDistanceM ||
-            (now - s.lastMilestoneAt >= level.milestoneIntervalMs && walkedSinceMilestone > 100)
-        ) {
+        Rule("rest", setOf(WalkGate.CHAT_GAP, WalkGate.SETTLED)) { s ->
+            TalkDecision.Rest(s.restMinutes).takeIf {
+                s.level.remarkOnRest && TalkEventKind.REST in s.events && s.restMinutes >= REST_MINUTES && !s.restRemarked
+            }
+        },
+        Rule("milestone", setOf(WalkGate.CHAT_GAP, WalkGate.SETTLED)) { s ->
+            val walkedSinceMilestone = s.distanceM - s.lastMilestoneDistanceM
+            val due = walkedSinceMilestone >= s.level.milestoneDistanceM ||
+                (s.now - s.lastMilestoneAt >= s.level.milestoneIntervalMs && walkedSinceMilestone > 100)
             // Still a checkpoint for the history on a quiet channel, so the walk isn't lost if the service dies.
-            return if (TalkEventKind.MILESTONE in s.events) TalkDecision.Milestone else TalkDecision.Checkpoint
-        }
-        return TalkDecision.Nothing
-    }
+            if (!due) null else if (TalkEventKind.MILESTONE in s.events) TalkDecision.Milestone else TalkDecision.Checkpoint
+        },
+    )
+
+    private val engine = TalkEngine(rules, TalkDecision.Nothing)
+
+    fun decide(s: TalkSituation): TalkDecision = engine.decide(s)
 }

@@ -220,6 +220,16 @@ class TalkDeciderTest {
     }
 
     @Test
+    fun `the walk's rules, in order, and those a channel can't switch off`() {
+        assertEquals(
+            listOf("weather", "greeting", "spot", "point", "sunset", "facility", "rest", "milestone"),
+            TalkDecider.rules.map { it.name },
+        )
+        // ADR-003 E-6: what the profile lists as events a channel can't stop (channel-package-format.md F-4).
+        assertEquals(setOf("weather", "sunset", "facility"), TalkDecider.rules.filter { it.safety }.map { it.name }.toSet())
+    }
+
+    @Test
     fun `the talk level sets the spacing`() {
         // QUIET: two kilometres between milestones, five minutes between spot talks.
         assertEquals(TalkDecision.Nothing, decide(calm.copy(level = TalkLevel.QUIET, distanceM = 1000.0)))
