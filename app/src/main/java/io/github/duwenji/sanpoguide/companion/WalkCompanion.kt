@@ -7,9 +7,9 @@ import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.history.HistoryStore
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.history.WalkRecord
-import io.github.duwenji.sanpoguide.mood.Mood
-import io.github.duwenji.sanpoguide.mood.Season
-import io.github.duwenji.sanpoguide.mood.TimeOfDay
+import io.github.duwenji.michizure.kit.mood.Mood
+import io.github.duwenji.michizure.kit.mood.Season
+import io.github.duwenji.michizure.kit.mood.TimeOfDay
 import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.prompt.StationPrompts

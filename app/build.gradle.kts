@@ -89,6 +89,7 @@ dependencies {
     implementation(project(":platform:kit-voice"))
     implementation(project(":platform:kit-llm"))
     implementation(project(":platform:kit-geo"))
+    implementation(project(":platform:kit-mood"))
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // (ADR-001 T-5), and later API-001.
     implementation(libs.tink.android)

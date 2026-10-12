@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.mood
+package io.github.duwenji.michizure.kit.mood
 
 /** Guesses the kind of place from the spots around the user. Pure logic, no Android calls. */
 object PlaceGuess {

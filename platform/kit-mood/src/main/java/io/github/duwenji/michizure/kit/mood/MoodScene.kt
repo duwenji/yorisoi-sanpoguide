@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.ui
+package io.github.duwenji.michizure.kit.mood
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
@@ -11,11 +11,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import io.github.duwenji.sanpoguide.mood.Mood
-import io.github.duwenji.sanpoguide.mood.Place
-import io.github.duwenji.sanpoguide.mood.Season
-import io.github.duwenji.sanpoguide.mood.Sky
-import io.github.duwenji.sanpoguide.mood.TimeOfDay
 import kotlin.random.Random
 
 /**
