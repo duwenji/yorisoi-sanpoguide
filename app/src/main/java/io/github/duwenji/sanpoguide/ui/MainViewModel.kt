@@ -1,5 +1,9 @@
 package io.github.duwenji.sanpoguide.ui
 
+import io.github.duwenji.michizure.kit.geo.map.FacilityItem
+import io.github.duwenji.michizure.kit.geo.map.MapTiles
+import io.github.duwenji.michizure.kit.geo.map.RouteToSpot
+import io.github.duwenji.michizure.kit.geo.map.SpotItem
 import android.annotation.SuppressLint
 import android.app.Application
 import android.graphics.Bitmap
@@ -12,13 +16,13 @@ import androidx.lifecycle.viewModelScope
 import io.github.duwenji.sanpoguide.SanpoApp
 import io.github.duwenji.sanpoguide.companion.LiveWalk
 import io.github.duwenji.sanpoguide.companion.Utterance
-import io.github.duwenji.sanpoguide.data.Facility
-import io.github.duwenji.sanpoguide.data.GoogleMapsException
-import io.github.duwenji.sanpoguide.data.FacilityKind
-import io.github.duwenji.sanpoguide.data.Poi
-import io.github.duwenji.sanpoguide.data.RouteGeometry
-import io.github.duwenji.sanpoguide.data.WalkRoute
-import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.michizure.kit.geo.Facility
+import io.github.duwenji.michizure.kit.geo.map.GoogleMapsException
+import io.github.duwenji.michizure.kit.geo.FacilityKind
+import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.michizure.kit.geo.RouteGeometry
+import io.github.duwenji.michizure.kit.geo.WalkRoute
+import io.github.duwenji.michizure.kit.geo.LatLon
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.Credit
 import io.github.duwenji.sanpoguide.material.CueDetail
@@ -26,7 +30,7 @@ import io.github.duwenji.sanpoguide.material.Pace
 import io.github.duwenji.sanpoguide.material.MaterialResult
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.settings.GuideSettings
-import io.github.duwenji.sanpoguide.settings.MapStyle
+import io.github.duwenji.michizure.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.remote.ChannelNotice
 import io.github.duwenji.sanpoguide.walk.WalkService
@@ -57,12 +61,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/** A nearby spot; [visitCount] is how many walks have stopped there. */
-data class SpotItem(val poi: Poi, val distanceM: Int?, val visitCount: Int)
-
-/** A nearby toilet, drinking fountain or bench. */
-data class FacilityItem(val facility: Facility, val distanceM: Int?)
-
 sealed interface GuideState {
     data object Loading : GuideState
     data class Ready(val text: String) : GuideState
@@ -78,12 +76,6 @@ sealed interface PhotoState {
     /** [image] with the credit its license asks to be shown next to it. */
     data class Ready(val image: Bitmap, val credit: Credit?) : PhotoState
 }
-
-/**
- * The way to [spot] drawn on the map; [askedFrom] is where the route was last looked up.
- * While [loading], [route] is a straight placeholder.
- */
-data class RouteToSpot(val spot: Poi, val route: WalkRoute, val askedFrom: LatLon, val loading: Boolean = false)
 
 /** What the map shows; [notice] says why it fell back to the GSI map, if it did. */
 data class MapState(val tiles: MapTiles, val notice: String? = null)

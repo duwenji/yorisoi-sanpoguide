@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.station.remote
 
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.CueFinder
 import io.github.duwenji.sanpoguide.material.CueMemory

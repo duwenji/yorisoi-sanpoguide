@@ -1,9 +1,16 @@
 package io.github.duwenji.sanpoguide.ui
 
+import io.github.duwenji.michizure.kit.geo.map.FacilityItem
+import io.github.duwenji.michizure.kit.geo.map.MapTiles
+import io.github.duwenji.michizure.kit.geo.map.RouteToSpot
+import io.github.duwenji.michizure.kit.geo.map.SpotItem
+import io.github.duwenji.michizure.kit.geo.map.SpotMap
+import io.github.duwenji.michizure.kit.geo.map.facilityColor
+import io.github.duwenji.michizure.kit.geo.map.rememberHeading
 import io.github.duwenji.sanpoguide.R
-import io.github.duwenji.sanpoguide.data.FacilityKind
-import io.github.duwenji.sanpoguide.data.Poi
-import io.github.duwenji.sanpoguide.settings.GoogleMapType
+import io.github.duwenji.michizure.kit.geo.FacilityKind
+import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.michizure.kit.geo.map.GoogleMapType
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

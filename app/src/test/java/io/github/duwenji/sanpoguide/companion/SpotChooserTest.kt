@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.Poi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

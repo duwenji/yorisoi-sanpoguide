@@ -2,7 +2,7 @@ package io.github.duwenji.sanpoguide.material
 
 import android.util.Log
 import io.github.duwenji.sanpoguide.companion.WalkCompanion
-import io.github.duwenji.sanpoguide.data.SpotPhotos
+import io.github.duwenji.michizure.kit.geo.SpotPhotos
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.material.MaterialResult.Reason

@@ -1,5 +1,7 @@
 package io.github.duwenji.sanpoguide.companion
 
+import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.michizure.kit.geo.weather.WeatherCodes
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.settings.Thresholds
 

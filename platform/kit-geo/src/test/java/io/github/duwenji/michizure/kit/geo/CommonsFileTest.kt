@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

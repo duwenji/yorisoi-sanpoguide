@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.material
 
 import android.util.Log
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.michizure.core.format.material.BuiltInProducers
 import io.github.duwenji.michizure.core.format.material.MaterialType
 import io.github.duwenji.sanpoguide.station.Station

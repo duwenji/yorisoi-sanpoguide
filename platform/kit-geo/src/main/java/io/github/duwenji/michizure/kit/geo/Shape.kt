@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
 import kotlin.math.PI
 import kotlin.math.cos

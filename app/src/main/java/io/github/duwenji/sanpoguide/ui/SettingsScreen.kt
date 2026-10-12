@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.sanpoguide.BuildConfig
 import io.github.duwenji.michizure.kit.llm.Provider
-import io.github.duwenji.sanpoguide.settings.MapStyle
+import io.github.duwenji.michizure.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.settings.TalkLevel
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.settings.Thresholds

@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.guide
 
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.Poi
 import java.util.Locale
 
 /** Values for the spot-guide prompt files (`guide/user`, `fallback/guide`). The wording lives in the files. */

@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.settings
 
+import io.github.duwenji.michizure.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.SanpoApp
 import io.github.duwenji.michizure.kit.llm.Provider
 import io.github.duwenji.michizure.core.format.GuideLength
