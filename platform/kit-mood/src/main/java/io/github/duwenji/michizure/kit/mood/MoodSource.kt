@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.mood
+package io.github.duwenji.michizure.kit.mood
 
 import io.github.duwenji.michizure.kit.geo.weather.Weather
 import io.github.duwenji.michizure.kit.geo.SpotRepository

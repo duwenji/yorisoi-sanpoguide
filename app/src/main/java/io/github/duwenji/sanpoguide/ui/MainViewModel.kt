@@ -28,7 +28,7 @@ import io.github.duwenji.sanpoguide.material.Credit
 import io.github.duwenji.sanpoguide.material.CueDetail
 import io.github.duwenji.sanpoguide.material.Pace
 import io.github.duwenji.sanpoguide.material.MaterialResult
-import io.github.duwenji.sanpoguide.mood.Mood
+import io.github.duwenji.michizure.kit.mood.Mood
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.michizure.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.station.Station

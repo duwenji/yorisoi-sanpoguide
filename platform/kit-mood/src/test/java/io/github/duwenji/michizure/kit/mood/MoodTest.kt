@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.mood
+package io.github.duwenji.michizure.kit.mood
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

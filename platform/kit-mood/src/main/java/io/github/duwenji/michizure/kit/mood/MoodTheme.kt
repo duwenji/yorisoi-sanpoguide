@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.ui
+package io.github.duwenji.michizure.kit.mood
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -10,11 +10,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import io.github.duwenji.sanpoguide.mood.Mood
-import io.github.duwenji.sanpoguide.mood.Place
-import io.github.duwenji.sanpoguide.mood.Season
-import io.github.duwenji.sanpoguide.mood.Sky
-import io.github.duwenji.sanpoguide.mood.TimeOfDay
 
 /** One look: the main color, a soft container for cards and banners, and the page background. */
 private class Palette(

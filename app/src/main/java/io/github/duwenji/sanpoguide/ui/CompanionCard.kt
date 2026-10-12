@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.ui
 
+import io.github.duwenji.michizure.kit.mood.MoodScene
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -32,7 +33,7 @@ import io.github.duwenji.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.sanpoguide.companion.LiveWalk
 import io.github.duwenji.sanpoguide.companion.Utterance
 import io.github.duwenji.sanpoguide.material.CueDetail
-import io.github.duwenji.sanpoguide.mood.Mood
+import io.github.duwenji.michizure.kit.mood.Mood
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date

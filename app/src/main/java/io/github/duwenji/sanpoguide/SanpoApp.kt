@@ -30,7 +30,7 @@ import io.github.duwenji.sanpoguide.material.Narration
 import io.github.duwenji.sanpoguide.material.Producers
 import io.github.duwenji.michizure.core.format.material.Regions
 import io.github.duwenji.sanpoguide.material.Subject
-import io.github.duwenji.sanpoguide.mood.MoodSource
+import io.github.duwenji.michizure.kit.mood.MoodSource
 import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.station.BuiltInStations

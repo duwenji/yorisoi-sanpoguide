@@ -1,10 +1,5 @@
-package io.github.duwenji.sanpoguide.sound
+package io.github.duwenji.michizure.kit.mood
 
-import io.github.duwenji.sanpoguide.mood.Mood
-import io.github.duwenji.sanpoguide.mood.Place
-import io.github.duwenji.sanpoguide.mood.Season
-import io.github.duwenji.sanpoguide.mood.Sky
-import io.github.duwenji.sanpoguide.mood.TimeOfDay
 import io.github.duwenji.michizure.core.format.SoundChoice
 import io.github.duwenji.michizure.kit.voice.Soundscape
 import org.junit.Assert.assertEquals

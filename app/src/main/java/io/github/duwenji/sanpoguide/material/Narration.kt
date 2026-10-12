@@ -6,7 +6,7 @@ import io.github.duwenji.michizure.kit.geo.weather.Weather
 import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.michizure.core.format.material.BuiltInProducers
 import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.sanpoguide.mood.Mood
+import io.github.duwenji.michizure.kit.mood.Mood
 import io.github.duwenji.michizure.kit.voice.Soundscape
 import io.github.duwenji.sanpoguide.station.Station
 
