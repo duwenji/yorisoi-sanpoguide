@@ -10,9 +10,9 @@
 | 関連Skill | refactoring-safety |
 | 作成日 | 2026-10-12 |
 | 作成者 | Claude（開発者との検討） |
-| 承認者 | 開発者（1.0: 2026-10-12。実施結果は PR でレビュー） |
-| ステータス | 承認済（実施中。1.1 は設計レビュー待ち） |
-| 版 | 1.1 |
+| 承認者 | 開発者（1.0・1.1: 2026-10-12。実施結果は PR でレビュー） |
+| ステータス | 実施済（2026-10-12） |
+| 版 | 1.2 |
 
 ## 目的・背景
 
@@ -61,7 +61,7 @@
 | 3 | 設計レビュー: `TalkRule`・`TalkEngine` の形（D-7）と、サイクリングで確かめること（D-8）を、この RFC の改訂として開発者に見せる | レビュー |
 | 4 | `platform/kit-companion`（`io.github.duwenji.michizure.kit.companion`。JVM で足りれば JVM、`Flow` などが要れば Android）を作り、`TalkDecider` をルールの並びとエンジンで書き直す | 手順 1 の場面テストを書き換えずに通す。エミュレータで手順 1 と同じ確認 |
 
-### 手順 3: エンジンの設計（1.1、設計レビュー）
+### 手順 3: エンジンの設計（1.1、2026-10-12 承認）
 
 手順 1 で取り出した判定を整理すると、判定ごとの「出してよいか」は、次の 4 つの条件の組み合わせだけで決まっていた（`TalkDecider.decide` の `if` の並びから読み取ったもの）。
 
@@ -78,7 +78,7 @@
 
 そこで、D-7 の属性（`spacing`・`quietAfterSwitch`・`whileStationary`）を、**ゲート**という 1 つの考え方にまとめる。
 
-| No. | 論点 | 決定（提案） |
+| No. | 論点 | 決定 |
 |---|---|---|
 | D-10 | ゲート | 「今その種類の発話を出してよいか」を表す、アプリが決める列挙。SanpoGuide は `SPOT_GAP`（前回のスポットの話から `TalkLevel.spotGapMs` 経った）・`CHAT_GAP`（前回の発話から `minGapMs` 経った）・`MOVING`（とどまっていない）・`SETTLED`（切り替えの直後でない）の 4 つ。状況（`TalkSituation`）が、各ゲートが今開いているかを答える。間隔の長さや「とどまっている」の基準はアプリの値で、エンジンは知らない（D-9 の JVM で足りる理由） |
 | D-11 | ルール | `TalkRule<S, D, G>(name, gates: Set<G>, safety: Boolean, decide: (S) -> D?)`。`gates` がすべて開いているときだけ `decide` を呼ぶ。`decide` は、ルール固有の条件（チャンネルの「話す場面」、天気の予告の繰り返しの間隔、日の入りの時間帯、施設の条件など）を見て、出すなら決定を、出さないなら null を返す |
@@ -137,6 +137,8 @@ val rideRules = listOf(
 |---|---|---|
 | 1 | 2026-10-12 | `companion/TalkDecider.kt` に `TalkSituation`・`NearbySpot`・`TalkDecision`・`TalkDecider.decide` を作り、`maybeTalk()` の判定を順番も式も変えずに移した。`maybeTalk()` は状況を集める（`situation()`）・決める・実行する（`when (decision)`）だけになった。定数 `ANNOUNCE_RADIUS_M`・`STATIONARY_MINUTES`・`REST_MINUTES` は `TalkDecider` に移した（`WalkService.ANNOUNCE_RADIUS_M` は同じ値を指す）。決定は D-3 の 11 通り（名前は `NearFacility`・`Nothing`）。場面テスト `TalkDeciderTest` 18 件（図 2 の 8 つの判断の出る・出ない場面、ぶつかる場面、channels.md V-08）。わざと判定を変えた 3 通り（地点のきっかけを止める、切り替えの直後に施設を止める、とどまっている判定の境界をずらす）が、それぞれテストで落ちることを確かめた。結果: テストは app 93 → 111（+18）。`./gradlew test lint assembleRelease` が通る。エミュレータ: 散策の開始のあいさつ → 再訪のスポットの一言（「鶴岡八幡宮、4回目ですね」とルート）→ 途中でチャンネルを歴史探訪に切り替えたあいさつ → 時刻を 30 分進めてトイレの案内（「90m ほどのところにトイレがあります」）→ 終了。落ちない |
 | 2 | 2026-10-12 | architecture.md 図 2 と「変更の入口」を `TalkDecider` を指すように直した。channels.md の V-08 の注記、TODO の表も |
+| 3 | 2026-10-12 | 設計（D-10〜D-14）を開発者が承認 |
+| 4 | 2026-10-12 | `platform/kit-companion`（JVM。`io.github.duwenji.michizure.kit.companion`）に `TalkGates`・`TalkRule`・`TalkEngine` を作った（テスト 5 件）。`TalkSituation` が `TalkGates<WalkGate>` として 4 つのゲートに答え、`TalkDecider` は 8 つのルールの並び（`TalkDecider.rules`）とエンジンになった。手順 1 の場面テスト 18 件は書き換えずに通った（テストのフォルダに差分なし）。ルールの並びと `safety` の宣言（天気・日の入り・施設）を固定するテストを 1 件足した。結果: テストは app 111 → 112、kit-companion 5。`./gradlew test lint assembleRelease` が通る。エミュレータ: 開始 → 再訪のスポットの一言（「5回目ですね」）→ 自然観察への切り替えのあいさつ → 時刻を 30 分進めてトイレの案内 → 終了。落ちない。**段階 2 はこれで終わり** |
 
 ### 戻し方
 
@@ -176,3 +178,5 @@ val rideRules = listOf(
 | 2026-10-12 | 0.1 | 草案 | Claude |
 | 2026-10-12 | 1.0 | 承認 | Claude（承認: 開発者） |
 | 2026-10-12 | 1.1 | 手順 1・2 を実施（#44）。手順 3 の設計（D-10〜D-14: ゲート・ルール・エンジン・safety の意味・JVM のモジュール）と、サイクリングで確かめた例を追加 | Claude |
+| 2026-10-12 | 1.1 | 承認（手順 3 の設計レビュー） | Claude（承認: 開発者） |
+| 2026-10-12 | 1.2 | 手順 4 を実施。実施の記録 | Claude |

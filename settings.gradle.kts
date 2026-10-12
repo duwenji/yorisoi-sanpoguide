@@ -20,6 +20,7 @@ include(":platform:kit-voice")
 include(":platform:kit-llm")
 include(":platform:kit-geo")
 include(":platform:kit-mood")
+include(":platform:kit-companion")
 // SanpoGuide: the app and its prompt pack.
 include(":apps:sanpoguide:app")
 include(":apps:sanpoguide:prompts")
