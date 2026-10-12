@@ -242,7 +242,7 @@ ADR-001 と API-002 は 2026-10-03 に承認した（同日、1.1 の改訂も�
 - [ ] 要件を詰める: チャンネル提供者の登録と本人確認、審査の手順、差し戻し、操作の記録は michizure-console の ADR-001・DM-001・API-001 で決めた（2026-10-03）。残りは、審査にかかる期間の目安と、運営が複数になる場合（承認を 2 人にするか、権限を分けるか）
 - [x] 技術と置き場所を決める（2026-10-03。別リポジトリ michizure-console、AWS。下の「決めたこと」）
 - [ ] ルート鍵と署名鍵の手順（ADR-001 T-3）
-- [x] エコシステムへの対応（ADR-003 T-7 の中心）: format 2 の `activities`・`genres`・`requires`、リストの `minAppVersions`、素材集の `grants.apps`、画面の「このチャンネルが出るアプリ」。michizure-console の DES-011（2026-10-12、PR #27）。開発用への配備と通しの確認が残り
+- [x] エコシステムへの対応（ADR-003 T-7 の中心）: format 2 の `activities`・`genres`・`requires`、リストの `minAppVersions`、素材集の `grants.apps`、画面の「このチャンネルが出るアプリ」。michizure-console の DES-011（2026-10-12、PR #27）。開発用に配備し、通しの確認済み
 - [x] 審査用の道具（パッケージの機械チェック、場面ごとの見本の書き出し）。michizure-console の DES-004・DES-005（2026-10-04）、素材集は DES-007（2026-10-11）
 - [x] API-002 の準拠テスト（確認観点 V-01〜V-09・V-15・V-16）。michizure-console の `conformance/`（2026-10-03）。開発用のリストで合格
 - [x] プロンプト・`PromptTemplates`・組み込みのチャンネルを `:station-format` に移し、審査の見本（`ReviewSamples`）を足した。GitHub Packages に `com.example.sanpoguide:station-format` として公開する（2026-10-03、[RFC-001](refactoring/RFC-001-prompts-to-station-format.md)）
