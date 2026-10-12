@@ -14,4 +14,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SanpoGuide"
 include(":app")
-include(":station-format")
+include(":platform:core-format")
+include(":platform:core-prompt")
+include(":apps:sanpoguide:prompts")

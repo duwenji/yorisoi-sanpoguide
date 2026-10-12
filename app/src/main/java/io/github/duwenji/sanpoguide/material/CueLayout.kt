@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.station.format.PresentAs
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.format.PresentAs
 
 /** One thing a cue shows by itself, in the cue's order. */
 sealed interface CueStep {

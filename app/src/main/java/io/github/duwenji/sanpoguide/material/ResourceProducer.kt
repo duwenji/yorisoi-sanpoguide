@@ -2,15 +2,15 @@ package io.github.duwenji.sanpoguide.material
 
 import io.github.duwenji.sanpoguide.data.RouteGeometry
 import io.github.duwenji.sanpoguide.history.LatLon
-import io.github.duwenji.sanpoguide.material.format.About
-import io.github.duwenji.sanpoguide.material.format.Exposure
-import io.github.duwenji.sanpoguide.material.format.Fetch
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.material.format.ProducerDescriptor
-import io.github.duwenji.sanpoguide.material.format.Resource
-import io.github.duwenji.sanpoguide.material.format.Resources
-import io.github.duwenji.sanpoguide.material.format.SubjectKind
-import io.github.duwenji.sanpoguide.material.format.Trust
+import io.github.duwenji.michizure.core.format.material.About
+import io.github.duwenji.michizure.core.format.material.Exposure
+import io.github.duwenji.michizure.core.format.material.Fetch
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
+import io.github.duwenji.michizure.core.format.material.Resource
+import io.github.duwenji.michizure.core.format.material.Resources
+import io.github.duwenji.michizure.core.format.material.SubjectKind
+import io.github.duwenji.michizure.core.format.material.Trust
 
 /**
  * Material a third party made ahead: a channel's own resources (`self`) or a collection it

@@ -4,7 +4,7 @@ import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.mood.Place
 import io.github.duwenji.sanpoguide.mood.Season
 import io.github.duwenji.sanpoguide.mood.Sky
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SoundChoice
 
 /** Background sounds, synthesized on the phone (see [Voices]). */
 enum class Soundscape(val label: String) {

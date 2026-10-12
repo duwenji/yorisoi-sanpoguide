@@ -4,8 +4,8 @@ import io.github.duwenji.sanpoguide.companion.TalkEvent
 import io.github.duwenji.sanpoguide.companion.WalkSession
 import io.github.duwenji.sanpoguide.companion.Weather
 import io.github.duwenji.sanpoguide.data.Poi
-import io.github.duwenji.sanpoguide.material.format.BuiltInProducers
-import io.github.duwenji.sanpoguide.material.format.MaterialType
+import io.github.duwenji.michizure.core.format.material.BuiltInProducers
+import io.github.duwenji.michizure.core.format.material.MaterialType
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.sound.Soundscape
 import io.github.duwenji.sanpoguide.station.Station

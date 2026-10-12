@@ -1,26 +1,27 @@
 package io.github.duwenji.sanpoguide.prompt
 
+import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import io.github.duwenji.sanpoguide.station.BuiltInStations
-import io.github.duwenji.sanpoguide.station.format.DirectoryStationFiles
+import io.github.duwenji.michizure.core.format.DirectoryStationFiles
 import org.junit.Test
 import java.io.File
 
 /**
- * Renders every prompt file under `station-format/src/main/resources/sanpoguide/prompts/` with realistic values, so a typo in
+ * Renders every prompt file under `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/` with realistic values, so a typo in
  * a variable name, a missing file or an unused file fails the build. The rendered samples are
  * written to `build/prompt-samples/` for review.
  */
 class PromptFilesTest {
-    private val root = File("../station-format/src/main/resources/sanpoguide/prompts")
+    private val root = File("../apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts")
     private val prompts = PromptTemplates { name -> File(root, "$name.md").readText() }
 
     private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社")
 
     /** System prompts take the channel's slots; the standard channel's are the realistic sample. */
-    private val standard = BuiltInStations.load { id -> DirectoryStationFiles(File("../station-format/src/main/resources/sanpoguide/channels/$id")) }
+    private val standard = BuiltInStations.load { id -> DirectoryStationFiles(File("../apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels/$id")) }
         .first { it.manifest.id == BuiltInStations.STANDARD }
 
     private val noNeed = mapOf(

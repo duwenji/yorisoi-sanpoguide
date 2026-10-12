@@ -1,18 +1,18 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.sanpoguide.material.format.CollectionPackage
-import io.github.duwenji.sanpoguide.material.format.Exposure
-import io.github.duwenji.sanpoguide.material.format.Fetch
-import io.github.duwenji.sanpoguide.material.format.ProducerDescriptor
-import io.github.duwenji.sanpoguide.material.format.Resource
-import io.github.duwenji.sanpoguide.material.format.ResourceReader
-import io.github.duwenji.sanpoguide.material.format.SubjectKind
-import io.github.duwenji.sanpoguide.material.format.Trust
-import io.github.duwenji.sanpoguide.station.format.ChannelList
-import io.github.duwenji.sanpoguide.station.format.ListedCollection
-import io.github.duwenji.sanpoguide.station.format.Selector
-import io.github.duwenji.sanpoguide.station.format.StationFiles
-import io.github.duwenji.sanpoguide.station.format.StationMedia
+import io.github.duwenji.michizure.core.format.material.CollectionPackage
+import io.github.duwenji.michizure.core.format.material.Exposure
+import io.github.duwenji.michizure.core.format.material.Fetch
+import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
+import io.github.duwenji.michizure.core.format.material.Resource
+import io.github.duwenji.michizure.core.format.material.ResourceReader
+import io.github.duwenji.michizure.core.format.material.SubjectKind
+import io.github.duwenji.michizure.core.format.material.Trust
+import io.github.duwenji.michizure.core.format.ChannelList
+import io.github.duwenji.michizure.core.format.ListedCollection
+import io.github.duwenji.michizure.core.format.Selector
+import io.github.duwenji.michizure.core.format.StationFiles
+import io.github.duwenji.michizure.core.format.StationMedia
 
 /** A collection on the device that a selector may draw from, as its provider's list names it. */
 class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackage, val files: StationFiles)

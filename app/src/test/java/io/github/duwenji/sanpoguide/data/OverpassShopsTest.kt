@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.data
 
-import io.github.duwenji.sanpoguide.station.format.SpotKind
+import io.github.duwenji.michizure.core.format.SpotKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

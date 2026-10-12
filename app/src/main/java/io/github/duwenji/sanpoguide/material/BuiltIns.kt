@@ -6,9 +6,9 @@ import io.github.duwenji.sanpoguide.data.SpotPhotos
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.material.MaterialResult.Reason
-import io.github.duwenji.sanpoguide.material.format.BuiltInProducers
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.prompt.PromptTemplates
+import io.github.duwenji.michizure.core.format.material.BuiltInProducers
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.sanpoguide.sound.Soundscape

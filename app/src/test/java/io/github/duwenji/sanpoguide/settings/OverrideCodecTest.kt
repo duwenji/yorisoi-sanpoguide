@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.settings
 
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

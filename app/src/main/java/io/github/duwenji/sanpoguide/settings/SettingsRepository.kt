@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.core.content.edit
 import io.github.duwenji.sanpoguide.guide.Provider
 import io.github.duwenji.sanpoguide.station.StationOverrides
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

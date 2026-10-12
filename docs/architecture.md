@@ -2,7 +2,7 @@
 
 アプリ全体を 7 枚の図で説明する。最初に、アプリの中心にある「チャンネル」の考え方と関係者を示す。図 1 で「どこに何があるか」をつかみ、図 2〜7 で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追う。
 
-- ソース 90 ファイル / 約 11,940 行（アプリ 71 ファイル・9,505 行、チャンネルの形式のモジュール `:station-format` 19 ファイル・2,436 行。2026-10-12 時点）、アプリのパッケージ 11
+- ソース 90 ファイル / 約 11,940 行（アプリ 71 ファイル・9,505 行、チャンネルの形式のモジュール `:station-format` 19 ファイル・2,436 行。2026-10-12 時点。RFC-002 の手順 1 で `:platform:core-format`・`:platform:core-prompt`・`:apps:sanpoguide:prompts` に分けた）、アプリのパッケージ 11
 - 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネル・リストは設定で選んだときだけ）
 
 図はコードから手で書き起こしたもの。`WalkService` の判定順を変えたり、パッケージを追加したりしたときは、この文書も更新する。
@@ -54,11 +54,11 @@ flowchart TB
   end
 
   subgraph APP["共有部品（SanpoApp.onCreate() で生成）"]
-    prompt["プロンプト（:station-format）<br/>PromptTemplates・StationPrompts<br/>← sanpoguide/prompts/*.md"]
+    prompt["プロンプト（:apps:sanpoguide:prompts・:platform:core-prompt）<br/>PromptTemplates・StationPrompts<br/>← sanpoguide/prompts/*.md"]
     history["history<br/>HistoryStore<br/>walk_history.json（端末内）"]
     settings["settings<br/>SettingsRepository<br/>KeyCipher・Threshold"]
     mood["mood<br/>MoodSource・Mood・PlaceGuess"]
-    station["station<br/>StationRepository・Station<br/>← sanpoguide/channels/（:station-format で確認）<br/>station/remote: ThirdPartyChannels・ChannelSync"]
+    station["station<br/>StationRepository・Station<br/>← sanpoguide/channels/（:platform:core-format で確認）<br/>station/remote: ThirdPartyChannels・ChannelSync"]
     material["material<br/>Producers・Narration<br/>CueFinder・CuePresenter・ChannelMaterials"]
     data["data<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・GoogleMapTiles"]
     guide["guide<br/>GuideRepository・Speaker<br/>LlmClient・Provider"]
@@ -222,7 +222,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  Assets["sanpoguide/channels/{id}/<br/>channel.json・prompts/"] --> Check["BuiltInChannels・BuiltInStations<br/>StationValidator（:station-format）<br/>API-003 の確認"]
+  Assets["sanpoguide/channels/{id}/<br/>channel.json・prompts/"] --> Check["BuiltInChannels・BuiltInStations<br/>StationValidator（:platform:core-format）<br/>API-003 の確認"]
   ThirdParty["第三者のチャンネル<br/>リスト（API-002）・試用チケット<br/>ThirdPartyChannels・ChannelSync"] --> Check
   Check --> Repo["<b>StationRepository</b><br/>current: Station"]
   Settings["設定<br/>stationId・stationOverrides"] --> Repo
@@ -288,16 +288,16 @@ flowchart LR
 | `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |
 | (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 204 |
 
-チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない別のモジュール `:station-format`（`station-format/`）にある。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.sanpoguide:station-format` として公開する）。ファイルは `station-format/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `:platform:core-format`、`PromptTemplates` は `:platform:core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:apps:sanpoguide:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.michizure:core-format`・`core-prompt` と `io.github.duwenji.sanpoguide:prompts` として公開する）。ファイルは `apps/sanpoguide/prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
 | やりたいこと | 最初に開くファイル |
 |---|---|
-| 話しかけ・解説の文面を変える | 枠は `station-format/src/main/resources/sanpoguide/prompts/`（一覧は [prompts.md](prompts.md)）、役割や話題はチャンネルの `sanpoguide/channels/{id}/prompts/` |
+| 話しかけ・解説の文面を変える | 枠は `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/`（一覧は [prompts.md](prompts.md)）、役割や話題はチャンネルの `sanpoguide/channels/{id}/prompts/` |
 | 話す条件や優先順位を変える | `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
-| 組み込みのチャンネルを追加・変更する | `station-format/src/main/resources/sanpoguide/channels/{id}/`（形式は [API-003](channel-package-format.md)）と、`BuiltInChannels.kt` の `IDS` |
-| チャンネルの形式の確認を変える | `station-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も |
+| 組み込みのチャンネルを追加・変更する | `apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は [API-003](channel-package-format.md)）と、`BuiltInChannels.kt` の `IDS` |
+| チャンネルの形式の確認を変える | `platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も |
 | チャンネルの設定画面の項目を変える | `ui/SettingsScreen.kt` の `StationSettings`・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt` |
 | 距離・時間・気温などの既定値を変える | `settings/Threshold.kt` |
 | 話しかけの頻度の段階を変える | `settings/TalkLevel.kt` |
@@ -311,7 +311,7 @@ flowchart LR
 | AI に送る位置情報を変える | `guide/GuidePrompt.kt`・`companion/WalkCompanion.kt`（設定 `shareLocationWithAi` で切り替え） |
 | 配色・絵・背景音の選び方を変える | `ui/MoodTheme.kt`・`ui/MoodScene.kt`・`sound/Soundscape.kt` |
 | 記録の保存形式や再訪の判定を変える | `history/HistoryStore.kt`（読み書きは `WalkJson`） |
-| リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:station-format` の `ProviderDocuments` |
+| リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:platform:core-format` の `ProviderDocuments` |
 | きっかけの判定（いつ出すか）を変える | `material/Cues.kt` の `CueFinder`。散歩の中での順番は `walk/WalkService.kt` の `maybeTalk()` |
 | きっかけの見せ方（カード・通知・解説の画面）を変える | `material/CueLayout.kt`・`walk/CueShow.kt`・`ui/CueViews.kt` |
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers` |

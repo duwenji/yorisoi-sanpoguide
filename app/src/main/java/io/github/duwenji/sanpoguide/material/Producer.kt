@@ -6,9 +6,9 @@ import io.github.duwenji.sanpoguide.companion.TalkEvent
 import io.github.duwenji.sanpoguide.companion.WalkSession
 import io.github.duwenji.sanpoguide.companion.Weather
 import io.github.duwenji.sanpoguide.data.Poi
-import io.github.duwenji.sanpoguide.material.format.MaterialType
-import io.github.duwenji.sanpoguide.material.format.ProducerDescriptor
-import io.github.duwenji.sanpoguide.material.format.ProducerPolicy
+import io.github.duwenji.michizure.core.format.material.MaterialType
+import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
+import io.github.duwenji.michizure.core.format.material.ProducerPolicy
 import io.github.duwenji.sanpoguide.mood.Mood
 import io.github.duwenji.sanpoguide.sound.Soundscape
 import io.github.duwenji.sanpoguide.station.Station

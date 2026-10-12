@@ -1,17 +1,17 @@
 package io.github.duwenji.sanpoguide.station
 
-import io.github.duwenji.sanpoguide.prompt.PromptTemplates
+import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
-import io.github.duwenji.sanpoguide.station.format.DirectoryStationFiles
+import io.github.duwenji.michizure.core.format.DirectoryStationFiles
 import io.github.duwenji.sanpoguide.history.StationSegment
 import io.github.duwenji.sanpoguide.history.WalkRecord
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.sanpoguide.settings.TalkLevel
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.Slot
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.Slot
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -23,14 +23,14 @@ import org.junit.Test
 import java.io.File
 
 /**
- * The built-in channels under `station-format/src/main/resources/sanpoguide/channels/` (docs/channel-package-format.md,
+ * The built-in channels under `apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels/` (docs/channel-package-format.md,
  * 確認観点 V-01・V-02・V-09). Rendered system prompts go to `build/prompt-samples/channels/`.
  */
 class StationAssetsTest {
-    private val prompts = PromptTemplates { name -> File("../station-format/src/main/resources/sanpoguide/prompts/$name.md").readText() }
+    private val prompts = PromptTemplates { name -> File("../apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/$name.md").readText() }
 
     // Loading runs the same checks as the app does at start-up and fails on any rejection (V-01).
-    private val stations = BuiltInStations.load { id -> DirectoryStationFiles(File("../station-format/src/main/resources/sanpoguide/channels/$id")) }
+    private val stations = BuiltInStations.load { id -> DirectoryStationFiles(File("../apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels/$id")) }
     private val standard = stations.first { it.manifest.id == BuiltInStations.STANDARD }
 
     private fun baseline(name: String): String =
@@ -38,7 +38,7 @@ class StationAssetsTest {
 
     @Test
     fun `every built-in channel is in its folder and listed`() {
-        val folders = File("../station-format/src/main/resources/sanpoguide/channels").listFiles()!!.filter { it.isDirectory }.map { it.name }.sorted()
+        val folders = File("../apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels").listFiles()!!.filter { it.isDirectory }.map { it.name }.sorted()
         assertEquals(folders, BuiltInStations.IDS.sorted())
         assertEquals(BuiltInStations.IDS, stations.map { it.manifest.id })
     }

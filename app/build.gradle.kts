@@ -16,7 +16,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        // The Google Play ID: fixed once uploaded. The namespace, the Kotlin packages and the station-format group use the same name.
+        // The Google Play ID: fixed once uploaded. The namespace and the Kotlin packages use the same name.
         applicationId = "io.github.duwenji.sanpoguide"
         minSdk = 26
         targetSdk = 35
@@ -85,7 +85,7 @@ dependencies {
     implementation(libs.osmdroid.android)
     implementation(libs.okhttp)
     implementation(libs.anthropic.java)
-    implementation(project(":station-format"))
+    implementation(project(":apps:sanpoguide:prompts"))
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // (ADR-001 T-5), and later API-001.
     implementation(libs.tink.android)

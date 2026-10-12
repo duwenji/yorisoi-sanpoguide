@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.data
 
 import android.location.Location
-import io.github.duwenji.sanpoguide.station.format.SpotKind
+import io.github.duwenji.michizure.core.format.SpotKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -65,10 +65,10 @@ import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.settings.Thresholds
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.StationLabels
-import io.github.duwenji.sanpoguide.station.format.GuideLength
-import io.github.duwenji.sanpoguide.station.format.SoundChoice
-import io.github.duwenji.sanpoguide.station.format.SpotKind
-import io.github.duwenji.sanpoguide.station.format.TalkEventKind
+import io.github.duwenji.michizure.core.format.GuideLength
+import io.github.duwenji.michizure.core.format.SoundChoice
+import io.github.duwenji.michizure.core.format.SpotKind
+import io.github.duwenji.michizure.core.format.TalkEventKind
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
