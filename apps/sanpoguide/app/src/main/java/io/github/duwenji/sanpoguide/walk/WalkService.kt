@@ -18,10 +18,11 @@ import io.github.duwenji.sanpoguide.R
 import io.github.duwenji.sanpoguide.SanpoApp
 import io.github.duwenji.sanpoguide.companion.FacilityAdvice
 import io.github.duwenji.sanpoguide.companion.FacilityAdvisor
-import io.github.duwenji.sanpoguide.companion.SpotCandidate
-import io.github.duwenji.sanpoguide.companion.SpotChooser
+import io.github.duwenji.sanpoguide.companion.NearbySpot
+import io.github.duwenji.sanpoguide.companion.TalkDecider
+import io.github.duwenji.sanpoguide.companion.TalkDecision
+import io.github.duwenji.sanpoguide.companion.TalkSituation
 import io.github.duwenji.sanpoguide.companion.TalkEvent
-import io.github.duwenji.sanpoguide.companion.WeatherChangeDetector
 import io.github.duwenji.sanpoguide.companion.WeatherChangeKind
 import io.github.duwenji.sanpoguide.companion.Utterance
 import io.github.duwenji.sanpoguide.companion.WalkSession
@@ -34,7 +35,6 @@ import io.github.duwenji.sanpoguide.material.CueLayout
 import io.github.duwenji.sanpoguide.material.MaterialContext
 import io.github.duwenji.sanpoguide.material.Shown
 import io.github.duwenji.sanpoguide.material.Subject
-import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.michizure.kit.voice.AmbientPlayer
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.michizure.core.format.CueEvent
@@ -189,22 +189,18 @@ class WalkService : LifecycleService() {
         }
     }
 
-    /** Decides whether anything is worth saying right now, most important first. */
+    /** Says what [TalkDecider] finds worth saying right now, if anything (RFC-003 D-4). */
     private suspend fun maybeTalk() {
         val s = session ?: return
         val location = lastLocation ?: return
         // Let the current line finish before starting another.
         if (app.speaker.isSpeaking) return
         val station = app.stations.current.value
-        val level = station.talkLevel
-        val limits = app.settings.settings.value.thresholds
         val now = System.currentTimeMillis()
 
-        // A turn in the weather comes first, regardless of the talk level: it's about safety.
-        val change = weather?.let { WeatherChangeDetector.detect(it, now, limits) }
-        val warnedAt = change?.let { s.weatherWarnedAt[it.kind] }
-        if (change != null && (warnedAt == null || now - warnedAt >= limits.ms(Threshold.WEATHER_REPEAT_MIN))) {
-            talk {
+        when (val decision = TalkDecider.decide(situation(s, location, station, now))) {
+            is TalkDecision.WeatherTurn -> talk {
+                val change = decision.change
                 // A thunderstorm warning also covers the rain that comes with it.
                 WeatherChangeKind.entries.filter { it >= change.kind }.forEach { s.weatherWarnedAt[it] = now }
                 val line = app.narration.line(TalkEvent.WeatherTurn(change), s, weather)
@@ -214,129 +210,98 @@ class WalkService : LifecycleService() {
                 }
                 speakLine(line)
             }
-            return
-        }
-
-        // The user just switched channels: the new one says hello before anything else. No AI, so it's instant.
-        s.pendingGreeting?.let { line ->
-            talk {
+            is TalkDecision.Greeting -> talk {
                 s.pendingGreeting = null
-                speakLine(line)
+                speakLine(decision.line)
                 // A channel chosen mid-walk shows its cues for being chosen after its greeting (API-003 `event: select`).
-                if (s.pendingSelect) {
+                if (decision.select) {
                     s.pendingSelect = false
                     eventCues(s, CueEvent.SELECT, Subject.None)
                 }
             }
-            return
-        }
-        val justSwitched = s.justSwitched(now)
-
-        // While the user stands still, don't run through every spot within reach one by one;
-        // the spot they arrived at has been introduced, and a rest remark may be due instead.
-        val stationary = s.restMinutes(now) >= STATIONARY_MINUTES
-        if (!stationary && !justSwitched && now - s.lastSpotTalkAt >= level.spotGapMs) {
-            val nearby = app.spots.spots.value
-                .filter { poi -> poi.id !in s.talkedAbout && s.visits.none { it.matches(poi) } }
-                .map { it to it.distanceFrom(location) }
-                .filter { (_, d) -> d <= ANNOUNCE_RADIUS_M }
-                .sortedBy { (_, d) -> d }
-            // A spot the channel put a cue on comes first, even of a kind it skips or with spot talk
-            // off: the channel placed it on purpose (API-003「きっかけ」). The spacing still holds.
-            val cued = station.materials?.let { m ->
-                nearby.firstNotNullOfOrNull { (poi, d) -> app.cueFinder.spot(station.id, m.media, poi, d.toInt(), s.shownCues, now)?.let { Triple(poi, d, it) } }
+            is TalkDecision.SpotCue -> talk {
+                s.lastSpotTalkAt = now
+                talkAboutSpot(s, decision.poi, decision.distanceM, decision.fire)
             }
-            if (cued != null) {
-                talk {
-                    s.lastSpotTalkAt = now
-                    talkAboutSpot(s, cued.first, cued.second.toInt(), cued.third)
-                }
-                return
+            is TalkDecision.Spot -> talk {
+                s.lastSpotTalkAt = now
+                talkAboutSpot(s, decision.poi, decision.distanceM)
             }
-            // One spot per tick, by distance from the user (spots' distances to each other don't matter).
-            val candidates = nearby
-                .map { (poi, d) -> SpotCandidate(poi, d, app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty()) }
-            val spot = SpotChooser.pick(
-                candidates, station.preferredCategories, station.skippedCategories,
-                newSpots = station.talksOn(TalkEventKind.SPOT), revisits = station.talksOn(TalkEventKind.REVISIT),
-            )
-            if (spot != null) {
-                talk {
-                    s.lastSpotTalkAt = now
-                    talkAboutSpot(s, spot.poi, spot.distanceM.toInt())
-                }
-                return
+            is TalkDecision.PointCue -> talk { show(s, decision.fire, present(s, decision.fire, station), spotName = null) }
+            is TalkDecision.Sunset -> talk {
+                s.sunsetWarned = true
+                speakLine(app.narration.line(TalkEvent.Sunset(decision.minutesLeft), s, weather))
             }
-        }
-
-        // A point the channel put a cue on, as for spots: not while standing still (API-003「きっかけ」).
-        if (!stationary && !justSwitched) {
-            val fire = station.materials?.let { app.cueFinder.point(station.id, it.media, location.latitude, location.longitude, s.shownCues, now) }
-            if (fire != null) {
-                talk { show(s, fire, present(s, fire, station), spotName = null) }
-                return
-            }
-        }
-
-        // Heads-up before dark, regardless of the talk level: it's about getting home, not chat.
-        val sunsetAt = weather?.sunsetAt
-        if (sunsetAt != null && !s.sunsetWarned) {
-            val minutesLeft = ((sunsetAt - now) / 60_000).toInt()
-            // Too close to be useful below the latest minute; an empty range if the settings cross.
-            if (minutesLeft in limits[Threshold.SUNSET_LATEST_MIN]..limits[Threshold.SUNSET_NOTICE_MIN]) {
-                talk {
-                    s.sunsetWarned = true
-                    speakLine(app.narration.line(TalkEvent.Sunset(minutesLeft), s, weather))
-                }
-                return
-            }
-        }
-
-        if (now - s.lastSpokeAt < level.minGapMs) return
-
-        val facility = FacilityAdvisor.pick(
-            app.spots.facilities.value.map { it to it.distanceFrom(location) },
-            s.elapsedMs(now), weather, s.mentionedFacilities, s.facilityMentionAt, now, limits,
-        )
-        if (facility != null) {
-            talk {
+            is TalkDecision.NearFacility -> talk {
+                val facility = decision.advice
                 s.mentionedFacilities += facility.facility.id
                 s.facilityMentionAt[facility.need] = now
                 val direction = directionTo(location, facility)
                 speakLine(app.narration.line(TalkEvent.NearFacility(facility, direction), s, weather))
             }
-            return
-        }
-
-        // Small talk right after the greeting would crowd it.
-        if (justSwitched) return
-
-        val restMinutes = s.restMinutes(now)
-        if (level.remarkOnRest && station.talksOn(TalkEventKind.REST) && restMinutes >= REST_MINUTES && !s.restRemarked) {
-            talk {
+            is TalkDecision.Rest -> talk {
                 s.markRestRemarked()
-                speakLine(app.narration.line(TalkEvent.Rest(restMinutes), s, weather))
+                speakLine(app.narration.line(TalkEvent.Rest(decision.minutes), s, weather))
             }
-            return
-        }
-        val walkedSinceMilestone = s.distanceM - s.lastMilestoneDistanceM
-        if (walkedSinceMilestone >= level.milestoneDistanceM ||
-            (now - s.lastMilestoneAt >= level.milestoneIntervalMs && walkedSinceMilestone > 100)
-        ) {
-            if (station.talksOn(TalkEventKind.MILESTONE)) {
-                talk {
-                    s.lastMilestoneAt = now
-                    s.lastMilestoneDistanceM = s.distanceM
-                    speakLine(app.narration.line(TalkEvent.Milestone, s, weather))
-                    saveProgress(s)
-                }
-            } else {
-                // Still a checkpoint for the history, so a quiet walk isn't lost if the service dies.
+            TalkDecision.Milestone -> talk {
+                s.lastMilestoneAt = now
+                s.lastMilestoneDistanceM = s.distanceM
+                speakLine(app.narration.line(TalkEvent.Milestone, s, weather))
+                saveProgress(s)
+            }
+            TalkDecision.Checkpoint -> {
                 s.lastMilestoneAt = now
                 s.lastMilestoneDistanceM = s.distanceM
                 saveProgress(s)
             }
+            TalkDecision.Nothing -> Unit
         }
+    }
+
+    /**
+     * What [TalkDecider] reads, as of [now] (RFC-003 D-2). Only lookups, no decisions: a channel's
+     * cues and earlier visits are looked up for the spots within reach only, as they always were.
+     */
+    private fun situation(s: WalkSession, location: Location, station: Station, now: Long): TalkSituation {
+        val media = station.materials?.media
+        val spots = app.spots.spots.value
+            .map { it to it.distanceFrom(location) }
+            .filter { (_, d) -> d <= TalkDecider.ANNOUNCE_RADIUS_M }
+            .map { (poi, d) ->
+                val already = poi.id in s.talkedAbout || s.visits.any { it.matches(poi) }
+                NearbySpot(
+                    poi, d, already,
+                    visitedBefore = !already && app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty(),
+                    cue = if (already) null else media?.let { app.cueFinder.spot(station.id, it, poi, d.toInt(), s.shownCues, now) },
+                )
+            }
+        return TalkSituation(
+            now = now,
+            weather = weather,
+            limits = app.settings.settings.value.thresholds,
+            level = station.talkLevel,
+            events = station.events,
+            preferredCategories = station.preferredCategories,
+            skippedCategories = station.skippedCategories,
+            spots = spots,
+            facilities = app.spots.facilities.value.map { it to it.distanceFrom(location) },
+            pointCue = media?.let { app.cueFinder.point(station.id, it, location.latitude, location.longitude, s.shownCues, now) },
+            elapsedMs = s.elapsedMs(now),
+            distanceM = s.distanceM,
+            restMinutes = s.restMinutes(now),
+            restRemarked = s.restRemarked,
+            lastSpokeAt = s.lastSpokeAt,
+            lastSpotTalkAt = s.lastSpotTalkAt,
+            lastMilestoneAt = s.lastMilestoneAt,
+            lastMilestoneDistanceM = s.lastMilestoneDistanceM,
+            sunsetWarned = s.sunsetWarned,
+            weatherWarnedAt = s.weatherWarnedAt.toMap(),
+            mentionedFacilities = s.mentionedFacilities.toSet(),
+            facilityMentionAt = s.facilityMentionAt.toMap(),
+            pendingGreeting = s.pendingGreeting,
+            pendingSelect = s.pendingSelect,
+            justSwitched = s.justSwitched(now),
+        )
     }
 
     /**
@@ -516,13 +481,11 @@ class WalkService : LifecycleService() {
         private const val TICK_MS = 30_000L
         // Often enough that the lookahead for weather changes stays current.
         private const val WEATHER_REFRESH_MS = 15 * 60_000L
-        private const val REST_MINUTES = 4
-        private const val STATIONARY_MINUTES = 2
         // Below walking pace (m/s) the reported heading is noise.
         private const val MIN_HEADING_SPEED = 0.5f
         private const val MIN_SAVED_WALK_MS = 60_000L
         // Measured from the user, not around each spot.
-        const val ANNOUNCE_RADIUS_M = 60f
+        const val ANNOUNCE_RADIUS_M = TalkDecider.ANNOUNCE_RADIUS_M
 
         private val _walking = MutableStateFlow(false)
         val walking: StateFlow<Boolean> = _walking.asStateFlow()

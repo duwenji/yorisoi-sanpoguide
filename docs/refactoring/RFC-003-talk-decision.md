@@ -10,9 +10,9 @@
 | 関連Skill | refactoring-safety |
 | 作成日 | 2026-10-12 |
 | 作成者 | Claude（開発者との検討） |
-| 承認者 | 開発者（未承認） |
-| ステータス | 草案（レビュー待ち） |
-| 版 | 0.1 |
+| 承認者 | 開発者（1.0: 2026-10-12。実施結果は PR でレビュー） |
+| ステータス | 承認済（実施中） |
+| 版 | 1.0 |
 
 ## 目的・背景
 
@@ -40,7 +40,7 @@
 
 ## 方針・決定事項
 
-| No. | 論点 | 提案 |
+| No. | 論点 | 決定 |
 |---|---|---|
 | D-1 | 進め方 | 2 段に分ける。**段 A（手順 1・2）**: 判定をアプリの中で純粋な関数 `TalkDecider.decide(TalkSituation): TalkDecision` に取り出し、場面テストを付ける。**段 B（手順 3・4）**: 取り出した判定をルールの並びに書き直し、調停を `kit-companion` に移す。段 A だけでも、判定にテストが付く価値がある |
 | D-2 | 状況（入力） | `TalkSituation` は判定に要る値だけを持つ**値のスナップショット**にする。`WalkService` が毎回集めて渡す。`android.location.Location` や `WalkSession` そのものは渡さない（単体テストで作れないため）。距離・休んでいる分数・経過時間・前回の発話からの時間などは計算済みの値で渡す |
@@ -60,6 +60,13 @@
 | 2 | architecture.md 図 2 を、`TalkDecider` の決定の並びとして書き直す（図とコードの並びがずれないよう、図に `TalkDecider` を指す） | 文書だけ |
 | 3 | 設計レビュー: `TalkRule`・`TalkEngine` の形（D-7）と、サイクリングで確かめること（D-8）を、この RFC の改訂として開発者に見せる | レビュー |
 | 4 | `platform/kit-companion`（`io.github.duwenji.michizure.kit.companion`。JVM で足りれば JVM、`Flow` などが要れば Android）を作り、`TalkDecider` をルールの並びとエンジンで書き直す | 手順 1 の場面テストを書き換えずに通す。エミュレータで手順 1 と同じ確認 |
+
+### 実施の記録
+
+| 手順 | 日付 | 結果 |
+|---|---|---|
+| 1 | 2026-10-12 | `companion/TalkDecider.kt` に `TalkSituation`・`NearbySpot`・`TalkDecision`・`TalkDecider.decide` を作り、`maybeTalk()` の判定を順番も式も変えずに移した。`maybeTalk()` は状況を集める（`situation()`）・決める・実行する（`when (decision)`）だけになった。定数 `ANNOUNCE_RADIUS_M`・`STATIONARY_MINUTES`・`REST_MINUTES` は `TalkDecider` に移した（`WalkService.ANNOUNCE_RADIUS_M` は同じ値を指す）。決定は D-3 の 11 通り（名前は `NearFacility`・`Nothing`）。場面テスト `TalkDeciderTest` 18 件（図 2 の 8 つの判断の出る・出ない場面、ぶつかる場面、channels.md V-08）。わざと判定を変えた 3 通り（地点のきっかけを止める、切り替えの直後に施設を止める、とどまっている判定の境界をずらす）が、それぞれテストで落ちることを確かめた。結果: テストは app 93 → 111（+18）。`./gradlew test lint assembleRelease` が通る。エミュレータ: 散策の開始のあいさつ → 再訪のスポットの一言（「鶴岡八幡宮、4回目ですね」とルート）→ 途中でチャンネルを歴史探訪に切り替えたあいさつ → 時刻を 30 分進めてトイレの案内（「90m ほどのところにトイレがあります」）→ 終了。落ちない |
+| 2 | 2026-10-12 | architecture.md 図 2 と「変更の入口」を `TalkDecider` を指すように直した。channels.md の V-08 の注記、TODO の表も |
 
 ### 戻し方
 
@@ -97,3 +104,4 @@
 | 日付 | 版 | 変更内容 | 変更者 |
 |---|---|---|---|
 | 2026-10-12 | 0.1 | 草案 | Claude |
+| 2026-10-12 | 1.0 | 承認 | Claude（承認: 開発者） |

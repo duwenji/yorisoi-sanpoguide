@@ -173,7 +173,7 @@
 |---|---|---|
 | 語り手（人格・口調） | `prompts/companion/system`・`guide/system` | プロンプトの上書き |
 | 話題 | `OverpassClient` の検索対象・スポットの優先順位 | 優先するカテゴリ（歴史なら史跡・寺社、自然なら公園・水辺） |
-| 話す場面 | `WalkService.maybeTalk()` | 出来事ごとのオン・オフ（「しずかに」はスポット案内・雑談を止める） |
+| 話す場面 | `TalkDecider.decide()`（実行は `WalkService.maybeTalk()`） | 出来事ごとのオン・オフ（「しずかに」はスポット案内・雑談を止める） |
 | 話す量 | `TalkLevel` | 話しかけの頻度 |
 | 雰囲気・背景音 | `Mood`・`Soundscape` | 配色・絵・背景音の傾向 |
 

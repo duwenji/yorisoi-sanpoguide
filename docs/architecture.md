@@ -94,14 +94,14 @@ flowchart TB
 
 ## 図 2 · 散策モード: 話しかけるまでの流れ
 
-位置が更新されるたびと、一定間隔のタイマーで `maybeTalk()` が呼ばれる。判定は上から順に行い、最初に当たった 1 件だけを話す。
+位置が更新されるたびと、一定間隔のタイマーで `WalkService.maybeTalk()` が呼ばれる。`maybeTalk()` はその時の状況（`TalkSituation`。距離・経過時間・セッションの値などを計算済みの値で）を集め、`TalkDecider.decide()` が上から順に判定して、最初に当たった 1 件を決定（`TalkDecision`）として返す。`maybeTalk()` はその決定を実行する（読み上げ・通知・記録・セッションの更新）。判定は Android に依存しない純粋な関数で、場面ごとのテスト（`TalkDeciderTest`）がある（[RFC-003](refactoring/RFC-003-talk-decision.md)）。
 
 ```mermaid
 flowchart LR
   Loc["位置の更新<br/>10 秒・10m ごと<br/>（300m 移動でスポット再検索）"] --> Talk
   Tick["タイマー<br/>止まっていても判定"] --> Talk
 
-  Talk["<b>maybeTalk()</b><br/>① 天気の急変（頻度に関係なく）<br/>② チャンネルを切り替えた直後の一言（AI なし）と、選んだときのきっかけ<br/>③ スポット 60m 以内（チャンネルのきっかけがあるスポットが先。次に初訪問 / 再訪。SpotChooser）<br/>④ 地点のきっかけ<br/>⑤ 日の入り前（頻度に関係なく）<br/>── ここから雑談の間隔を守る ──<br/>⑥ 施設の案内（FacilityAdvisor）<br/>── 切り替えの直後 1 分はここまで ──<br/>⑦ 休憩の声かけ（4 分とどまる）<br/>⑧ 距離・時間の区切り（チャンネルの頻度）"]
+  Talk["<b>TalkDecider.decide()</b><br/>① 天気の急変（頻度に関係なく）<br/>② チャンネルを切り替えた直後の一言（AI なし）と、選んだときのきっかけ<br/>③ スポット 60m 以内（チャンネルのきっかけがあるスポットが先。次に初訪問 / 再訪。SpotChooser）<br/>④ 地点のきっかけ<br/>⑤ 日の入り前（頻度に関係なく）<br/>── ここから雑談の間隔を守る ──<br/>⑥ 施設の案内（FacilityAdvisor）<br/>── 切り替えの直後 1 分はここまで ──<br/>⑦ 休憩の声かけ（4 分とどまる）<br/>⑧ 距離・時間の区切り（チャンネルの頻度）"]
 
   Talk -- "TalkEvent" --> Compose["<b>文を作る</b>（Narration）<br/>初訪問のスポット: GuideRepository.guideFor()<br/>それ以外（再訪を含む）: WalkCompanion.say()<br/>文面は sanpoguide/prompts/ と、選んでいるチャンネルから"]
   Talk -- "きっかけ（CueFire）" --> CueShow["CuePresenter → CueShow<br/>チャンネルの素材（図 7）"]
@@ -114,7 +114,7 @@ flowchart LR
   Speak --> Save["記録を保存<br/>HistoryStore"]
 ```
 
-- 順番はコードの判定順（`walk/WalkService.kt` の `maybeTalk()`）そのまま。README の表とは並びが違い、実際には「スポット」が「日の入り」より先に判定される。
+- 順番はコードの判定順（`companion/TalkDecider.kt`）そのまま。README の表とは並びが違い、実際には「スポット」が「日の入り」より先に判定される。
 - 天気と日の入りは安全に関わるため、話しかけの頻度設定を無視する。施設の案内も含め、この 3 つはチャンネルの設定で止まらない。
 - スポット（初訪問・再訪）・休憩・区切り・開始・終了は、チャンネルの「話す場面」でオフにできる。頻度（`TalkLevel`）もチャンネルごと。
 - チャンネルを切り替えると、次に話すのは新しいチャンネルの一言（`WalkSession.pendingGreeting`）。その後 1 分はスポット案内と休憩・区切りを控える（`WalkSession.justSwitched()`）。
@@ -305,7 +305,7 @@ flowchart LR
 | やりたいこと | 最初に開くファイル |
 |---|---|
 | 話しかけ・解説の文面を変える | 枠は `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/`（一覧は [prompts.md](prompts.md)）、役割や話題はチャンネルの `sanpoguide/channels/{id}/prompts/` |
-| 話す条件や優先順位を変える | `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
+| 話す条件や優先順位を変える | `companion/TalkDecider.kt`（場面のテストは `TalkDeciderTest`）。決まったことの実行は `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
 | 組み込みのチャンネルを追加・変更する | `apps/sanpoguide/prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は [API-003](channel-package-format.md)）と、`BuiltInChannels.kt` の `IDS` |
 | チャンネルの形式の確認を変える | `platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も |
 | チャンネルの設定画面の項目を変える | `ui/SettingsScreen.kt` の `StationSettings`・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt` |
@@ -322,7 +322,7 @@ flowchart LR
 | 配色・絵・背景音の選び方を変える | `platform/kit-mood` の `MoodTheme.kt`・`MoodScene.kt`・`SoundscapeChoice.kt`（音の合成は `platform/kit-voice` の `Voices.kt`） |
 | 記録の保存形式や再訪の判定を変える | `history/HistoryStore.kt`（読み書きは `WalkJson`） |
 | リストの取得や取り下げの扱いを変える | `station/remote/ChannelSync.kt`（端末での保存は `ChannelStore.kt`）。文書の確認は `:platform:core-format` の `ProviderDocuments` |
-| きっかけの判定（いつ出すか）を変える | `material/Cues.kt` の `CueFinder`。散歩の中での順番は `walk/WalkService.kt` の `maybeTalk()` |
+| きっかけの判定（いつ出すか）を変える | `material/Cues.kt` の `CueFinder`。散歩の中での順番は `companion/TalkDecider.kt` |
 | きっかけの見せ方（カード・通知・解説の画面）を変える | `material/CueLayout.kt`・`walk/CueShow.kt`・`ui/CueViews.kt` |
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers` |
 | 素材集の取得（前もっての取得・基準で選ぶ取得）を変える | `material/ChannelMaterials.kt`・`material/Selectors.kt`、取得の実行は `ChannelSync` |
