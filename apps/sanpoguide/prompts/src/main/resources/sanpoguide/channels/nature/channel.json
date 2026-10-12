@@ -1,10 +1,12 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "nature",
   "version": 1,
   "name": "自然観察",
   "summary": "季節の草花や鳥、水辺や地形など、自然に目を向ける話を多めに",
   "lang": "ja",
+  "activities": ["walk"],
+  "genres": ["nature"],
   "greeting": "ここからは、自然に目を向けて歩きましょう。",
   "talk": {
     "level": "normal",

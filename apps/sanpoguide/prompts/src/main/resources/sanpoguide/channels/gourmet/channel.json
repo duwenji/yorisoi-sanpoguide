@@ -1,10 +1,12 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "gourmet",
   "version": 1,
   "name": "グルメの旅",
   "summary": "飲食店や菓子・食品の店、市場をめぐり、土地の名物や食文化の話を多めに",
   "lang": "ja",
+  "activities": ["walk"],
+  "genres": ["food"],
   "greeting": "ここからは、土地の味をたずねて歩きましょう。",
   "talk": {
     "level": "normal",

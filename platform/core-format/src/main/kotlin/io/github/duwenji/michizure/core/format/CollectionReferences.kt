@@ -43,10 +43,14 @@ object CollectionReferences {
      * @param publisher the channel's publisher; a grant to one of its former ids (`publisherChange`)
      *   still counts (API-004 W-13). Null for a built-in channel, which any grant to everyone allows.
      * @param packages the collections read so far, by id, at the version the list names.
+     * @param appId the app resolving, whose id a collection's `grants.apps` must hold (API-004 1.5
+     *   I-11); null for the management system, which reviews a channel for every app.
      */
-    fun resolve(media: StationMedia, publisher: String?, list: ChannelList, packages: Map<String, CollectionPackage>): CollectionResolution {
+    fun resolve(
+        media: StationMedia, publisher: String?, list: ChannelList, packages: Map<String, CollectionPackage>, appId: String? = null,
+    ): CollectionResolution {
         val publisherIds = publisher?.let { setOf(it) + list.formerPublisherIds(it) }.orEmpty()
-        val statuses = media.collections.associate { use -> use.alias to status(use, publisherIds, list, packages[use.id]) }
+        val statuses = media.collections.associate { use -> use.alias to status(use, publisherIds, list, packages[use.id], appId) }
         val problems = media.cues.flatMap { cue ->
             cue.present.flatMap { p ->
                 p.items.flatten().filterIsInstance<Reference.Alias>().mapNotNull { ref ->
@@ -78,7 +82,7 @@ object CollectionReferences {
             .mapValues { it.value.toSet() }
     }
 
-    private fun status(use: CollectionUse, publisherIds: Set<String>, list: ChannelList, pkg: CollectionPackage?): CollectionStatus {
+    private fun status(use: CollectionUse, publisherIds: Set<String>, list: ChannelList, pkg: CollectionPackage?, appId: String?): CollectionStatus {
         val listed = list.collections.firstOrNull { it.id == use.id }
             ?: return CollectionStatus.Unusable(RejectCode.COLLECTION_NOT_LISTED, "${use.id} is not on the list")
         if (list.revokedCollections.any { it.id == use.id && it.covers(listed.version) }) {
@@ -89,6 +93,7 @@ object CollectionReferences {
         }
         val granted = listed.grants.publishers == null || publisherIds.any { listed.grants.allows(it) }
         if (!granted) return CollectionStatus.Unusable(RejectCode.NOT_GRANTED, "${use.id} is not granted to this publisher")
+        if (appId != null && !listed.grants.allowsApp(appId)) return CollectionStatus.Unusable(RejectCode.NOT_GRANTED, "${use.id} is not granted to $appId")
         pkg ?: return CollectionStatus.NotFetched(listed)
         // The package is the one the list names (its own check), and the list's copy of the grants must agree (API-002 P-15).
         if (pkg.manifest.id != listed.id || pkg.manifest.version != listed.version) {
