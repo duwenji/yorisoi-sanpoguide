@@ -13,7 +13,7 @@ import io.github.duwenji.sanpoguide.data.RouteClient
 import io.github.duwenji.sanpoguide.data.SpotPhotos
 import io.github.duwenji.sanpoguide.data.SpotRepository
 import io.github.duwenji.sanpoguide.guide.GuideRepository
-import io.github.duwenji.sanpoguide.guide.Speaker
+import io.github.duwenji.michizure.kit.voice.Speaker
 import io.github.duwenji.sanpoguide.history.HistoryStore
 import io.github.duwenji.sanpoguide.material.AiCompanionProducer
 import io.github.duwenji.sanpoguide.material.AiGuideProducer

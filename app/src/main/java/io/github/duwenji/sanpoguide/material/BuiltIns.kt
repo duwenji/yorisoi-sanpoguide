@@ -11,7 +11,7 @@ import io.github.duwenji.michizure.core.format.material.MaterialType
 import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.SettingsRepository
-import io.github.duwenji.sanpoguide.sound.Soundscape
+import io.github.duwenji.sanpoguide.sound.SoundscapeChoice
 import kotlin.coroutines.cancellation.CancellationException
 
 // The producers built into the app (API-004「組み込みの素材提供者」). Each wraps the code that made
@@ -126,7 +126,7 @@ class AmbientProducer : Producer {
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
         val mood = request.context.mood ?: return MaterialResult.None
-        val sound = Soundscape.of(request.context.station.sound, mood)
+        val sound = SoundscapeChoice.of(request.context.station.sound, mood)
         return ready(MaterialType.AUDIO, Content.Ambient(sound), descriptor.id)
     }
 }

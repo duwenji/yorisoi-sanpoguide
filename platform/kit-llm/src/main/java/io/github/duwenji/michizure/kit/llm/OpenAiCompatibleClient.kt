@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.guide
+package io.github.duwenji.michizure.kit.llm
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -1,5 +1,9 @@
 package io.github.duwenji.sanpoguide.guide
 
+import io.github.duwenji.michizure.kit.llm.Provider
+import io.github.duwenji.michizure.kit.llm.LlmClient
+import io.github.duwenji.michizure.kit.llm.ClaudeClient
+import io.github.duwenji.michizure.kit.llm.OpenAiCompatibleClient
 import io.github.duwenji.sanpoguide.data.Poi
 import io.github.duwenji.michizure.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts

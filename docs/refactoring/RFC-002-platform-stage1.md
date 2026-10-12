@@ -62,10 +62,10 @@
 | `platform/core-format` | JVM | `io.github.duwenji.michizure.core.format.*` | `station-format` の `station/format/*`（`BuiltInChannels` を除く）と `material/format/*` |
 | `platform/core-prompt` | JVM | `io.github.duwenji.michizure.core.prompt` | `prompt/PromptTemplates.kt` |
 | `apps/sanpoguide/prompts` | JVM | `io.github.duwenji.sanpoguide.prompt`（今のまま） | `prompt/Prompts.kt`・`StationPrompts.kt`・`ReviewSamples.kt`、`station/format/BuiltInChannels.kt`、リソース `sanpoguide/prompts/`・`sanpoguide/channels/`、`channelIndex` タスク |
-| `platform/kit-voice` | Android | `io.github.duwenji.michizure.kit.voice` | `guide/Speaker.kt`、`sound/AmbientPlayer.kt`・`Voices.kt` |
+| `platform/kit-voice` | Android | `io.github.duwenji.michizure.kit.voice` | `guide/Speaker.kt`、`sound/AmbientPlayer.kt`・`Voices.kt`、`sound/Soundscape.kt` の enum（音の種類。手順 2 で分けた。下の注記） |
 | `platform/kit-llm` | Android | `io.github.duwenji.michizure.kit.llm` | `guide/Provider.kt`（`LlmClient`・`Provider`）・`ClaudeClient.kt`・`OpenAiCompatibleClient.kt`、`settings/KeyCipher.kt` |
 | `platform/kit-geo` | Android | `io.github.duwenji.michizure.kit.geo`（`.weather`・`.map` を含む） | `data/*`（`Poi`・`Shape`・`Facility`・`OverpassClient`・`SpotRepository`・`RouteClient`・`SpotPhotos`・`GoogleMapTiles`）、`companion/WeatherClient.kt`、`history` の `LatLon`、`settings/MapStyle.kt` と `GoogleMapType`、`ui/SpotMap.kt`・`MapTiles.kt`・`Heading.kt`、drawable 7 つ（`spot_dot`・`me_dot`・`facility_*_dot`。通知のアイコン `ic_walk` はアプリに残す） |
-| `platform/kit-mood` | Android | `io.github.duwenji.michizure.kit.mood` | `mood/*`、`sound/Soundscape.kt`、`ui/MoodTheme.kt`・`MoodScene.kt` |
+| `platform/kit-mood` | Android | `io.github.duwenji.michizure.kit.mood` | `mood/*`、`sound/SoundscapeChoice.kt`（雰囲気・チャンネルから音を選ぶ。手順 2 で `Soundscape` から分けた）、`ui/MoodTheme.kt`・`MoodScene.kt` |
 | `app`（手順 5 で `apps/sanpoguide/app`） | Android | `io.github.duwenji.sanpoguide.*`（今のまま） | 残り: `companion`（`WeatherClient` を除く）・`guide/GuideRepository`・`GuidePrompt`・`history`・`material`・`settings`・`station`・`ui`・`walk`・`SanpoApp` |
 
 依存の向き（上が下を使う。逆向きはない）:
@@ -82,6 +82,8 @@ flowchart TB
 ```
 
 `kit-geo` が `core-format` を使うのは、スポットの種類（`SpotKind`）で検索する種類を決めているため（`OverpassClient.categoryOf`）。`kit-mood` が `core-format` を使うのは、背景音の選び方（`SoundChoice`）のため。
+
+**手順 2 での変更**: 計画では `Soundscape` を `kit-mood` に置く予定だったが、`Voices`・`AmbientPlayer`（`kit-voice`）が音の種類（`Soundscape` の enum）を使っていて、そのままでは `kit-voice` が `kit-mood` に依存してしまう。そこで `Soundscape` を、音の種類の enum（`kit-voice`）と、雰囲気・チャンネルの指定から選ぶ処理 `SoundscapeChoice`（今はアプリ、手順 4 で `kit-mood`）に分けた。呼び出しは `Soundscape.of`・`forMood` から `SoundscapeChoice.of`・`forMood` に変わるだけで、選び方は変えていない。依存の向きは `kit-mood` → `kit-voice` になる。
 
 ### 手順と保証
 
@@ -117,6 +119,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 |---|---|---|
 | 0 | 2026-10-12 | テストの数の基準: station-format 69 件、app 128 件（debug・release とも）。足したもの: CI（`.github/workflows/ci.yml`）、`PromptGoldenTest`（基準は `station-format/src/test/resources/prompt-golden.txt`。組み込みのチャンネル 6 本 × 解説のシステムプロンプト（長さ 3 通り）・散歩の友のシステムプロンプト・出来事ごとの追加の指示・審査の見本、プロンプトとチャンネルの全ファイルの SHA-256。プロンプトを 1 文字変えると落ちることを確かめた）、`StoredNamesTest`（R-8。そのため `KeyCipher.ALIAS` を `private` から `internal` にした）、バージョンカタログ（依存の解決結果が、アプリの実行時・アプリのテスト・station-format のコンパイルとテストで、書き換え前と同じことを確かめた）。判定順の場面テストは段階 2 に回した（未決事項 No.1）。CI と同じコマンド（`./gradlew test lint assembleRelease`）が手元で通り、テストは station-format 70 件・app 132 件。リリース版 APK の中身の一覧（.dex を除く）を [RFC-002-apk-files.txt](RFC-002-apk-files.txt) に記録した |
 | 1 | 2026-10-12 | station-format を `:platform:core-format`（`io.github.duwenji.michizure.core.format`・`.material`）・`:platform:core-prompt`（`…core.prompt`）・`:apps:sanpoguide:prompts`（`io.github.duwenji.sanpoguide.prompt`、`BuiltInChannels` を含む）に `git mv` で分けた（31 ファイル）。パッケージは 2 つにとどめた（R-2 の注記）。公開は `.github/workflows/publish.yml`（タグ `michizure-core-v*`・`sanpoguide-prompts-v*`）、版は `michizureCoreVersion=1.0.0`・`sanpoguidePromptsVersion=1.0.0`。結果: テストは core-format 54・core-prompt 9・prompts 7（計 70 で手順 0 と同じ。`PromptGoldenTest` を含む）・app 132。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身（339 ファイル、`sanpoguide/` の CRC を含む）が手順 0 の基準と同じ。`publishToMavenLocal` の jar と org.json・kotlin-stdlib だけで、JShell から標準チャンネルの審査の見本 9 件を組み立てられた。エミュレータでの確認は未実施（この PC に AVD がない。APK の中身が同じことで代えた） |
+| 2 | 2026-10-12 | `kit-voice`（`Speaker`・`AmbientPlayer`・`Voices`・`Soundscape` の enum）と `kit-llm`（`Provider`・`LlmClient`・`GuideException`・`ClaudeClient`・`OpenAiCompatibleClient`・`KeyCipher`）を作った。`Soundscape` を enum と `SoundscapeChoice` に分けた（上の注記）。`KeyCipher` はアプリから使うため `internal` から公開にし、Keystore の別名のテストを `kit-llm` の `KeyCipherTest` に、音の合成のテスト `VoicesTest` を `kit-voice` に移した。結果: テストは app 129・kit-llm 1・kit-voice 2（計 132 で手順 0 と同じ）、形式とプロンプトは変更なし。`./gradlew test lint assembleRelease` が通る。リリース版 APK の中身が手順 0 の基準と同じ。エミュレータでの確認は未実施（AVD がない） |
 
 ### 戻し方
 

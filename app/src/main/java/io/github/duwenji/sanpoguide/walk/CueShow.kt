@@ -9,7 +9,7 @@ import io.github.duwenji.sanpoguide.R
 import io.github.duwenji.sanpoguide.SanpoApp
 import io.github.duwenji.sanpoguide.companion.CompanionFeed
 import io.github.duwenji.sanpoguide.companion.Utterance
-import io.github.duwenji.sanpoguide.guide.Speaker
+import io.github.duwenji.michizure.kit.voice.Speaker
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.CueDetail
 import io.github.duwenji.sanpoguide.material.CueLayout

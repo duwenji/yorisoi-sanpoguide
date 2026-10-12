@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.guide
+package io.github.duwenji.michizure.kit.llm
 
 /** LLM services the guide can use. Everything except Claude speaks the OpenAI chat API. */
 enum class Provider(

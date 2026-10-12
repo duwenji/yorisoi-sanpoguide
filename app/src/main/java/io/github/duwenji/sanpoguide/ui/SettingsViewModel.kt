@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.duwenji.sanpoguide.SanpoApp
-import io.github.duwenji.sanpoguide.guide.GuideException
+import io.github.duwenji.michizure.kit.llm.GuideException
 import io.github.duwenji.sanpoguide.guide.GuideRepository
-import io.github.duwenji.sanpoguide.guide.Provider
+import io.github.duwenji.michizure.kit.llm.Provider
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.sanpoguide.settings.MapStyle
