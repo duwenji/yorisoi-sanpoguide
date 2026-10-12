@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.settings
+package io.github.duwenji.michizure.kit.geo.map
 
 /** Google's map types in the Map Tiles API (`mapType` of a session). */
 enum class GoogleMapType(val apiName: String) {

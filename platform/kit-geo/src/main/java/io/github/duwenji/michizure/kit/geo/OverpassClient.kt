@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
 import android.util.Log
 import io.github.duwenji.michizure.core.format.SpotKind

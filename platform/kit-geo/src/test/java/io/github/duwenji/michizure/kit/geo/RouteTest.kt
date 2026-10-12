@@ -1,6 +1,5 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
-import io.github.duwenji.sanpoguide.history.LatLon
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

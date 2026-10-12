@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.ui
+package io.github.duwenji.michizure.kit.geo.map
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -21,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import io.github.duwenji.sanpoguide.R
-import io.github.duwenji.sanpoguide.data.Facility
-import io.github.duwenji.sanpoguide.data.FacilityKind
-import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.michizure.kit.geo.R
+import io.github.duwenji.michizure.kit.geo.Facility
+import io.github.duwenji.michizure.kit.geo.FacilityKind
+import io.github.duwenji.michizure.kit.geo.LatLon
 import org.osmdroid.events.DelayedMapListener
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent

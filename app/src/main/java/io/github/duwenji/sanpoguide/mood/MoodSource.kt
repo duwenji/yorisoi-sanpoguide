@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.mood
 
-import io.github.duwenji.sanpoguide.companion.Weather
-import io.github.duwenji.sanpoguide.data.SpotRepository
+import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.michizure.kit.geo.SpotRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted

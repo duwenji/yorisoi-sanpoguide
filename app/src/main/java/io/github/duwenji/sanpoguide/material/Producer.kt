@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 import android.util.Log
 import io.github.duwenji.sanpoguide.companion.TalkEvent
 import io.github.duwenji.sanpoguide.companion.WalkSession
-import io.github.duwenji.sanpoguide.companion.Weather
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.michizure.core.format.material.MaterialType
 import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
 import io.github.duwenji.michizure.core.format.material.ProducerPolicy

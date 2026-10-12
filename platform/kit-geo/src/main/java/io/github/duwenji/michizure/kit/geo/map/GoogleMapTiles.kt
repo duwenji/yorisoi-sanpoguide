@@ -1,6 +1,5 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo.map
 
-import io.github.duwenji.sanpoguide.settings.GoogleMapType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrl

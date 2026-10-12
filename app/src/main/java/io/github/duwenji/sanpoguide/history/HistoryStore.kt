@@ -1,10 +1,11 @@
 package io.github.duwenji.sanpoguide.history
 
+import io.github.duwenji.michizure.kit.geo.LatLon
 import android.content.Context
 import android.location.Location
 import android.util.AtomicFile
 import android.util.Log
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.Poi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +16,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-
-data class LatLon(val lat: Double, val lon: Double)
 
 /** One stop at a spot during a walk, with what the companion said there. */
 data class SpotVisit(

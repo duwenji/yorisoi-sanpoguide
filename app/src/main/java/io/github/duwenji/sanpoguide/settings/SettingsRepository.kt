@@ -1,5 +1,6 @@
 package io.github.duwenji.sanpoguide.settings
 
+import io.github.duwenji.michizure.kit.geo.map.MapStyle
 import io.github.duwenji.michizure.kit.llm.KeyCipher
 import android.content.Context
 import androidx.core.content.edit

@@ -1,6 +1,5 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
-import io.github.duwenji.sanpoguide.history.LatLon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient

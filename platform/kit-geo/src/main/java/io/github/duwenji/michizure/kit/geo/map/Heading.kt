@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.ui
+package io.github.duwenji.michizure.kit.geo.map
 
 import android.content.Context
 import android.hardware.GeomagneticField

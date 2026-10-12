@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.companion
 
 import android.location.Location
-import io.github.duwenji.sanpoguide.data.RouteGeometry
-import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.michizure.kit.geo.RouteGeometry
+import io.github.duwenji.michizure.kit.geo.LatLon
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.history.StationSegment
 import io.github.duwenji.sanpoguide.history.WalkRecord

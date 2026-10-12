@@ -25,8 +25,8 @@ import io.github.duwenji.sanpoguide.companion.WeatherChangeDetector
 import io.github.duwenji.sanpoguide.companion.WeatherChangeKind
 import io.github.duwenji.sanpoguide.companion.Utterance
 import io.github.duwenji.sanpoguide.companion.WalkSession
-import io.github.duwenji.sanpoguide.companion.Weather
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.CueFire

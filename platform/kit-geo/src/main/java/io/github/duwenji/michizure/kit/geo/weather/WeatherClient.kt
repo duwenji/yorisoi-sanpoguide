@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.companion
+package io.github.duwenji.michizure.kit.geo.weather
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

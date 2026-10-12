@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.sanpoguide.data.RouteGeometry
-import io.github.duwenji.sanpoguide.history.LatLon
+import io.github.duwenji.michizure.kit.geo.RouteGeometry
+import io.github.duwenji.michizure.kit.geo.LatLon
 import io.github.duwenji.michizure.core.format.material.About
 import io.github.duwenji.michizure.core.format.material.Exposure
 import io.github.duwenji.michizure.core.format.material.Fetch

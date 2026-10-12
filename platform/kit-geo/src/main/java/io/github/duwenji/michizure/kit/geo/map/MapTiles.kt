@@ -1,9 +1,5 @@
-package io.github.duwenji.sanpoguide.ui
+package io.github.duwenji.michizure.kit.geo.map
 
-import io.github.duwenji.sanpoguide.data.GoogleMapTiles
-import io.github.duwenji.sanpoguide.data.GoogleTileSession
-import io.github.duwenji.sanpoguide.settings.GoogleMapType
-import io.github.duwenji.sanpoguide.settings.MapStyle
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.tileprovider.tilesource.XYTileSource

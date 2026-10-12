@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.mood
 
-import io.github.duwenji.sanpoguide.companion.WeatherCodes
+import io.github.duwenji.michizure.kit.geo.weather.WeatherCodes
 import java.util.Calendar
 
 enum class TimeOfDay(val label: String) {

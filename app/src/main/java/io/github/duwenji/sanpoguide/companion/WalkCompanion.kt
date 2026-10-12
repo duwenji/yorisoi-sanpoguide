@@ -1,6 +1,7 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.sanpoguide.data.Poi
+import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.michizure.kit.geo.Poi
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.history.HistoryStore

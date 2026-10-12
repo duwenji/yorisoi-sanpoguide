@@ -1,4 +1,4 @@
-package io.github.duwenji.sanpoguide.data
+package io.github.duwenji.michizure.kit.geo
 
 import io.github.duwenji.michizure.core.format.SpotKind
 import org.junit.Assert.assertEquals
