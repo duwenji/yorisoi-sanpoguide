@@ -17,6 +17,7 @@ import io.github.duwenji.sanpoguide.material.CueStep
 import io.github.duwenji.sanpoguide.material.Material
 import io.github.duwenji.sanpoguide.material.bitmap
 import io.github.duwenji.sanpoguide.material.creditLine
+import io.github.duwenji.sanpoguide.material.promotionNotice
 import io.github.duwenji.sanpoguide.ui.MainActivity
 
 /**
@@ -36,7 +37,7 @@ class CueShow(private val context: Context, private val feed: CompanionFeed, pri
         var name = spotName
         fun line(i: Int, m: Material): Utterance {
             val image = m.takeIf { it.content !is Content.Text }
-            return Utterance(now, textOf(m) ?: "", name, image, creditLine(m), layout.detail.takeIf { i == last }).also { name = null }
+            return Utterance(now, textOf(m) ?: "", name, image, creditLine(m), layout.detail.takeIf { i == last }, promotionNotice(m)).also { name = null }
         }
         layout.steps.forEachIndexed { i, step ->
             when (step) {
@@ -80,7 +81,7 @@ class CueShow(private val context: Context, private val feed: CompanionFeed, pri
 
         fun textOf(m: Material): String? = (m.content as? Content.Text)?.text
 
-        /** What is said for a line: the spot's name first, as for the companion's own lines. */
-        fun spoken(u: Utterance): String = if (u.spotName != null) "${u.spotName}。${u.text}" else u.text
+        /** What is said for a line: the spot's name first, as for the companion's own lines, then a promotion's notice. */
+        fun spoken(u: Utterance): String = listOfNotNull(u.spotName?.let { "${it}。" }, u.spokenPrefix, u.text).joinToString("")
     }
 }

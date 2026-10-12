@@ -117,6 +117,8 @@ data class Shown(val presentAs: PresentAs, val items: List<Material>)
 class CuePresenter(
     private val builtIns: Producers,
     private val stage: Int,
+    /** The user's「宣伝の素材を出さない」(ADR-002 D-34). */
+    private val hidePromotions: () -> Boolean = { false },
     private val log: (String, Throwable?) -> Unit = { message, e -> Log.w(TAG, message, e) },
 ) {
     suspend fun present(fire: CueFire, station: Station, context: MaterialContext): List<Shown> {
@@ -176,12 +178,17 @@ class CuePresenter(
     /** The channel's own resources as `self`, each usable collection by its alias, and each selector's producer (T-8d). */
     private fun producersOf(station: Station, materials: ChannelMaterials): Map<String, Producer> {
         val trial = station.source?.trial == true
-        val own = ResourceProducer(SELF, materials.media.resources, { materials.text(it, null) }, { materials.bytes(it, null) }, trial, stage)
+        // A promotional channel's own resources are its publisher's promotion (ADR-002 D-32).
+        val own = ResourceProducer(
+            SELF, materials.media.resources, { materials.text(it, null) }, { materials.bytes(it, null) }, trial, stage,
+            promotedBy = station.source?.takeIf { it.promotional }?.publisherName, hidePromotions = hidePromotions,
+        )
         val collections = materials.media.collections.mapNotNull { use ->
             val usable = materials.collection(use.alias) ?: return@mapNotNull null
             use.alias to ResourceProducer(
                 use.alias, usable.pkg.resources, { materials.text(it, use.alias) }, { materials.bytes(it, use.alias) },
                 trial, stage, producerName = usable.listed.producerName,
+                promotedBy = usable.listed.producerName.takeIf { usable.listed.promotional }, hidePromotions = hidePromotions,
             )
         }
         val selectors = materials.media.selectors.map { selector ->

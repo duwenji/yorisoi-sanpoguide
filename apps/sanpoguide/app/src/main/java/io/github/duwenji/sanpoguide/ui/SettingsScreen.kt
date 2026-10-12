@@ -258,6 +258,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                     draft.photosOnMobileData, viewModel::setPhotosOnMobileData,
                 )
             }
+            SwitchRow(
+                "宣伝の素材を出さない", "チャンネル・素材集の宣伝（「宣伝: 名前」と示されるもの）を出さず、次の候補（AI の解説など）に代えます",
+                draft.hidePromotions, viewModel::setHidePromotions,
+            )
 
             SectionTitle("地図")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

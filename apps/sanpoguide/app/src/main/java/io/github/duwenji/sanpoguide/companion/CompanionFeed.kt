@@ -21,6 +21,8 @@ data class Utterance(
     val image: Material? = null,
     val credit: String? = null,
     val detail: CueDetail? = null,
+    /** Said before the line, never shown: a promotion's notice (ADR-002 D-32). */
+    val spokenPrefix: String? = null,
 )
 
 /** Live walk figures for the UI; null while not walking. */

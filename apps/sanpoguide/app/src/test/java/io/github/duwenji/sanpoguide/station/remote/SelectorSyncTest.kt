@@ -80,7 +80,7 @@ class SelectorSyncTest {
 
     private class Col(
         val id: String, val by: TestPublisher, val text: String, val tag: String, val lat: Double?, val lon: Double?, val approved: Instant,
-        val grants: Any = "*",
+        val grants: Any = "*", val promotional: Boolean = false,
     )
 
     private fun collectionZip(c: Col): ByteArray {
@@ -113,7 +113,8 @@ class SelectorSyncTest {
                 .put("resourcesSize", zip.size).put("tags", JSONArray(listOf(c.tag))).put("regions", JSONArray(regions))
                 .put("grants", JSONObject().put("publishers", c.grants))
                 .put("package", JSONObject().put("url", "$base/col/$colSha.zip").put("sha256", colSha).put("size", zip.size).put("format", 1))
-                .put("minAppVersion", 1).put("approvedAt", c.approved.toString()))
+                .put("minAppVersion", 1).put("approvedAt", c.approved.toString())
+                .apply { if (c.promotional) put("promotional", true) })
         }
         files["$base/v1/channels.json"] = provider.list(1, JSONArray().put(entry), JSONArray(), clock, clock.plus(Duration.ofDays(14)), listed).toByteArray()
     }
@@ -143,6 +144,15 @@ class SelectorSyncTest {
     fun `a collection not granted to the channel's publisher is never drawn from`() {
         val members = Col("members-notes", templeGuild, "会員向けです", "history", null, null, clock, grants = JSONArray(listOf(TestPublisher().accountId)))
         publish(listOf(everywhere, members))
+        sync.addProvider(base, provider.id)
+        sync.install(provider.id, "kamakura-history", unmetered = true)
+        assertEquals(listOf("shrine-notes"), selected())
+    }
+
+    @Test
+    fun `a promotional collection is never drawn from, only named by a channel (ADR-002 D-33)`() {
+        val ads = Col("shop-notes", templeGuild, "お店の紹介です", "history", null, null, clock, promotional = true)
+        publish(listOf(everywhere, ads))
         sync.addProvider(base, provider.id)
         sync.install(provider.id, "kamakura-history", unmetered = true)
         assertEquals(listOf("shrine-notes"), selected())

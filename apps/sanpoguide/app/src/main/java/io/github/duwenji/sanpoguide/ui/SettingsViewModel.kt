@@ -95,6 +95,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAmbientEarphonesOnly(on: Boolean) = edit { it.copy(ambientEarphonesOnly = on) }
     fun setSpotPhotos(on: Boolean) = edit { it.copy(spotPhotos = on) }
     fun setPhotosOnMobileData(on: Boolean) = edit { it.copy(photosOnMobileData = on) }
+    fun setHidePromotions(on: Boolean) = edit { it.copy(hidePromotions = on) }
     fun setShareLocationWithAi(on: Boolean) = edit { it.copy(shareLocationWithAi = on) }
     fun setMapStyle(style: MapStyle) = edit { it.copy(mapStyle = style) }
     fun setGoogleMapsApiKey(key: String) = edit { it.copy(googleMapsApiKey = key) }
