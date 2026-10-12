@@ -1,9 +1,9 @@
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 // Release signing keys live outside Git, in keystore.properties at the project root
@@ -63,37 +63,36 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2025.06.00")
-    implementation(composeBom)
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.compose.ui.tooling.preview)
+    debugImplementation(libs.compose.ui.tooling)
 
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
     // A dependency pulls in a Fragment older than 1.3, too old for the ActivityResult API
     // (lint fails release builds with InvalidFragmentVersionForActivityResult).
-    implementation("androidx.fragment:fragment:1.8.8")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")
-    implementation("androidx.lifecycle:lifecycle-service:2.9.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation(libs.androidx.fragment)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.service)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
 
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("org.osmdroid:osmdroid-android:6.1.20")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.anthropic:anthropic-java:2.34.0")
+    implementation(libs.play.services.location)
+    implementation(libs.osmdroid.android)
+    implementation(libs.okhttp)
+    implementation(libs.anthropic.java)
     implementation(project(":station-format"))
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // (ADR-001 T-5), and later API-001.
-    implementation("com.google.crypto.tink:tink-android:1.23.0")
+    implementation(libs.tink.android)
     // Test tickets' QR codes (API-002): Google's scanner UI, so the app needs no camera permission.
-    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
+    implementation(libs.play.services.code.scanner)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
     // The real org.json; Android's is a stub in local unit tests.
-    testImplementation("org.json:json:20240303")
+    testImplementation(libs.json)
 }
