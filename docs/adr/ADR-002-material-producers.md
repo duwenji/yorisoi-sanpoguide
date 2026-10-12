@@ -185,7 +185,7 @@ flowchart TB
 | T-9 | README（外部サービス・プライバシー）、channels.md、TODO.md の更新。2026-10-11 実施（versionCode を 2 にしたのと同じ PR） | Claude | T-8 と同時 |
 | T-10 | 権利の申し立ての窓口と手順（D-21）。公開の連絡先、受け付けから取り下げまでの流れ、記録の残し方 | 開発者 | 第三者の素材集・チャンネルの公開の前 |
 | T-11 | 宣伝（D-29〜D-36）の契約: API-002 1.3（`promotional`）、API-004 1.4（基準で除く・散策者の設定で飛ばす）、API-003 1.4（審査で確かめること）、審査基準 2.4。2026-10-11 承認 | Claude | 1.2 の承認と同時 |
-| T-12 | station-format: リストの `promotional` を読む | Claude | T-11 の後 |
+| T-12 | station-format: リストの `promotional` を読む。2026-10-12 実装（station-format は ADR-003 の段階 1 で `core-format` になった。`ListedChannel.promotional`・`ListedCollection.promotional`、省略は偽。`core-format` 1.3.0） | Claude | T-11 の後 |
 | T-13 | sanpo-channel-console: 申請での「宣伝を含む」の申告、審査の画面での表示、リストの `promotional`（宣伝の素材集を宣言するチャンネルにも付ける）、`promotionalMinAppVersion` | Claude | T-12 の後 |
 | T-14 | アプリ: 「宣伝を含む」「宣伝: 素材提供者名」の表示、読み上げる前の一言、基準で除く、設定「宣伝の素材を出さない」。版を上げ、`promotionalMinAppVersion` をその版にする | Claude | T-12 の後 |
 

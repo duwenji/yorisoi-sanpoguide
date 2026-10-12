@@ -133,6 +133,8 @@ class ProviderDocumentsTest {
         assertEquals(emptyList<String>(), kamakura.media)
         assertNull(kamakura.resourcesSize)
         assertEquals(setOf("sg1" + "a".repeat(32)), list.formerPublisherIds(kamakura.publisher))
+        // A list from before API-002 1.3 marks nothing as promotional.
+        assertFalse(kamakura.promotional)
     }
 
     @Test
@@ -165,9 +167,30 @@ class ProviderDocumentsTest {
         assertFalse(c.grants.allows(producer))
         assertEquals(setOf("sg1" + "d".repeat(32)), list.formerProducerIds(producer))
         assertTrue(list.revokedCollections.single().covers(1))
+        assertFalse(c.promotional || list.channels[0].promotional)
         // Grants that are neither "*" nor a list make the list unreadable.
         val badGrants = listWith { it.put("collections", JSONArray().put(collection("\"everyone\""))) }
         assertEquals(ProviderError.BAD_DOCUMENT, error { docs.channelList(badGrants, keyset, now) })
+    }
+
+    @Test
+    fun `a 1_3 list marks promotional channels and collections (API-002 P-16)`() {
+        val json = listWith { body ->
+            body.getJSONArray("channels").getJSONObject(0).put("promotional", true)
+            body.getJSONArray("channels").getJSONObject(1).put("promotional", false)
+            body.put("collections", JSONArray().put(JSONObject(
+                """
+                { "id": "shop-ads", "version": 1, "producer": "sg1${"c".repeat(32)}", "producerName": "商店街",
+                  "name": "商店街のお知らせ", "summary": "お店の紹介", "media": ["text"], "resourcesSize": 1000,
+                  "tags": ["shopping"], "grants": { "publishers": "*" }, "promotional": true,
+                  "package": { "url": "https://cdn.example.com/col/s-1.zip", "sha256": "${"0".repeat(64)}", "size": 900, "format": 1 },
+                  "minAppVersion": 20, "approvedAt": "2026-10-11T09:00:00Z" }
+                """.trimIndent(),
+            )))
+        }
+        val list = docs.channelList(json, keyset, now)
+        assertEquals(listOf(true, false), list.channels.map { it.promotional })
+        assertTrue(list.collections.single().promotional)
     }
 
     @Test
