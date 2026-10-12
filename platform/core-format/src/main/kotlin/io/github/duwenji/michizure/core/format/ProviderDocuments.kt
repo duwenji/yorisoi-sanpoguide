@@ -11,7 +11,7 @@ import java.time.format.DateTimeParseException
 /**
  * The app's checks of a channel provider's documents (API-002): the discovery document and its
  * keyset, the channel list, and test tickets. The same rules as the channel management system's
- * conformance checks (sanpo-channel-console `packages/protocol`), whose code signs the test
+ * conformance checks (michizure-console `packages/protocol`), whose code signs the test
  * vectors these are tested against.
  */
 

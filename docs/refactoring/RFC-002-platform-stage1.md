@@ -52,7 +52,7 @@
 | R-9 | Android のリソース | `SpotMap` が使う drawable（`spot_dot`・`me_dot`・`facility_*_dot`）は `kit-geo` に移す。`app_name` などアプリの文字列はアプリに残す。`android.nonTransitiveRClass=true` なので、キットのリソースはキットの `R` で参照する |
 | R-10 | ビルドの設定 | 依存の版をそろえるため、Gradle のバージョンカタログ（`gradle/libs.versions.toml`）を作り、アプリ・キット・コアで使う。版の数字は今と同じにする |
 | R-11 | 公開 | コアとプロンプト・パックを GitHub Packages に公開する（コアは `michizureCoreVersion`、タグ `michizure-core-v<版>`。プロンプト・パックは `sanpoguidePromptsVersion`、タグ `sanpoguide-prompts-v<版>`）。キットは公開しない（同じリポジトリのアプリだけが使う。ADR-003 E-19）。`station-format` は 2.1.0 を最後に公開をやめる |
-| R-12 | 管理システム | validator は station-format 2.1.0 を固定して使っているので、段階 1 の間も動き続ける。手順 1 の公開の後、validator の依存を `core-format`・`sanpoguide:prompts` に切り替える PR を sanpo-channel-console に出す（ADR-003 T-7 から先に切り出す。import と依存の座標を変えるだけ）。以後、形式の修正は新しいコアだけで行う |
+| R-12 | 管理システム | validator は station-format 2.1.0 を固定して使っているので、段階 1 の間も動き続ける。手順 1 の公開の後、validator の依存を `core-format`・`sanpoguide:prompts` に切り替える PR を michizure-console に出す（ADR-003 T-7 から先に切り出す。import と依存の座標を変えるだけ）。以後、形式の修正は新しいコアだけで行う |
 | R-13 | CI | 今は公開のワークフローしかないので、プルリクエストごとに全モジュールの単体テスト・lint・デバッグ版のビルドを走らせるワークフローを足す（ADR-003 のリスク「モノレポで 1 つの変更がほかを壊す」への備え） |
 
 ### モジュールと移すもの
@@ -105,7 +105,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 |---|---|---|
 | 0 | 準備（PR-0）。① CI（R-13）。② プロンプトの基準のファイル: 組み込みのチャンネル 6 本 × スポット解説・散歩の友のシステムプロンプト、出来事ごとの追加の指示、定型文、`ReviewSamples` の見本を、今のコードで書き出してテストのリソースにし、比べるテストを足す（RFC-001 の 36 件・48 件の比較を、残るテストにしたもの）。③ R-8 の名前（設定のファイル名とキー、Keystore の別名、通知のチャンネル ID）を固定するテスト。④ 判定順の場面テスト（ADR-003 T-2）: `maybeTalk()` の判定を、場面ごとの期待する発言の表にする。`WalkService` から判定を取り出さないと書けない場合は、取り出す部分を最小にし、別の PR にする。⑤ バージョンカタログ（R-10） | 足したテストが今のコードで通る。リリース版の APK の中身（クラス以外のファイルの一覧）を記録する |
 | 1 | コア（PR-1）。`station-format` を `core-format`・`core-prompt`・`apps/sanpoguide/prompts` に分け、パッケージを改める（R-2〜R-4・R-6）。`station-format` のテストを、それぞれのモジュールに移す。公開のワークフローを改める（R-11） | `publishToMavenLocal` で公開した jar と org.json だけで、見本を組み立てられる（RFC-001 の手順 5 と同じ確かめ方）。APK の中のリソースの一覧（`sanpoguide/channels/index.txt` を含む）が手順 0 と同じ |
-| 1a | 管理システム（sanpo-channel-console の PR）。validator を新しいコアとプロンプト・パックに切り替える（R-12） | validator のテストと、開発用の環境での機械審査（組み込みのチャンネル 1 本と、試用のパッケージ 1 つ） |
+| 1a | 管理システム（michizure-console の PR）。validator を新しいコアとプロンプト・パックに切り替える（R-12） | validator のテストと、開発用の環境での機械審査（組み込みのチャンネル 1 本と、試用のパッケージ 1 つ） |
 | 2 | `kit-voice`・`kit-llm`（PR-2）。どちらもアプリのほかのパッケージを使っていないので、そのまま移す | エミュレータ: 設定画面の接続テスト（AI）、解説の読み上げ、背景音（イヤホンなしでスピーカーを選んだとき）。API キーが上書きインストールの後も読める（G-5） |
 | 3 | `kit-geo`（PR-3）。先に R-7 の型を移し、次に `data`・地図の画面を移す。テスト（`data/*Test`）も移す | エミュレータ（鎌倉で位置を指定）: 地図とスポット・施設のマーカーとチップ（施設のチップは 2026-09-29 に落ちる不具合があった箇所）、地図の種類の切り替え、ルートと向き、スポットの写真。散歩の記録の経路が読める |
 | 4 | `kit-mood`（PR-4）。テスト（`MoodTest`・`SoundscapeTest`）も移す | エミュレータ: 配色の切り替え、散策中のカードの絵、明朝体、背景音の選択 |

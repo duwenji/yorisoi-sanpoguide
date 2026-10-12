@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 草案（2026-10-12）。呼び方（[1 章](#1-関係者と呼び方)）は開発者が決定済み。[4 章](#4-関係者ごとの課題と対応案)の対応案は未承認 |
-| 対象 | SanpoGuide（アプリ）と sanpo-channel-console（チャンネル管理システム） |
-| 関連 | [ADR-001](adr/ADR-001-third-party-channel-curation.md)・[ADR-002](adr/ADR-002-material-producers.md)、[channels.md](channels.md)、[構造図](architecture.md)、管理システムの[利用ガイド](https://github.com/duwenji/sanpo-channel-console/blob/main/docs/guide/README.md) |
+| 対象 | SanpoGuide（アプリ）と michizure-console（チャンネル管理システム） |
+| 関連 | [ADR-001](adr/ADR-001-third-party-channel-curation.md)・[ADR-002](adr/ADR-002-material-producers.md)、[channels.md](channels.md)、[構造図](architecture.md)、管理システムの[利用ガイド](https://github.com/duwenji/michizure-console/blob/main/docs/guide/README.md) |
 
 本書は、2 つのリポジトリに共通する関係者の呼び方と、関係者それぞれから見た課題をまとめる。呼び方の正本は本書。
 
@@ -48,7 +48,7 @@ flowchart LR
     CP["チャンネル提供者<br/>チャンネルを作る"]
     MP["素材提供者<br/>素材集を作る"]
   end
-  subgraph OPS["運営（sanpo-channel-console）"]
+  subgraph OPS["運営（michizure-console）"]
     Review["機械の確認 → 審査<br/>（身元の確認・AI の見本）"]
     List["承認済みチャンネル・リスト<br/>運営の鍵で署名"]
   end
