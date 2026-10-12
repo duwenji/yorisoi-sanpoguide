@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // built-in channels. Plain JVM so the channel management system's review tools can run exactly
 // the checks the app runs and render exactly the prompts it sends.
 plugins {
-    id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.kotlin.jvm)
     `maven-publish`
 }
 
@@ -27,10 +27,10 @@ kotlin {
 dependencies {
     // Android ships org.json; bundling the jar into the app would clash with it
     // (lint: DuplicatePlatformClasses). Other users add it themselves.
-    compileOnly("org.json:json:20240303")
+    compileOnly(libs.json)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.json:json:20240303")
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
 }
 
 // A jar (or the APK) can't list a resource folder, so the built-in channels come with a list of
