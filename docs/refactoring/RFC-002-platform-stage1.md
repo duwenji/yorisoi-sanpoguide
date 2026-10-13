@@ -110,6 +110,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 | 3 | `kit-geo`（PR-3）。先に R-7 の型を移し、次に `data`・地図の画面を移す。テスト（`data/*Test`）も移す | エミュレータ（鎌倉で位置を指定）: 地図とスポット・施設のマーカーとチップ（施設のチップは 2026-09-29 に落ちる不具合があった箇所）、地図の種類の切り替え、ルートと向き、スポットの写真。散歩の記録の経路が読める |
 | 4 | `kit-mood`（PR-4）。テスト（`MoodTest`・`SoundscapeTest`）も移す | エミュレータ: 配色の切り替え、散策中のカードの絵、明朝体、背景音の選択 |
 | 5 | モノレポの構成（PR-5）。`app` を `apps/sanpoguide/app` に移す（Gradle のパスは `:apps:sanpoguide:app`）。CI・公開のワークフロー、README のビルドの手順、architecture.md・yorisoi-tutorial の参照を直す。`station-format` のフォルダを消す | ファイルの移動だけで、手順 4 までと同じ保証。`git log --follow` で履歴をたどれる |
+| 5 | モノレポの構成（PR-5）。`app` を `apps/sanpoguide/app` に移す（Gradle のパスは `:apps:sanpoguide:app`）。CI・公開のワークフロー、README のビルドの手順、architecture.md・michizure-tutorial の参照を直す。`station-format` のフォルダを消す | ファイルの移動だけで、手順 4 までと同じ保証。`git log --follow` で履歴をたどれる |
 
 各手順の後、エミュレータで散策モードを通しで確かめる（開始・スポットの話しかけ・チャンネルの切り替え・終了・記録）。第三者のチャンネルの取り込みは、手順 1 の後に管理システムの `publish:local` で作ったリストを使って確かめる。
 

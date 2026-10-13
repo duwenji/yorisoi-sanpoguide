@@ -209,6 +209,7 @@ flowchart TB
 | T-9 | サイクリングのアプリ（E-23）を作り、合わなかった抽象を直す。代表のアプリとして `cycle` の見本に使う | 開発者・Claude | T-8 の後 |
 | T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、yorisoi-tutorial 第 5 部 | Claude | 段階ごと |
 | T-11 | `yorisoi` への改名（E-22、1.2）。範囲はエコシステム全体: SanpoGuide の Kotlin のパッケージと公開の座標（`core-format`・`core-prompt` を 2.0.0、プロンプト・パックを 2.0.0 として新しい座標で公開。`io.github.duwenji.michizure` の 1.x は GitHub Packages に残るが、以後は更新しない）、管理システム（リポジトリ・パッケージ・AWS のスタック。管理システムの ADR-001）、チュートリアル | 開発者・Claude | 2026-10-13〜 |
+| T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、michizure-tutorial 第 5 部 | Claude | 段階ごと |
 
 見直しの条件:
 - 2 本目のアプリで、プロファイル・エコシステム共通の語彙の形が合わなかったとき
