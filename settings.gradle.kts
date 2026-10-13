@@ -10,17 +10,34 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // The yorisoi platform (RFC-004 R-4). Reading GitHub Packages needs a token with
+        // read:packages: $GITHUB_TOKEN in CI, or gpr.user / gpr.key in ~/.gradle/gradle.properties.
+        // Without one, only versions published locally (`./gradlew publishToMavenLocal` in
+        // yorisoi-platform) are used.
+        val gprUser = providers.gradleProperty("gpr.user").orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
+        val gprKey = providers.gradleProperty("gpr.key").orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+        if (gprUser != null && gprKey != null) {
+            maven {
+                name = "yorisoiPlatform"
+                url = uri("https://maven.pkg.github.com/duwenji/yorisoi-platform")
+                credentials {
+                    username = gprUser
+                    password = gprKey
+                }
+                content { includeGroup("io.github.duwenji.yorisoi") }
+            }
+        }
+        mavenLocal {
+            content { includeGroup("io.github.duwenji.yorisoi") }
+        }
     }
 }
 rootProject.name = "SanpoGuide"
-// The platform (ADR-003): core libraries (plain JVM) and Android kits.
-include(":platform:core-format")
-include(":platform:core-prompt")
-include(":platform:kit-voice")
-include(":platform:kit-llm")
-include(":platform:kit-geo")
-include(":platform:kit-mood")
-include(":platform:kit-companion")
-// SanpoGuide: the app and its prompt pack.
-include(":apps:sanpoguide:app")
-include(":apps:sanpoguide:prompts")
+// SanpoGuide and its prompt pack. The platform comes from GitHub Packages (gradle/libs.versions.toml).
+include(":app")
+include(":prompts")
+
+// To change the platform and the app together, build against yorisoi-platform's sources instead of
+// the published version (RFC-004 R-7): -Pyorisoi.platformDir=../yorisoi-platform, or set it in
+// ~/.gradle/gradle.properties. Never set in CI.
+providers.gradleProperty("yorisoi.platformDir").orNull?.let { includeBuild(it) }

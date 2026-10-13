@@ -74,7 +74,7 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 
 ## チャンネル
 
-語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [docs/channel-package-format.md](docs/channel-package-format.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は [docs/stakeholders.md](docs/stakeholders.md)。
+語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は [docs/stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)。
 
 | チャンネル | 語り手と話題 | 話しかける場面 | 頻度の既定 | 解説の長さ | 優先する話題 |
 |---|---|---|---|---|---|
@@ -96,7 +96,7 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 
 ### 配信されているチャンネル
 
-第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[ADR-001](docs/adr/ADR-001-third-party-channel-curation.md)、形式は [API-002](docs/channel-list-api.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。
+第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[ADR-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-001-third-party-channel-curation.md)、形式は [API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。
 
 - リストは URL とリストID（`sc1…`）で足す。リストIDは運営のサイトなど別の方法で確かめたものを入れ、サーバーが返す鍵と照合する（URL からは取らない）。アプリに内蔵のリストは、公開の準備ができてから加わる
 - リストは、アプリの起動時と散策の開始時に、前回から 24 時間たっていれば取得する（画面から手動でも。散策中は取得しない）。署名・期限・巻き戻しを確かめ、だめなら前回のリストを期限まで使う
@@ -105,10 +105,10 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 - 配信されているチャンネルの話しかけの頻度や場面はチャンネル提供者が決める（設定画面では変えられない）。天気の急変・日の入りなどの案内と共通の決まりは、どのチャンネルでも同じ
 - 署名の確認には Tink（Ed25519）を使う
 - デバッグ版だけ、`http://localhost`・`http://10.0.2.2`（エミュレータから見た PC）のリストを使える
-- **素材・きっかけ・見せ方**（[ADR-002](docs/adr/ADR-002-material-producers.md)、アプリの第 1 段: 文字と画像）: 配信されているチャンネルは、スポット・地点・出来事（選んだとき・散歩の開始・終了）をきっかけに、同梱の素材や、リストに載った素材集（第三者の素材提供者が作り、審査されたもの）の素材を出せる。見せ方は、読み上げ・発言カード（文字・画像）・通知（チャンネル「チャンネルの案内」）・解説の画面・全画面の画像。解説の画面と全画面はカード・通知をタップしたときだけ開き、全画面は歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える
+- **素材・きっかけ・見せ方**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)、アプリの第 1 段: 文字と画像）: 配信されているチャンネルは、スポット・地点・出来事（選んだとき・散歩の開始・終了）をきっかけに、同梱の素材や、リストに載った素材集（第三者の素材提供者が作り、審査されたもの）の素材を出せる。見せ方は、読み上げ・発言カード（文字・画像）・通知（チャンネル「チャンネルの案内」）・解説の画面・全画面の画像。解説の画面と全画面はカード・通知をタップしたときだけ開き、全画面は歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える
   - 素材は、チャンネルを選んだときにまとめて取得し、端末で確かめてから使う（その後の更新は従量制でない回線のときだけ。映像を除いて 50MB まで）。スポットに近づいてから取得することはない
   - チャンネルが「基準」（種類・タグ）で素材を選ぶときは、今いる地域とその隣の地域（geohash 3 文字、約 150km 四方）に関する素材集と、地域を問わない素材集を、従量制でない回線のときだけ取得する
-- **宣伝の表示**（[ADR-002](docs/adr/ADR-002-material-producers.md) D-29〜D-36、versionCode 3）: 宣伝を含むチャンネルは、一覧と選ぶ画面に「宣伝を含む」と出す。宣伝の素材集の素材と、宣伝のチャンネルの同梱の素材は、出典の行に「宣伝: 名前」と出し、読み上げる前に「ここからは〇〇の宣伝です」と言う。宣伝の素材集は基準で選ばない（チャンネルが名指ししたときだけ使う）。設定「宣伝の素材を出さない」をオンにすると、宣伝の素材を飛ばして次の候補（AI の解説など）に代える
+- **宣伝の表示**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) D-29〜D-36、versionCode 3）: 宣伝を含むチャンネルは、一覧と選ぶ画面に「宣伝を含む」と出す。宣伝の素材集の素材と、宣伝のチャンネルの同梱の素材は、出典の行に「宣伝: 名前」と出し、読み上げる前に「ここからは〇〇の宣伝です」と言う。宣伝の素材集は基準で選ばない（チャンネルが名指ししたときだけ使う）。設定「宣伝の素材を出さない」をオンにすると、宣伝の素材を飛ばして次の候補（AI の解説など）に代える
 - **試用チケット（チャンネル提供者向け）**: 設定画面の一番下の「バージョン」を 7 回タップすると開発者モードになり、管理システムで発行した試用チケットの QR コードを読み込める（Google のコードスキャナを使うので、アプリにカメラの権限は要らない）。チケットのリストを先に足しておく。審査前のチャンネルを 7 日まで試せ、画面では「審査前の試用」、散策では最初に「審査前の試用のチャンネルです」と言う。開発者モードをオフにする・期限が切れると使えなくなる
 
 ## 雰囲気
@@ -161,10 +161,18 @@ API キーが未設定の場合は、地図データのタグから作る簡易�
 必要な環境: JDK 17、Android SDK（compileSdk 35）。対応端末は Android 8.0（API 26）以上。
 
 ```sh
-./gradlew :apps:sanpoguide:app:installDebug
+./gradlew :app:installDebug
 ```
 
-アプリは `apps/sanpoguide/app/`（Gradle では `:apps:sanpoguide:app`）、共通の部品は `platform/` にある（[RFC-002](docs/refactoring/RFC-002-platform-stage1.md)）。
+アプリは `app/`（Gradle では `:app`）、プロンプト・パックは `prompts/`（`:prompts`）にある。共通の部品（コアとキット）は別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform) にあり、GitHub Packages に公開した版を使う（版は `gradle/libs.versions.toml` の `yorisoi`。[RFC-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-004-split-repositories.md)）。
+
+GitHub Packages の Maven は、読むのにトークン（`read:packages`）が要る。`~/.gradle/gradle.properties` に `gpr.user`（GitHub のユーザー名）と `gpr.key`（トークン）を書く。トークンがなければ、yorisoi-platform で `./gradlew publishToMavenLocal` した版を使う。
+
+yorisoi-platform と一緒に直すときは、隣のフォルダのソースに差し替えて試せる（composite build）。
+
+```sh
+./gradlew :app:installDebug -Pyorisoi.platformDir=../yorisoi-platform
+```
 
 アプリの設定画面で API キーを入力し、「接続テスト」で確認してから保存する。
 
@@ -179,7 +187,7 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 ./gradlew assembleRelease
 ```
 
-出力: `apps/sanpoguide/app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
+出力: `app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
 
 ### アプリが求める権限
 
@@ -207,9 +215,9 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 
-チャンネルの形式（[docs/channel-package-format.md](docs/channel-package-format.md)）の読み込みと確認は `platform/core-format/`（`:platform:core-format`）、プロンプトのテンプレートの仕組みは `platform/core-prompt/`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルは `apps/sanpoguide/prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール（[RFC-002](docs/refactoring/RFC-002-platform-stage1.md)）。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（`io.github.duwenji.yorisoi:core-format`・`core-prompt` は `gradle.properties` の `yorisoiCoreVersion`、タグ `yorisoi-core-v<版>`。`io.github.duwenji.sanpoguide:prompts` は `sanpoguidePromptsVersion`、タグ `sanpoguide-prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（[docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール（[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
 
-AI に送るプロンプトと定型文は、コードではなく `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
+AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
 
 AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追加するだけでよい。独自 API の場合は `LlmClient` を実装し、`GuideRepository.createClient` に分岐を足す。
 
@@ -244,7 +252,7 @@ AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追
 
 ## 今後の予定
 
-アプリの操作ではなく、散策全般の支援に広げている。雰囲気・背景画像・背景音と、第三者のチャンネル（素材の第 1 段: 文字と画像）は実装済み。宣伝を含むチャンネル・素材集の表示（[ADR-002](docs/adr/ADR-002-material-producers.md) T-12〜T-14）も実装した。次は、素材の第 2 段（音声）、位置に紐づく秘密メッセージなど。項目と検討事項は [docs/TODO.md](docs/TODO.md) にまとめている。
+アプリの操作ではなく、散策全般の支援に広げている。雰囲気・背景画像・背景音と、第三者のチャンネル（素材の第 1 段: 文字と画像）は実装済み。宣伝を含むチャンネル・素材集の表示（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) T-12〜T-14）も実装した。次は、素材の第 2 段（音声）、位置に紐づく秘密メッセージなど。項目と検討事項は [docs/TODO.md](docs/TODO.md) にまとめている。
 
 ## 既知の課題
 

@@ -1,4 +1,6 @@
-# Checks every pull request (RFC-002 R-13): all modules' unit tests, lint and a release build.
+# Checks every pull request (RFC-002 R-13, RFC-004 R-6): unit tests, lint and a release build,
+# against the published yorisoi platform (read with GITHUB_TOKEN: the platform's packages give this
+# repository Actions access).
 # The release APK is unsigned here (no keystore.properties); it only has to build.
 name: CI
 
@@ -9,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -29,6 +32,9 @@ jobs:
 
       - name: Test, lint and build
         run: ./gradlew test lint assembleRelease --console=plain
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Keep the reports
         if: failure()

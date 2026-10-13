@@ -1,14 +1,12 @@
-# Publishes to GitHub Packages when a tag is pushed (RFC-002 R-11):
-# - yorisoi-core-v<version>:     :platform:core-format and :platform:core-prompt (yorisoiCoreVersion)
-# - sanpoguide-prompts-v<version>: :apps:sanpoguide:prompts (sanpoguidePromptsVersion)
-# The tag must match the version in gradle.properties. Publish the core a prompt pack uses first.
+# Publishes SanpoGuide's prompt pack (:prompts, sanpoguidePromptsVersion) to GitHub Packages when
+# the tag prompts-v<version> is pushed (RFC-004 R-5). The tag must match the version in
+# gradle.properties, and the yorisoi version it uses must be published first.
 name: Publish
 
 on:
   push:
     tags:
-      - 'yorisoi-core-v*'
-      - 'sanpoguide-prompts-v*'
+      - 'prompts-v*'
 
 permissions:
   contents: read
@@ -27,28 +25,16 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Choose what to publish
-        id: what
+      - name: Check the tag
         run: |
-          case "${GITHUB_REF_NAME}" in
-            yorisoi-core-v*)
-              property=yorisoiCoreVersion
-              tasks=":platform:core-format:test :platform:core-prompt:test :platform:core-format:publish :platform:core-prompt:publish"
-              ;;
-            sanpoguide-prompts-v*)
-              property=sanpoguidePromptsVersion
-              tasks=":apps:sanpoguide:prompts:test :apps:sanpoguide:prompts:publish"
-              ;;
-          esac
-          version=$(grep "^${property}=" gradle.properties | cut -d= -f2)
-          if [ "${GITHUB_REF_NAME##*-v}" != "${version}" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match ${property}=${version}" >&2
+          version=$(grep '^sanpoguidePromptsVersion=' gradle.properties | cut -d= -f2)
+          if [ "${GITHUB_REF_NAME#prompts-v}" != "${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match sanpoguidePromptsVersion=${version}" >&2
             exit 1
           fi
-          echo "tasks=${tasks}" >> "$GITHUB_OUTPUT"
 
       - name: Test and publish
-        run: ./gradlew ${{ steps.what.outputs.tasks }} --console=plain
+        run: ./gradlew :prompts:test :prompts:publish --console=plain
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

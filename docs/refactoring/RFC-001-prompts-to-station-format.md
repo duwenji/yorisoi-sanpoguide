@@ -67,7 +67,7 @@
 
 ## 関連ドキュメント・参照リンク
 
-- [prompts.md](../prompts.md)、[architecture.md](../architecture.md)、[channel-package-format.md](../channel-package-format.md)
+- [prompts.md](../prompts.md)、[architecture.md](../architecture.md)、[channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)
 - 検討の記録: [skill-logs/refactoring_safety_2026-10-03.md](../skill-logs/refactoring_safety_2026-10-03.md)
 
 ## 変更履歴

@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 承認済み（2026-10-03、開発者）。段階 1〜4（組み込みのチャンネル）と段階 5（第三者のチャンネルと素材の第 1 段。ADR-002 T-8、2026-10-11）は実装済み、段階 6・7 は未着手 |
-| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[API-003 チャンネル・パッケージ形式](channel-package-format.md)、[API-002 承認済みチャンネル・リスト](channel-list-api.md)、[ADR-001](adr/ADR-001-third-party-channel-curation.md) |
+| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[API-003 チャンネル・パッケージ形式](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)、[API-002 承認済みチャンネル・リスト](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)、[ADR-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-001-third-party-channel-curation.md) |
 
 チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-003「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-003、第三者のチャンネルの取得は API-002 で決めてある。
 
@@ -148,7 +148,7 @@ API-003 で `format: 1` にすべての種類を定め、アプリは次の段�
 
 - `:station-format` の単体テスト: API-003 の確認観点 V-03〜V-07（見本の不正なパッケージで拒むこと）
 - 組み込みのチャンネルの確認（V-01）と、標準のプロンプトが変わらないこと（V-02）
-- `PromptFilesTest` を全チャンネル × 全出来事で回す。`apps/sanpoguide/app/build/prompt-samples/{チャンネル}/` に書き出して見比べられるようにする
+- `PromptFilesTest` を全チャンネル × 全出来事で回す。`app/build/prompt-samples/{チャンネル}/` に書き出して見比べられるようにする
 - 話す処理: `talk.events` をすべて偽にしても、天気の急変・日の入り・施設の案内が話されること（V-08）。判定は `TalkDecider` に切り出し、`TalkDeciderTest` で確かめている（2026-10-12、RFC-003）
 - 設定の移行: 今の `talkLevel`・`moodEnabled` が正しく移ること
 

@@ -1,6 +1,6 @@
 # プロンプト一覧
 
-AI に送るプロンプトと、AI を使えないときの定型文は、すべて `apps/sanpoguide/prompts/src/main/resources/sanpoguide/prompts/` に置いてある（アプリはクラスパスから読む。チャンネル管理システムも同じファイルで審査の見本を作るため、JVM のモジュール `:apps:sanpoguide:prompts`（SanpoGuide のプロンプト・パック）に置いている）。コードにはプロンプトの文言を書かず、値（変数）を渡すだけにしている。
+AI に送るプロンプトと、AI を使えないときの定型文は、すべて `prompts/src/main/resources/sanpoguide/prompts/` に置いてある（アプリはクラスパスから読む。チャンネル管理システムも同じファイルで審査の見本を作るため、JVM のモジュール `:prompts`（SanpoGuide のプロンプト・パック）に置いている）。コードにはプロンプトの文言を書かず、値（変数）を渡すだけにしている。
 
 文言を変えるときは該当ファイルを編集し、アプリをビルドし直す。どの AI サービス（Claude / DeepSeek など）を選んでも同じファイルを使う。
 
@@ -60,7 +60,7 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 
 ## チャンネルとの関係
 
-`guide/system` と `companion/system` は枠で、役割・内容の重点・話題の選び方・解説の長さは、選んでいるチャンネルから変数で入る（[channel-package-format.md](channel-package-format.md) のスロット）。チャンネルの文章は `sanpoguide/channels/{id}/prompts/` にあり、ないスロットには標準のチャンネル（`sanpoguide/channels/standard/`）の文章が入る。スロットの差し込み方と、出来事のプロンプトのつなぎ方は `StationPrompts` にある。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
+`guide/system` と `companion/system` は枠で、役割・内容の重点・話題の選び方・解説の長さは、選んでいるチャンネルから変数で入る（[channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md) のスロット）。チャンネルの文章は `sanpoguide/channels/{id}/prompts/` にあり、ないスロットには標準のチャンネル（`sanpoguide/channels/standard/`）の文章が入る。スロットの差し込み方と、出来事のプロンプトのつなぎ方は `StationPrompts` にある。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
 
 今までの文面を変えたいときは、枠の部分なら `prompts/` を、役割や話題なら `sanpoguide/channels/standard/prompts/` を直す。標準のチャンネルで組み立てたシステムプロンプトがチャンネル導入前と同じであることを `StationAssetsTest` が確かめているので、意図して文面を変えたときは、基準のファイル（`app/src/test/resources/prompt-baseline/`）も直す。
 
@@ -111,4 +111,4 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 - `prompts/` にあるファイルがすべて使われていて、コードが参照するファイルがすべて存在する
 - タグが残っていない、空行が続いていない
 
-組み立てた結果は `apps/sanpoguide/app/build/prompt-samples/` に書き出されるので、文言を変えたあとの見え方をそこで確認できる。
+組み立てた結果は `app/build/prompt-samples/` に書き出されるので、文言を変えたあとの見え方をそこで確認できる。

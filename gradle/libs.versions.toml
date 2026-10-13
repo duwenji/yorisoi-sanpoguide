@@ -16,6 +16,8 @@ anthropic = "2.34.0"
 tink = "1.23.0"
 json = "20240303"
 junit = "4.13.2"
+# The yorisoi platform (github.com/duwenji/yorisoi-platform, RFC-004 R-4): one version for all modules.
+yorisoi = "2.0.0"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -40,6 +42,13 @@ anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthr
 tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink" }
 json = { module = "org.json:json", version.ref = "json" }
 junit = { module = "junit:junit", version.ref = "junit" }
+yorisoi-core-format = { module = "io.github.duwenji.yorisoi:core-format", version.ref = "yorisoi" }
+yorisoi-core-prompt = { module = "io.github.duwenji.yorisoi:core-prompt", version.ref = "yorisoi" }
+yorisoi-kit-voice = { module = "io.github.duwenji.yorisoi:kit-voice", version.ref = "yorisoi" }
+yorisoi-kit-llm = { module = "io.github.duwenji.yorisoi:kit-llm", version.ref = "yorisoi" }
+yorisoi-kit-geo = { module = "io.github.duwenji.yorisoi:kit-geo", version.ref = "yorisoi" }
+yorisoi-kit-mood = { module = "io.github.duwenji.yorisoi:kit-mood", version.ref = "yorisoi" }
+yorisoi-kit-companion = { module = "io.github.duwenji.yorisoi:kit-companion", version.ref = "yorisoi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
