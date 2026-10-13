@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.history
 
-import io.github.duwenji.michizure.kit.geo.LatLon
+import io.github.duwenji.yorisoi.kit.geo.LatLon
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

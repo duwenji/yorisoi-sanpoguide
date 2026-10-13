@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.station.remote
 
-import io.github.duwenji.michizure.core.format.AccountIds
-import io.github.duwenji.michizure.core.format.ProviderIds
+import io.github.duwenji.yorisoi.core.format.AccountIds
+import io.github.duwenji.yorisoi.core.format.ProviderIds
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream

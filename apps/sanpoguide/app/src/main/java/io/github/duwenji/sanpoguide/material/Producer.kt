@@ -4,13 +4,13 @@ import android.graphics.Bitmap
 import android.util.Log
 import io.github.duwenji.sanpoguide.companion.TalkEvent
 import io.github.duwenji.sanpoguide.companion.WalkSession
-import io.github.duwenji.michizure.kit.geo.weather.Weather
-import io.github.duwenji.michizure.kit.geo.Poi
-import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
-import io.github.duwenji.michizure.core.format.material.ProducerPolicy
-import io.github.duwenji.michizure.kit.mood.Mood
-import io.github.duwenji.michizure.kit.voice.Soundscape
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.core.format.material.MaterialType
+import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
+import io.github.duwenji.yorisoi.core.format.material.ProducerPolicy
+import io.github.duwenji.yorisoi.kit.mood.Mood
+import io.github.duwenji.yorisoi.kit.voice.Soundscape
 import io.github.duwenji.sanpoguide.station.Station
 import kotlin.coroutines.cancellation.CancellationException
 

@@ -1,11 +1,11 @@
 package io.github.duwenji.sanpoguide.prompt
 
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import io.github.duwenji.sanpoguide.station.BuiltInStations
-import io.github.duwenji.michizure.core.format.DirectoryStationFiles
+import io.github.duwenji.yorisoi.core.format.DirectoryStationFiles
 import org.junit.Test
 import java.io.File
 

@@ -58,17 +58,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.sanpoguide.BuildConfig
-import io.github.duwenji.michizure.kit.llm.Provider
-import io.github.duwenji.michizure.kit.geo.map.MapStyle
+import io.github.duwenji.yorisoi.kit.llm.Provider
+import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.settings.TalkLevel
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.settings.Thresholds
 import io.github.duwenji.sanpoguide.station.Station
 import io.github.duwenji.sanpoguide.station.StationLabels
-import io.github.duwenji.michizure.core.format.GuideLength
-import io.github.duwenji.michizure.core.format.SoundChoice
-import io.github.duwenji.michizure.core.format.SpotKind
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.GuideLength
+import io.github.duwenji.yorisoi.core.format.SoundChoice
+import io.github.duwenji.yorisoi.core.format.SpotKind
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)

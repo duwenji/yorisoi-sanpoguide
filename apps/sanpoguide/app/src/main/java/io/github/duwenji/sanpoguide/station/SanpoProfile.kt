@@ -1,9 +1,9 @@
 package io.github.duwenji.sanpoguide.station
 
-import io.github.duwenji.michizure.core.format.Activity
-import io.github.duwenji.michizure.core.format.AppIds
-import io.github.duwenji.michizure.core.format.AppProfile
-import io.github.duwenji.michizure.core.format.Feature
+import io.github.duwenji.yorisoi.core.format.Activity
+import io.github.duwenji.yorisoi.core.format.AppIds
+import io.github.duwenji.yorisoi.core.format.AppProfile
+import io.github.duwenji.yorisoi.core.format.Feature
 
 /**
  * SanpoGuide as the ecosystem sees it (ADR-003 E-6 ①, API-003 G-4): a walking companion that has

@@ -7,8 +7,8 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.duwenji.michizure"
-version = providers.gradleProperty("michizureCoreVersion").get()
+group = "io.github.duwenji.yorisoi"
+version = providers.gradleProperty("yorisoiCoreVersion").get()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -32,7 +32,7 @@ publishing {
             artifactId = "core-prompt"
             from(components["java"])
             pom {
-                name.set("michizure core-prompt")
+                name.set("yorisoi core-prompt")
                 description.set("Prompt templates: the subset of Mustache the apps' prompt files are written in.")
                 url.set("https://github.com/duwenji/SanpoGuide")
             }

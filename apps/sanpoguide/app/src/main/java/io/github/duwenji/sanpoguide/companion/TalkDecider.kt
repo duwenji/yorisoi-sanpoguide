@@ -1,12 +1,12 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.core.format.TalkEventKind
-import io.github.duwenji.michizure.kit.companion.TalkEngine
-import io.github.duwenji.michizure.kit.companion.TalkGates
-import io.github.duwenji.michizure.kit.companion.TalkRule
-import io.github.duwenji.michizure.kit.geo.Facility
-import io.github.duwenji.michizure.kit.geo.Poi
-import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.kit.companion.TalkEngine
+import io.github.duwenji.yorisoi.kit.companion.TalkGates
+import io.github.duwenji.yorisoi.kit.companion.TalkRule
+import io.github.duwenji.yorisoi.kit.geo.Facility
+import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.sanpoguide.material.CueFire
 import io.github.duwenji.sanpoguide.settings.TalkLevel
 import io.github.duwenji.sanpoguide.settings.Threshold

@@ -8,8 +8,8 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.duwenji.michizure"
-version = providers.gradleProperty("michizureCoreVersion").get()
+group = "io.github.duwenji.yorisoi"
+version = providers.gradleProperty("yorisoiCoreVersion").get()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -40,7 +40,7 @@ publishing {
             artifactId = "core-format"
             from(components["java"])
             pom {
-                name.set("michizure core-format")
+                name.set("yorisoi core-format")
                 description.set(
                     "Channel and collection package formats, their checks and the channel list (API-002/003/004). " +
                         "Requires org.json on the classpath.",

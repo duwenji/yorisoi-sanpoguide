@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.duwenji.michizure.kit.geo"
+    namespace = "io.github.duwenji.yorisoi.kit.geo"
     compileSdk = 35
 
     defaultConfig {

@@ -26,8 +26,8 @@ import io.github.duwenji.sanpoguide.companion.TalkEvent
 import io.github.duwenji.sanpoguide.companion.WeatherChangeKind
 import io.github.duwenji.sanpoguide.companion.Utterance
 import io.github.duwenji.sanpoguide.companion.WalkSession
-import io.github.duwenji.michizure.kit.geo.weather.Weather
-import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.material.Content
 import io.github.duwenji.sanpoguide.material.CueFire
@@ -35,10 +35,10 @@ import io.github.duwenji.sanpoguide.material.CueLayout
 import io.github.duwenji.sanpoguide.material.MaterialContext
 import io.github.duwenji.sanpoguide.material.Shown
 import io.github.duwenji.sanpoguide.material.Subject
-import io.github.duwenji.michizure.kit.voice.AmbientPlayer
+import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
 import io.github.duwenji.sanpoguide.station.Station
-import io.github.duwenji.michizure.core.format.CueEvent
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.CueEvent
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import io.github.duwenji.sanpoguide.ui.MainActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest

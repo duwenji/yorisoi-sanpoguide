@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.kit.geo.weather.Weather
-import io.github.duwenji.michizure.kit.geo.Poi
-import io.github.duwenji.michizure.kit.geo.LatLon
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.sanpoguide.material.CueDetail
 import io.github.duwenji.sanpoguide.material.Material
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,9 +1,9 @@
 package io.github.duwenji.sanpoguide.prompt
 
 import io.github.duwenji.sanpoguide.prompt.BuiltInChannels
-import io.github.duwenji.michizure.core.format.Slot
-import io.github.duwenji.michizure.core.format.StationPackage
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.Slot
+import io.github.duwenji.yorisoi.core.format.StationPackage
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

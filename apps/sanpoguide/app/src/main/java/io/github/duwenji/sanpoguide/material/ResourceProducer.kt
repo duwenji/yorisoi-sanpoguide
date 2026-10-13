@@ -1,16 +1,16 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.michizure.kit.geo.RouteGeometry
-import io.github.duwenji.michizure.kit.geo.LatLon
-import io.github.duwenji.michizure.core.format.material.About
-import io.github.duwenji.michizure.core.format.material.Exposure
-import io.github.duwenji.michizure.core.format.material.Fetch
-import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
-import io.github.duwenji.michizure.core.format.material.Resource
-import io.github.duwenji.michizure.core.format.material.Resources
-import io.github.duwenji.michizure.core.format.material.SubjectKind
-import io.github.duwenji.michizure.core.format.material.Trust
+import io.github.duwenji.yorisoi.kit.geo.RouteGeometry
+import io.github.duwenji.yorisoi.kit.geo.LatLon
+import io.github.duwenji.yorisoi.core.format.material.About
+import io.github.duwenji.yorisoi.core.format.material.Exposure
+import io.github.duwenji.yorisoi.core.format.material.Fetch
+import io.github.duwenji.yorisoi.core.format.material.MaterialType
+import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
+import io.github.duwenji.yorisoi.core.format.material.Resource
+import io.github.duwenji.yorisoi.core.format.material.Resources
+import io.github.duwenji.yorisoi.core.format.material.SubjectKind
+import io.github.duwenji.yorisoi.core.format.material.Trust
 
 /**
  * Material a third party made ahead: a channel's own resources (`self`) or a collection it

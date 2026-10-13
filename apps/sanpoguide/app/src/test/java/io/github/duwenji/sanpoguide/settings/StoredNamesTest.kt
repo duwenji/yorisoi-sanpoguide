@@ -1,12 +1,12 @@
 package io.github.duwenji.sanpoguide.settings
 
-import io.github.duwenji.michizure.kit.geo.map.MapStyle
+import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
 import io.github.duwenji.sanpoguide.SanpoApp
-import io.github.duwenji.michizure.kit.llm.Provider
-import io.github.duwenji.michizure.core.format.GuideLength
-import io.github.duwenji.michizure.core.format.SoundChoice
-import io.github.duwenji.michizure.core.format.SpotKind
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.kit.llm.Provider
+import io.github.duwenji.yorisoi.core.format.GuideLength
+import io.github.duwenji.yorisoi.core.format.SoundChoice
+import io.github.duwenji.yorisoi.core.format.SpotKind
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

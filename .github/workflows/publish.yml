@@ -1,5 +1,5 @@
 # Publishes to GitHub Packages when a tag is pushed (RFC-002 R-11):
-# - michizure-core-v<version>:     :platform:core-format and :platform:core-prompt (michizureCoreVersion)
+# - yorisoi-core-v<version>:     :platform:core-format and :platform:core-prompt (yorisoiCoreVersion)
 # - sanpoguide-prompts-v<version>: :apps:sanpoguide:prompts (sanpoguidePromptsVersion)
 # The tag must match the version in gradle.properties. Publish the core a prompt pack uses first.
 name: Publish
@@ -7,7 +7,7 @@ name: Publish
 on:
   push:
     tags:
-      - 'michizure-core-v*'
+      - 'yorisoi-core-v*'
       - 'sanpoguide-prompts-v*'
 
 permissions:
@@ -31,8 +31,8 @@ jobs:
         id: what
         run: |
           case "${GITHUB_REF_NAME}" in
-            michizure-core-v*)
-              property=michizureCoreVersion
+            yorisoi-core-v*)
+              property=yorisoiCoreVersion
               tasks=":platform:core-format:test :platform:core-prompt:test :platform:core-format:publish :platform:core-prompt:publish"
               ;;
             sanpoguide-prompts-v*)
