@@ -1,6 +1,5 @@
 # Checks every pull request (RFC-002 R-13, RFC-004 R-6): unit tests, lint and a release build,
-# against the published yorisoi platform (read with GITHUB_TOKEN: the platform's packages give this
-# repository Actions access).
+# against the published yorisoi platform (a public repository: GITHUB_TOKEN can read its packages).
 # The release APK is unsigned here (no keystore.properties); it only has to build.
 name: CI
 
