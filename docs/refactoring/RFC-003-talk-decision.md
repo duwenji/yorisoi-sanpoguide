@@ -151,7 +151,7 @@ val rideRules = listOf(
 | 散策者 | なし |
 | チャンネル提供者・素材提供者 | なし（形式を変えない） |
 | 開発 | 話す条件を変えるときの入口が `WalkService.maybeTalk()` から `TalkDecider`（段 B の後はルールの並び）に変わる。architecture.md の「変更の入口」を直す |
-| 文書 | architecture.md 図 2・「変更の入口」、sanpo-tutorial 第 3 部 3-4（`maybeTalk()` の判断）。tutorial は段階 2 の後にまとめて直す（2026-10-12 の決定） |
+| 文書 | architecture.md 図 2・「変更の入口」、michizure-tutorial 第 3 部 3-4（`maybeTalk()` の判断）。tutorial は段階 2 の後にまとめて直す（2026-10-12 の決定） |
 
 ## 未決事項・リスク
 

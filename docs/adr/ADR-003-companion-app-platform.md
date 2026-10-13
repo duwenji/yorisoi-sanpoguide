@@ -194,7 +194,7 @@ flowchart TB
 | 運用 | 審査で、チャンネルの宣言した過ごし方と語り手の文章が合っているかを確かめる。アプリが増えるたびに代表のアプリを決める |
 | テスト | 段階ごとに、今の動きが変わらないこと（プロンプトの組み立て結果、API-004 の確認観点 W-01〜W-19、判定順の場面テスト、エミュレータでの散策） |
 | 移行 | 散策者のデータへの影響はない。format 1 はそのまま読める（E-21） |
-| 文書 | architecture.md・README・channels.md・stakeholders.md・sanpo-tutorial 第 5 部の書き直し |
+| 文書 | architecture.md・README・channels.md・stakeholders.md・michizure-tutorial 第 5 部の書き直し |
 
 | ID | 追従タスク | 担当 | 時期 |
 |---|---|---|---|
@@ -207,7 +207,7 @@ flowchart TB
 | T-7 | michizure-console: 新しいコアへの切り替え、互換性の判定と表示、プロンプト・パックでの組み立ての確認と `activities` ごとの見本（E-26）、`grants` のアプリ指定。ADR・DM-001・API-001 の改訂。`michizure-console` への改名（E-22）。改名は 2026-10-12 に実施（リポジトリ・パッケージ・AWS のスタック。管理システムの ADR-001 T-9） | Claude | T-4〜T-6 の後 |
 | T-8 | 新しいアプリの雛形（`templates/`）と、要望からプロファイル・ルール・プロンプト・組み込みのチャンネルを生成する Claude Code のスキル | Claude | T-3・T-4 の後 |
 | T-9 | サイクリングのアプリ（E-23）を作り、合わなかった抽象を直す。代表のアプリとして `cycle` の見本に使う | 開発者・Claude | T-8 の後 |
-| T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、sanpo-tutorial 第 5 部 | Claude | 段階ごと |
+| T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、michizure-tutorial 第 5 部 | Claude | 段階ごと |
 
 見直しの条件:
 - 2 本目のアプリで、プロファイル・エコシステム共通の語彙の形が合わなかったとき
