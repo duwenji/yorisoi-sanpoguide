@@ -109,7 +109,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 | 2 | `kit-voice`・`kit-llm`（PR-2）。どちらもアプリのほかのパッケージを使っていないので、そのまま移す | エミュレータ: 設定画面の接続テスト（AI）、解説の読み上げ、背景音（イヤホンなしでスピーカーを選んだとき）。API キーが上書きインストールの後も読める（G-5） |
 | 3 | `kit-geo`（PR-3）。先に R-7 の型を移し、次に `data`・地図の画面を移す。テスト（`data/*Test`）も移す | エミュレータ（鎌倉で位置を指定）: 地図とスポット・施設のマーカーとチップ（施設のチップは 2026-09-29 に落ちる不具合があった箇所）、地図の種類の切り替え、ルートと向き、スポットの写真。散歩の記録の経路が読める |
 | 4 | `kit-mood`（PR-4）。テスト（`MoodTest`・`SoundscapeTest`）も移す | エミュレータ: 配色の切り替え、散策中のカードの絵、明朝体、背景音の選択 |
-| 5 | モノレポの構成（PR-5）。`app` を `apps/sanpoguide/app` に移す（Gradle のパスは `:apps:sanpoguide:app`）。CI・公開のワークフロー、README のビルドの手順、architecture.md・sanpo-tutorial の参照を直す。`station-format` のフォルダを消す | ファイルの移動だけで、手順 4 までと同じ保証。`git log --follow` で履歴をたどれる |
+| 5 | モノレポの構成（PR-5）。`app` を `apps/sanpoguide/app` に移す（Gradle のパスは `:apps:sanpoguide:app`）。CI・公開のワークフロー、README のビルドの手順、architecture.md・michizure-tutorial の参照を直す。`station-format` のフォルダを消す | ファイルの移動だけで、手順 4 までと同じ保証。`git log --follow` で履歴をたどれる |
 
 各手順の後、エミュレータで散策モードを通しで確かめる（開始・スポットの話しかけ・チャンネルの切り替え・終了・記録）。第三者のチャンネルの取り込みは、手順 1 の後に管理システムの `publish:local` で作ったリストを使って確かめる。
 
@@ -139,7 +139,7 @@ PR は手順ごとに分ける。どの PR も、その時点で下の「毎回�
 | チャンネル提供者・素材提供者 | なし（形式を変えない） |
 | 管理システム | validator の依存の座標と import（手順 1a） |
 | 開発 | import とモジュールのパスが変わる。ビルドのコマンドが手順 5 で変わる（`:app:` → `:apps:sanpoguide:app:`） |
-| 文書 | architecture.md（図 1 とモジュールの一覧）、README（ビルドの手順）、RFC-001 への注記、sanpo-tutorial 第 1 部 1-2（モジュール）・第 5 部（station-format） |
+| 文書 | architecture.md（図 1 とモジュールの一覧）、README（ビルドの手順）、RFC-001 への注記、michizure-tutorial 第 1 部 1-2（モジュール）・第 5 部（station-format） |
 
 ## 未決事項・リスク
 
