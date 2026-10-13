@@ -1,16 +1,16 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.kit.geo.weather.Weather
-import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.history.HistoryStore
 import io.github.duwenji.sanpoguide.history.SpotVisit
 import io.github.duwenji.sanpoguide.history.WalkRecord
-import io.github.duwenji.michizure.kit.mood.Mood
-import io.github.duwenji.michizure.kit.mood.Season
-import io.github.duwenji.michizure.kit.mood.TimeOfDay
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.kit.mood.Mood
+import io.github.duwenji.yorisoi.kit.mood.Season
+import io.github.duwenji.yorisoi.kit.mood.TimeOfDay
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.prompt.StationPrompts
 import io.github.duwenji.sanpoguide.station.Station

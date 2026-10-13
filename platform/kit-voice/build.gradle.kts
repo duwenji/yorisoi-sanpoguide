@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.duwenji.michizure.kit.voice"
+    namespace = "io.github.duwenji.yorisoi.kit.voice"
     compileSdk = 35
 
     defaultConfig {

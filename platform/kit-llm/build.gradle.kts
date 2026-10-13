@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.duwenji.michizure.kit.llm"
+    namespace = "io.github.duwenji.yorisoi.kit.llm"
     compileSdk = 35
 
     defaultConfig {

@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.prompt
 
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 
 /**
  * The app's prompt files, kept as resources under `sanpoguide/prompts/` (see docs/prompts.md).

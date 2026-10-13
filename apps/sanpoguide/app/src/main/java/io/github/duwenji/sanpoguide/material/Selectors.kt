@@ -1,19 +1,19 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.michizure.core.format.material.CollectionPackage
-import io.github.duwenji.michizure.core.format.material.Exposure
-import io.github.duwenji.michizure.core.format.material.Fetch
-import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
-import io.github.duwenji.michizure.core.format.material.Resource
-import io.github.duwenji.michizure.core.format.material.ResourceReader
-import io.github.duwenji.michizure.core.format.material.SubjectKind
-import io.github.duwenji.michizure.core.format.material.Trust
-import io.github.duwenji.michizure.core.format.AppIds
-import io.github.duwenji.michizure.core.format.ChannelList
-import io.github.duwenji.michizure.core.format.ListedCollection
-import io.github.duwenji.michizure.core.format.Selector
-import io.github.duwenji.michizure.core.format.StationFiles
-import io.github.duwenji.michizure.core.format.StationMedia
+import io.github.duwenji.yorisoi.core.format.material.CollectionPackage
+import io.github.duwenji.yorisoi.core.format.material.Exposure
+import io.github.duwenji.yorisoi.core.format.material.Fetch
+import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
+import io.github.duwenji.yorisoi.core.format.material.Resource
+import io.github.duwenji.yorisoi.core.format.material.ResourceReader
+import io.github.duwenji.yorisoi.core.format.material.SubjectKind
+import io.github.duwenji.yorisoi.core.format.material.Trust
+import io.github.duwenji.yorisoi.core.format.AppIds
+import io.github.duwenji.yorisoi.core.format.ChannelList
+import io.github.duwenji.yorisoi.core.format.ListedCollection
+import io.github.duwenji.yorisoi.core.format.Selector
+import io.github.duwenji.yorisoi.core.format.StationFiles
+import io.github.duwenji.yorisoi.core.format.StationMedia
 
 /** A collection on the device that a selector may draw from, as its provider's list names it. */
 class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackage, val files: StationFiles)

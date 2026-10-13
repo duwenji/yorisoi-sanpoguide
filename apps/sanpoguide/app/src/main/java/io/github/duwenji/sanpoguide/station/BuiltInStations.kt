@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.station
 
 import io.github.duwenji.sanpoguide.prompt.BuiltInChannels
-import io.github.duwenji.michizure.core.format.StationFiles
+import io.github.duwenji.yorisoi.core.format.StationFiles
 
 /**
  * The channels that ship with the app. Their files are resources of `:apps:sanpoguide:prompts`

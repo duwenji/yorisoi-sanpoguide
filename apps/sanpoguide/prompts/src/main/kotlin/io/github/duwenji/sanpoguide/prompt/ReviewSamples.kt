@@ -1,9 +1,9 @@
 package io.github.duwenji.sanpoguide.prompt
 
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.BuiltInChannels
-import io.github.duwenji.michizure.core.format.StationPackage
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.StationPackage
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 
 /** One scene a reviewer has the AI speak, with the prompts the app would send for it. */
 data class ReviewSample(val id: String, val label: String, val system: String, val user: String)

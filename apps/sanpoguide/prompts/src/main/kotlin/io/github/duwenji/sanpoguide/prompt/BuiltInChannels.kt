@@ -1,10 +1,10 @@
 package io.github.duwenji.sanpoguide.prompt
 
-import io.github.duwenji.michizure.core.format.StationCheck
-import io.github.duwenji.michizure.core.format.StationFiles
-import io.github.duwenji.michizure.core.format.StationOrigin
-import io.github.duwenji.michizure.core.format.StationPackage
-import io.github.duwenji.michizure.core.format.StationValidator
+import io.github.duwenji.yorisoi.core.format.StationCheck
+import io.github.duwenji.yorisoi.core.format.StationFiles
+import io.github.duwenji.yorisoi.core.format.StationOrigin
+import io.github.duwenji.yorisoi.core.format.StationPackage
+import io.github.duwenji.yorisoi.core.format.StationValidator
 
 /**
  * The channels that ship with the app, as resources under `sanpoguide/channels/{id}/` in the

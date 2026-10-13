@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.prompt
 
 import io.github.duwenji.sanpoguide.prompt.BuiltInChannels
-import io.github.duwenji.michizure.core.format.GuideLength
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.GuideLength
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File

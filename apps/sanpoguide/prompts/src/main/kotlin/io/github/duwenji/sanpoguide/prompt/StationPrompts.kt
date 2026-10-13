@@ -1,10 +1,10 @@
 package io.github.duwenji.sanpoguide.prompt
 
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
-import io.github.duwenji.michizure.core.format.GuideLength
-import io.github.duwenji.michizure.core.format.Slot
-import io.github.duwenji.michizure.core.format.StationPackage
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.format.GuideLength
+import io.github.duwenji.yorisoi.core.format.Slot
+import io.github.duwenji.yorisoi.core.format.StationPackage
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 
 /**
  * How a channel's slots go into the app's prompts (API-003 "組み立て方"). The app and the

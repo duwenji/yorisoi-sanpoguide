@@ -1,8 +1,8 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.kit.geo.weather.Weather
-import io.github.duwenji.michizure.kit.geo.Facility
-import io.github.duwenji.michizure.kit.geo.FacilityKind
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.kit.geo.Facility
+import io.github.duwenji.yorisoi.kit.geo.FacilityKind
 import io.github.duwenji.sanpoguide.settings.Threshold
 import io.github.duwenji.sanpoguide.settings.Thresholds
 

@@ -1,14 +1,14 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.core.format.Cue
-import io.github.duwenji.michizure.core.format.Repeat
-import io.github.duwenji.michizure.core.format.TalkEventKind
-import io.github.duwenji.michizure.core.format.Trigger
-import io.github.duwenji.michizure.kit.geo.Facility
-import io.github.duwenji.michizure.kit.geo.FacilityKind
-import io.github.duwenji.michizure.kit.geo.Poi
-import io.github.duwenji.michizure.kit.geo.weather.ForecastSlot
-import io.github.duwenji.michizure.kit.geo.weather.Weather
+import io.github.duwenji.yorisoi.core.format.Cue
+import io.github.duwenji.yorisoi.core.format.Repeat
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.Trigger
+import io.github.duwenji.yorisoi.kit.geo.Facility
+import io.github.duwenji.yorisoi.kit.geo.FacilityKind
+import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.weather.ForecastSlot
+import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.sanpoguide.material.CueFire
 import io.github.duwenji.sanpoguide.material.Subject
 import io.github.duwenji.sanpoguide.settings.TalkLevel

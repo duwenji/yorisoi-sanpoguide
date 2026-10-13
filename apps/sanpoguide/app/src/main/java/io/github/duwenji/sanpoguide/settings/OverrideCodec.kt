@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.settings
 
-import io.github.duwenji.michizure.core.format.JsonValue
+import io.github.duwenji.yorisoi.core.format.JsonValue
 
 /**
  * How the user's channel changes are written to preferences: values in their `channel.json`

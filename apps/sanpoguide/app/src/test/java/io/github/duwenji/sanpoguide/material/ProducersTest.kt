@@ -1,13 +1,13 @@
 package io.github.duwenji.sanpoguide.material
 
 import io.github.duwenji.sanpoguide.material.MaterialResult.Reason
-import io.github.duwenji.michizure.core.format.material.BuiltInProducers
-import io.github.duwenji.michizure.core.format.material.Exposure
-import io.github.duwenji.michizure.core.format.material.Fetch
-import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.michizure.core.format.material.ProducerDescriptor
-import io.github.duwenji.michizure.core.format.material.SubjectKind
-import io.github.duwenji.michizure.core.format.material.Trust
+import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
+import io.github.duwenji.yorisoi.core.format.material.Exposure
+import io.github.duwenji.yorisoi.core.format.material.Fetch
+import io.github.duwenji.yorisoi.core.format.material.MaterialType
+import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
+import io.github.duwenji.yorisoi.core.format.material.SubjectKind
+import io.github.duwenji.yorisoi.core.format.material.Trust
 import io.github.duwenji.sanpoguide.station.BuiltInStations
 import io.github.duwenji.sanpoguide.station.Station
 import kotlinx.coroutines.runBlocking

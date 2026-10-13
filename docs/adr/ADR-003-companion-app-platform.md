@@ -6,13 +6,13 @@
 |---|---|
 | 文書ID | ADR-003 |
 | ドキュメント種別 | ADR |
-| 対象システム/機能 | SanpoGuide と michizure-console の全体。共通部分の切り出し、チャンネル・素材集のアプリをまたいだ扱い |
+| 対象システム/機能 | SanpoGuide と yorisoi-console の全体。共通部分の切り出し、チャンネル・素材集のアプリをまたいだ扱い |
 | 関連Skill | architecture-decision-record |
 | 作成日 | 2026-10-12 |
 | 作成者 | Claude（開発者との検討） |
 | 承認者 | 開発者（1.0・1.1: 2026-10-12） |
 | ステータス | 承認済（方針。詳細は追従タスクの契約書・計画書で決める） |
-| 版 | 1.1 |
+| 版 | 1.2（草案） |
 
 ## 目的・背景
 
@@ -53,7 +53,7 @@ SanpoGuide は散策向けのアプリだが、今の仕組み（チャンネル
 | API-002 | 承認済みチャンネル・リスト | エコシステムで 1 本のまま、互換性の宣言を載せる（E-17。T-5） |
 | API-003 | F-1〜F-7（スロット・選択肢・止められない出来事・ファイルの許可・署名） | format 2 で `activities`・`genres`・`requires` を足し、F-5 の当て方を変える（E-8・E-12。T-4） |
 | API-004 | 題材・タグ・利用許諾 | 題材の「出来事」の扱い、タグの共通化、`grants` のアプリ指定（T-6） |
-| michizure-console ADR-001 | 管理システムの構成 | 互換性の判定・審査の見本の作り方を変える（T-7） |
+| yorisoi-console ADR-001 | 管理システムの構成 | 互換性の判定・審査の見本の作り方を変える（T-7） |
 
 ## 方針・決定事項
 
@@ -101,7 +101,7 @@ SanpoGuide は散策向けのアプリだが、今の仕組み（チャンネル
 
 | No. | 論点 | 決定 |
 |---|---|---|
-| E-19 | リポジトリ | Kotlin 側は 1 つの Gradle モノレポにする（SanpoGuide のリポジトリを育てる）。`platform/`（コアとキット）、`apps/`（SanpoGuide と次のアプリ）、`templates/`（新しいアプリの雛形）。コアとアプリを同じ PR で直せるようにするため。管理システム（michizure-console）は別リポジトリのまま、公開したコアとプロンプト・パックを版で固定して使う（今の station-format と同じ関係） |
+| E-19 | リポジトリ | Kotlin 側は 1 つの Gradle モノレポにする（SanpoGuide のリポジトリを育てる）。`platform/`（コアとキット）、`apps/`（SanpoGuide と次のアプリ）、`templates/`（新しいアプリの雛形）。コアとアプリを同じ PR で直せるようにするため。管理システム（yorisoi-console）は別リポジトリのまま、公開したコアとプロンプト・パックを版で固定して使う（今の station-format と同じ関係） |
 | E-20 | 進め方 | 段階 1（動きを変えない切り出し）はすぐに進めてよい。話す判断のエンジン（段階 2）と format 2（段階 3）は、2 本目のアプリを具体的に決めてから詰める（散歩だけに合わせた抽象を固めないため）。段階は[追従タスク](#影響範囲追従タスク)の順 |
 | E-21 | 互換 | format 1 のチャンネルは「`activities: ["walk"]`・`requires` は今の SanpoGuide が実装しているもの」として読む。今の組み込みのチャンネル・第三者のチャンネル・素材集は書き換えなくてよい |
 
@@ -111,7 +111,7 @@ SanpoGuide は散策向けのアプリだが、今の仕組み（チャンネル
 
 | No. | 論点 | 決定 |
 |---|---|---|
-| E-22 | エコシステムの名前 | **michizure**（道連れ。「旅は道連れ」の、移動に付き添う相手）。プラットフォームの Kotlin のパッケージと公開の座標は `io.github.duwenji.michizure`（例: `io.github.duwenji.michizure.core.format`）。管理システムは `michizure-console` に改める（時期は T-7）。変えないもの: SanpoGuide の `applicationId`・パッケージ名（Google Play の ID で、アプリ自身の名前のため）、アカウントIDの `sg1…`・リストIDの `sc1…` の接頭辞（署名と照合に使っているため、互換を優先する） |
+| E-22 | エコシステムの名前 | **yorisoi**（寄り添い。移動のそばにいて支える相手）。プラットフォームの Kotlin のパッケージと公開の座標は `io.github.duwenji.yorisoi`（例: `io.github.duwenji.yorisoi.core.format`）。管理システムは `yorisoi-console`、チュートリアルは `yorisoi-tutorial`。1.1 では **michizure**（道連れ）としたが、「〜を道連れにする」（巻き添えにする）の悪い意味に取られるおそれがあるため、1.2 で改めた（2026-10-13、開発者の判断。T-11）。変えないもの: SanpoGuide の `applicationId`・パッケージ名（Google Play の ID で、アプリ自身の名前のため）、アカウントIDの `sg1…`・リストIDの `sc1…` の接頭辞（署名と照合に使っているため、互換を優先する） |
 | E-23 | 2 本目のアプリ | **サイクリングの伴走**（`cycle`）。地図・天気・日の入りの部品をそのまま使え、速度の違いで距離・間隔・判定の抽象を試せ、歴史探訪などのチャンネルを散歩と共有できるため。多くの都道府県で、周りの音が聞こえない状態での自転車の運転が規則で禁じられていることから、プロファイルは次を前提にする: 既定はスピーカーで流す（イヤホンだけにしない）、背景音は使わない、走行中は画面を出さない。この前提で成り立たないと分かったときの次点は、乗り物の車窓ガイド |
 | E-24 | `activities` の最初の一覧 | `walk`・`cycle` の 2 つだけで始める。値は、そのアプリを作ると決めたときにコアのマイナー版で足す（実装しているアプリのない値は、どのアプリでも確かめられない宣言になるため） |
 | E-25 | チャンネル提供者によるアプリの除外 | format 2 では入れない。出す範囲は `activities`・`requires` で絞る。アプリ単位の除外を認めると、互換性の判定と審査の見本がアプリごとに戻るため。要望が出たら `excludeApps` を足すことを検討する（見直しの条件） |
@@ -135,12 +135,12 @@ flowchart TB
         P2["プロファイル"]
     end
     POOL --> F1 & F2
-    subgraph PF["プラットフォーム（michizure）"]
+    subgraph PF["プラットフォーム（yorisoi）"]
         K["Android キット<br/>llm・voice・geo・mood・material・channels・companion"]
         C["コア（JVM）<br/>format・material・prompt・trust<br/>エコシステム共通の語彙・素材の方針"]
     end
     A1 & A2 --> K --> C
-    OPS["管理システム（michizure-console）<br/>コアで機械審査・全アプリで組み立て・代表アプリで見本"] -- "署名" --> POOL
+    OPS["管理システム（yorisoi-console）<br/>コアで機械審査・全アプリで組み立て・代表アプリで見本"] -- "署名" --> POOL
     OPS --> C
 ```
 
@@ -194,11 +194,11 @@ flowchart TB
 | 運用 | 審査で、チャンネルの宣言した過ごし方と語り手の文章が合っているかを確かめる。アプリが増えるたびに代表のアプリを決める |
 | テスト | 段階ごとに、今の動きが変わらないこと（プロンプトの組み立て結果、API-004 の確認観点 W-01〜W-19、判定順の場面テスト、エミュレータでの散策） |
 | 移行 | 散策者のデータへの影響はない。format 1 はそのまま読める（E-21） |
-| 文書 | architecture.md・README・channels.md・stakeholders.md・michizure-tutorial 第 5 部の書き直し |
+| 文書 | architecture.md・README・channels.md・stakeholders.md・yorisoi-tutorial 第 5 部の書き直し |
 
 | ID | 追従タスク | 担当 | 時期 |
 |---|---|---|---|
-| T-1 | [RFC-002](../refactoring/RFC-002-platform-stage1.md)（2026-10-12 承認・実施済）: 段階 1（動きを変えない切り出し）の計画書。依存を調べた結果、`core-material`・`core-trust` は段階 1 では `core-format` の中のパッケージとし、`kit-material`・`kit-channels` は段階 2・3 に回す提案（RFC-002 R-2・R-5）。プラットフォームのパッケージは `io.github.duwenji.michizure`（E-22）。station-format を `core-*` に分け、依存の少ない順（`kit-voice`・`kit-llm`・`kit-geo` → `kit-mood`・`kit-material` → `kit-channels`）にモジュールへ移す。保証は RFC-001 と同じ（プロンプトの組み立て結果が 1 文字も変わらない、既存のテストが通る、エミュレータで散策できる） | Claude | 本書の承認後すぐ |
+| T-1 | [RFC-002](../refactoring/RFC-002-platform-stage1.md)（2026-10-12 承認・実施済）: 段階 1（動きを変えない切り出し）の計画書。依存を調べた結果、`core-material`・`core-trust` は段階 1 では `core-format` の中のパッケージとし、`kit-material`・`kit-channels` は段階 2・3 に回す提案（RFC-002 R-2・R-5）。プラットフォームのパッケージは `io.github.duwenji.yorisoi`（E-22）。station-format を `core-*` に分け、依存の少ない順（`kit-voice`・`kit-llm`・`kit-geo` → `kit-mood`・`kit-material` → `kit-channels`）にモジュールへ移す。保証は RFC-001 と同じ（プロンプトの組み立て結果が 1 文字も変わらない、既存のテストが通る、エミュレータで散策できる） | Claude | 本書の承認後すぐ |
 | T-2 | 判定順の場面テスト: `maybeTalk()` の判定を、場面ごとに期待する発言を並べた表のテストにする（T-3 の前に作り、置き換え前後で一致させる） | Claude | T-1 と並行 |
 | T-3 | 話す判断のエンジン（`kit-companion`）の設計と実装（[RFC-003](../refactoring/RFC-003-talk-decision.md)、2026-10-12 実施済）。サイクリング（E-23）の判定も表せることを確かめる | 開発者・Claude | T-1・T-2 の後 |
 | T-4 | API-003 2.0（2026-10-12 承認。`core-format` 1.1.0 で実装）: format 2（`activities`（最初は `walk`・`cycle`。E-24）・`genres`・`requires`、エコシステム共通の語彙、知らない値の扱い E-12、format 1 の読み方 E-21） | Claude | T-3 と並行 |
@@ -207,6 +207,8 @@ flowchart TB
 | T-7 | michizure-console: 新しいコアへの切り替え、互換性の判定と表示、プロンプト・パックでの組み立ての確認と `activities` ごとの見本（E-26）、`grants` のアプリ指定。ADR・DM-001・API-001 の改訂。`michizure-console` への改名（E-22）。改名は 2026-10-12 に実施（リポジトリ・パッケージ・AWS のスタック。管理システムの ADR-001 T-9） | Claude | T-4〜T-6 の後 |
 | T-8 | 新しいアプリの雛形（`templates/`）と、要望からプロファイル・ルール・プロンプト・組み込みのチャンネルを生成する Claude Code のスキル | Claude | T-3・T-4 の後 |
 | T-9 | サイクリングのアプリ（E-23）を作り、合わなかった抽象を直す。代表のアプリとして `cycle` の見本に使う | 開発者・Claude | T-8 の後 |
+| T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、yorisoi-tutorial 第 5 部 | Claude | 段階ごと |
+| T-11 | `yorisoi` への改名（E-22、1.2）。範囲はエコシステム全体: SanpoGuide の Kotlin のパッケージと公開の座標（`core-format`・`core-prompt` を 2.0.0、プロンプト・パックを 2.0.0 として新しい座標で公開。`io.github.duwenji.michizure` の 1.x は GitHub Packages に残るが、以後は更新しない）、管理システム（リポジトリ・パッケージ・AWS のスタック。管理システムの ADR-001）、チュートリアル | 開発者・Claude | 2026-10-13〜 |
 | T-10 | 文書の更新: architecture.md・README・channels.md・stakeholders.md（利用者の呼び方。E-27）、michizure-tutorial 第 5 部 | Claude | 段階ごと |
 
 見直しの条件:
@@ -226,7 +228,7 @@ flowchart TB
 
 | No. | 内容 | 決める時期 |
 |---|---|---|
-| 1 | ~~エコシステムの名前~~ → 解決（1.1、E-22。michizure） | — |
+| 1 | ~~エコシステムの名前~~ → 解決（1.1、E-22。1.2 で michizure から yorisoi に改めた） | — |
 | 2 | ~~2 本目のアプリの候補~~ → 解決（1.1、E-23。サイクリングの伴走） | — |
 | 3 | ~~`activities` の最初の一覧~~ → 解決（1.1、E-24。`walk`・`cycle`） | — |
 | 4 | ~~チャンネル提供者が、特定のアプリを除外できるようにするか~~ → 解決（1.1、E-25。format 2 では入れない） | — |
@@ -258,3 +260,4 @@ flowchart TB
 | 2026-10-12 | 1.0 | 承認 | Claude（承認: 開発者） |
 | 2026-10-12 | 1.1 | 未決事項 No.1〜6 を解決（E-22〜E-27）。E-18 の見本を 2 段に（E-26）、追従タスクの時期と内容を更新 | Claude |
 | 2026-10-12 | 1.1 | 承認 | Claude（承認: 開発者） |
+| 2026-10-13 | 1.2（草案） | E-22 の名前を michizure から yorisoi に改めた（悪い意味に取られるおそれ。開発者の指摘）。T-11 を追加 | Claude |

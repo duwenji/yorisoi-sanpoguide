@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.duwenji.michizure.kit.mood"
+    namespace = "io.github.duwenji.yorisoi.kit.mood"
     compileSdk = 35
 
     defaultConfig {

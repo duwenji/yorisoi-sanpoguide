@@ -1,7 +1,7 @@
 package io.github.duwenji.sanpoguide.material
 
-import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.michizure.core.format.PresentAs
+import io.github.duwenji.yorisoi.core.format.material.MaterialType
+import io.github.duwenji.yorisoi.core.format.PresentAs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

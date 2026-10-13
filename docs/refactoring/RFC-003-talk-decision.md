@@ -59,7 +59,7 @@
 | 1 | `TalkSituation`・`TalkDecision`・`TalkDecider.decide` をアプリの `companion` に作り、`maybeTalk()` の判定をそこへ移す。`maybeTalk()` は状況を集めて決定を実行するだけにする（D-2〜D-5）。場面テストを書く（D-6） | RFC-002 の G-1〜G-5（テストの数は場面テストの分だけ増える）。場面テストが通る。エミュレータ（AVD `sanpo30`、鎌倉）で、散策の開始・スポットの案内・チャンネルの切り替えのあいさつ・時刻を進めたときの施設の案内・終了を確かめる |
 | 2 | architecture.md 図 2 を、`TalkDecider` の決定の並びとして書き直す（図とコードの並びがずれないよう、図に `TalkDecider` を指す） | 文書だけ |
 | 3 | 設計レビュー: `TalkRule`・`TalkEngine` の形（D-7）と、サイクリングで確かめること（D-8）を、この RFC の改訂として開発者に見せる | レビュー |
-| 4 | `platform/kit-companion`（`io.github.duwenji.michizure.kit.companion`。JVM で足りれば JVM、`Flow` などが要れば Android）を作り、`TalkDecider` をルールの並びとエンジンで書き直す | 手順 1 の場面テストを書き換えずに通す。エミュレータで手順 1 と同じ確認 |
+| 4 | `platform/kit-companion`（`io.github.duwenji.yorisoi.kit.companion`。JVM で足りれば JVM、`Flow` などが要れば Android）を作り、`TalkDecider` をルールの並びとエンジンで書き直す | 手順 1 の場面テストを書き換えずに通す。エミュレータで手順 1 と同じ確認 |
 
 ### 手順 3: エンジンの設計（1.1、2026-10-12 承認）
 
@@ -138,7 +138,7 @@ val rideRules = listOf(
 | 1 | 2026-10-12 | `companion/TalkDecider.kt` に `TalkSituation`・`NearbySpot`・`TalkDecision`・`TalkDecider.decide` を作り、`maybeTalk()` の判定を順番も式も変えずに移した。`maybeTalk()` は状況を集める（`situation()`）・決める・実行する（`when (decision)`）だけになった。定数 `ANNOUNCE_RADIUS_M`・`STATIONARY_MINUTES`・`REST_MINUTES` は `TalkDecider` に移した（`WalkService.ANNOUNCE_RADIUS_M` は同じ値を指す）。決定は D-3 の 11 通り（名前は `NearFacility`・`Nothing`）。場面テスト `TalkDeciderTest` 18 件（図 2 の 8 つの判断の出る・出ない場面、ぶつかる場面、channels.md V-08）。わざと判定を変えた 3 通り（地点のきっかけを止める、切り替えの直後に施設を止める、とどまっている判定の境界をずらす）が、それぞれテストで落ちることを確かめた。結果: テストは app 93 → 111（+18）。`./gradlew test lint assembleRelease` が通る。エミュレータ: 散策の開始のあいさつ → 再訪のスポットの一言（「鶴岡八幡宮、4回目ですね」とルート）→ 途中でチャンネルを歴史探訪に切り替えたあいさつ → 時刻を 30 分進めてトイレの案内（「90m ほどのところにトイレがあります」）→ 終了。落ちない |
 | 2 | 2026-10-12 | architecture.md 図 2 と「変更の入口」を `TalkDecider` を指すように直した。channels.md の V-08 の注記、TODO の表も |
 | 3 | 2026-10-12 | 設計（D-10〜D-14）を開発者が承認 |
-| 4 | 2026-10-12 | `platform/kit-companion`（JVM。`io.github.duwenji.michizure.kit.companion`）に `TalkGates`・`TalkRule`・`TalkEngine` を作った（テスト 5 件）。`TalkSituation` が `TalkGates<WalkGate>` として 4 つのゲートに答え、`TalkDecider` は 8 つのルールの並び（`TalkDecider.rules`）とエンジンになった。手順 1 の場面テスト 18 件は書き換えずに通った（テストのフォルダに差分なし）。ルールの並びと `safety` の宣言（天気・日の入り・施設）を固定するテストを 1 件足した。結果: テストは app 111 → 112、kit-companion 5。`./gradlew test lint assembleRelease` が通る。エミュレータ: 開始 → 再訪のスポットの一言（「5回目ですね」）→ 自然観察への切り替えのあいさつ → 時刻を 30 分進めてトイレの案内 → 終了。落ちない。**段階 2 はこれで終わり** |
+| 4 | 2026-10-12 | `platform/kit-companion`（JVM。`io.github.duwenji.yorisoi.kit.companion`）に `TalkGates`・`TalkRule`・`TalkEngine` を作った（テスト 5 件）。`TalkSituation` が `TalkGates<WalkGate>` として 4 つのゲートに答え、`TalkDecider` は 8 つのルールの並び（`TalkDecider.rules`）とエンジンになった。手順 1 の場面テスト 18 件は書き換えずに通った（テストのフォルダに差分なし）。ルールの並びと `safety` の宣言（天気・日の入り・施設）を固定するテストを 1 件足した。結果: テストは app 111 → 112、kit-companion 5。`./gradlew test lint assembleRelease` が通る。エミュレータ: 開始 → 再訪のスポットの一言（「5回目ですね」）→ 自然観察への切り替えのあいさつ → 時刻を 30 分進めてトイレの案内 → 終了。落ちない。**段階 2 はこれで終わり** |
 
 ### 戻し方
 
@@ -151,7 +151,7 @@ val rideRules = listOf(
 | 散策者 | なし |
 | チャンネル提供者・素材提供者 | なし（形式を変えない） |
 | 開発 | 話す条件を変えるときの入口が `WalkService.maybeTalk()` から `TalkDecider`（段 B の後はルールの並び）に変わる。architecture.md の「変更の入口」を直す |
-| 文書 | architecture.md 図 2・「変更の入口」、michizure-tutorial 第 3 部 3-4（`maybeTalk()` の判断）。tutorial は段階 2 の後にまとめて直す（2026-10-12 の決定） |
+| 文書 | architecture.md 図 2・「変更の入口」、yorisoi-tutorial 第 3 部 3-4（`maybeTalk()` の判断）。tutorial は段階 2 の後にまとめて直す（2026-10-12 の決定） |
 
 ## 未決事項・リスク
 

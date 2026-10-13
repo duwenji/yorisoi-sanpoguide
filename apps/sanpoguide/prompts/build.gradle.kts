@@ -55,7 +55,7 @@ sourceSets.main {
 }
 
 // Published to GitHub Packages for the channel management system (RFC-002 R-11, R-12). Publish
-// the michizureCoreVersion it depends on first. Users add org.json themselves.
+// the yorisoiCoreVersion it depends on first. Users add org.json themselves.
 publishing {
     publications {
         create<MavenPublication>("prompts") {

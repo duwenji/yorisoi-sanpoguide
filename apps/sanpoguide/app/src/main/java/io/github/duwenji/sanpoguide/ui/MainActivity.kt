@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.ui
 
-import io.github.duwenji.michizure.kit.mood.MoodTheme
+import io.github.duwenji.yorisoi.kit.mood.MoodTheme
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager

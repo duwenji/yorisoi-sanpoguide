@@ -17,7 +17,7 @@
 flowchart LR
   CP["チャンネル提供者"] -- "チャンネル（署名つき）" --> OPS
   MP["素材提供者"] -- "素材集（署名つき）" --> OPS
-  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>michizure-console"] -- "API-002" --> Sync
+  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>yorisoi-console"] -- "API-002" --> Sync
   subgraph APP["アプリ"]
     BuiltIn["組み込みのチャンネル・素材"] --> Repo
     Sync["ChannelSync<br/>署名・ハッシュ・形式を確かめる"] --> Repo["StationRepository.current"]
@@ -74,7 +74,7 @@ flowchart TB
     OpenMeteo["Open-Meteo<br/>天気・予報・日の入り"]
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
     GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
-    Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: michizure-console"]
+    Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: yorisoi-console"]
   end
 
   MainActivity -- "開始・終了" --> WalkService
@@ -290,16 +290,16 @@ flowchart LR
 
 | モジュール | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---|---:|
-| `:platform:core-format`（JVM） | `io.github.duwenji.michizure.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など） | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions | 2,078 |
+| `:platform:core-format`（JVM） | `io.github.duwenji.yorisoi.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など） | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions | 2,078 |
 | `:platform:core-prompt`（JVM） | `…core.prompt` | プロンプトのテンプレート | PromptTemplates | 90 |
-| `:platform:kit-voice` | `io.github.duwenji.michizure.kit.voice` | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生 | Speaker, AmbientPlayer, Voices, Soundscape | 500 |
+| `:platform:kit-voice` | `io.github.duwenji.yorisoi.kit.voice` | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生 | Speaker, AmbientPlayer, Voices, Soundscape | 500 |
 | `:platform:kit-llm` | `…kit.llm` | AI サービスの抽象と実装、API キーの暗号化 | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, KeyCipher | 221 |
 | `:platform:kit-geo` | `…kit.geo`・`.weather`・`.map` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
 | `:platform:kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する（[RFC-003](refactoring/RFC-003-talk-decision.md)） | TalkEngine, TalkRule, TalkGates | 45 |
 | `:platform:kit-mood` | `…kit.mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方 | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice | 622 |
 | `:apps:sanpoguide:prompts`（JVM） | `io.github.duwenji.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
 
-チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `:platform:core-format`、`PromptTemplates` は `:platform:core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:apps:sanpoguide:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.michizure:core-format`・`core-prompt` と `io.github.duwenji.sanpoguide:prompts` として公開する）。ファイルは `apps/sanpoguide/prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（[API-003](channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `:platform:core-format`、`PromptTemplates` は `:platform:core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:apps:sanpoguide:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.sanpoguide:prompts` として公開する）。ファイルは `apps/sanpoguide/prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 

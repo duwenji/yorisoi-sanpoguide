@@ -1,17 +1,17 @@
 package io.github.duwenji.sanpoguide.station
 
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
-import io.github.duwenji.michizure.core.format.DirectoryStationFiles
+import io.github.duwenji.yorisoi.core.format.DirectoryStationFiles
 import io.github.duwenji.sanpoguide.history.StationSegment
 import io.github.duwenji.sanpoguide.history.WalkRecord
 import io.github.duwenji.sanpoguide.settings.GuideSettings
 import io.github.duwenji.sanpoguide.settings.TalkLevel
-import io.github.duwenji.michizure.core.format.GuideLength
-import io.github.duwenji.michizure.core.format.Slot
-import io.github.duwenji.michizure.core.format.SoundChoice
-import io.github.duwenji.michizure.core.format.SpotKind
-import io.github.duwenji.michizure.core.format.TalkEventKind
+import io.github.duwenji.yorisoi.core.format.GuideLength
+import io.github.duwenji.yorisoi.core.format.Slot
+import io.github.duwenji.yorisoi.core.format.SoundChoice
+import io.github.duwenji.yorisoi.core.format.SpotKind
+import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull

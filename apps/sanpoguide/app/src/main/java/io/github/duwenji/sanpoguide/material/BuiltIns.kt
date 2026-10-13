@@ -2,16 +2,16 @@ package io.github.duwenji.sanpoguide.material
 
 import android.util.Log
 import io.github.duwenji.sanpoguide.companion.WalkCompanion
-import io.github.duwenji.michizure.kit.geo.SpotPhotos
+import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.sanpoguide.guide.GuideRepository
 import io.github.duwenji.sanpoguide.material.MaterialResult.Reason
-import io.github.duwenji.michizure.core.format.material.BuiltInProducers
-import io.github.duwenji.michizure.core.format.material.MaterialType
-import io.github.duwenji.michizure.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
+import io.github.duwenji.yorisoi.core.format.material.MaterialType
+import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.sanpoguide.prompt.Prompts
 import io.github.duwenji.sanpoguide.settings.SettingsRepository
-import io.github.duwenji.michizure.kit.mood.SoundscapeChoice
+import io.github.duwenji.yorisoi.kit.mood.SoundscapeChoice
 import kotlin.coroutines.cancellation.CancellationException
 
 // The producers built into the app (API-004「組み込みの素材提供者」). Each wraps the code that made

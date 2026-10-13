@@ -1,11 +1,11 @@
 package io.github.duwenji.sanpoguide.history
 
-import io.github.duwenji.michizure.kit.geo.LatLon
+import io.github.duwenji.yorisoi.kit.geo.LatLon
 import android.content.Context
 import android.location.Location
 import android.util.AtomicFile
 import android.util.Log
-import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.Poi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

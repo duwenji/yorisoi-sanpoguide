@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.companion
 
-import io.github.duwenji.michizure.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.Poi
 
 /** A spot within reach that hasn't been talked about on this walk. */
 data class SpotCandidate(

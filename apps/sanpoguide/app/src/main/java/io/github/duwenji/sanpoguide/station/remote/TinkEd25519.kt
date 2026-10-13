@@ -1,6 +1,6 @@
 package io.github.duwenji.sanpoguide.station.remote
 
-import io.github.duwenji.michizure.core.format.Ed25519Verifier
+import io.github.duwenji.yorisoi.core.format.Ed25519Verifier
 import com.google.crypto.tink.subtle.Ed25519Verify
 import java.security.GeneralSecurityException
 
