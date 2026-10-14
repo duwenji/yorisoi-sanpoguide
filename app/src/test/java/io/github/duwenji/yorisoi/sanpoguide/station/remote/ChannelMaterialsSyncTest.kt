@@ -102,7 +102,7 @@ class ChannelMaterialsSyncTest {
             .put("name", "鎌倉歴史散歩").put("summary", "寺社と武士の歴史").put("lang", JSONArray(listOf("ja")))
             .put("icon", JSONObject().put("url", "$base/icons/x.png").put("sha256", "0".repeat(64)))
             .put("package", JSONObject().put("url", "$base/pkg/$sha.zip").put("sha256", sha).put("size", channel.size).put("format", 1))
-            .put("minAppVersion", 1).put("approvedAt", clock.toString())
+            .put("approvedAt", clock.toString())
         val collections = collection?.let {
             val colSha = sha256(it)
             files["$base/col/$colSha.zip"] = it
@@ -112,7 +112,7 @@ class ChannelMaterialsSyncTest {
                 .put("resourcesSize", photo.size + voice.size).put("tags", JSONArray(listOf("history"))).put("regions", JSONArray(listOf("xn7")))
                 .put("grants", JSONObject().put("publishers", "*"))
                 .put("package", JSONObject().put("url", "$base/col/$colSha.zip").put("sha256", colSha).put("size", it.size).put("format", 1))
-                .put("minAppVersion", 1).put("approvedAt", clock.toString()))
+                .put("approvedAt", clock.toString()))
         }
         files["$base/v1/channels.json"] = provider.list(seq, JSONArray().put(entry), JSONArray(), clock, clock.plus(Duration.ofDays(14)), collections, revokedCollections).toByteArray()
     }

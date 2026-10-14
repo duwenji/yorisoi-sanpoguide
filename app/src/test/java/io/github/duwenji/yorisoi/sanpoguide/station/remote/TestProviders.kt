@@ -73,9 +73,22 @@ internal class TestProvider {
         seq: Int, channels: JSONArray, revoked: JSONArray, issuedAt: Instant, expiresAt: Instant,
         collections: JSONArray? = null, revokedCollections: JSONArray? = null,
     ): String {
+        // What every entry must carry (API-002), unless the test says otherwise.
+        for (i in 0 until channels.length()) channels.getJSONObject(i).apply {
+            if (!has("media")) put("media", JSONArray())
+            if (!has("resourcesSize")) put("resourcesSize", 0)
+            if (!has("activities")) put("activities", JSONArray(listOf("walk")))
+            if (!has("genres")) put("genres", JSONArray())
+            if (!has("requires")) put("requires", JSONArray())
+            if (!has("minAppVersions")) put("minAppVersions", JSONObject().put("sanpoguide", 1))
+        }
+        val listed = collections ?: JSONArray()
+        for (i in 0 until listed.length()) listed.getJSONObject(i).apply {
+            if (!has("minAppVersions")) put("minAppVersions", JSONObject().put("sanpoguide", 1))
+        }
         val body = JSONObject().put("type", "channel-list").put("format", 1).put("provider", id).put("seq", seq)
             .put("issuedAt", issuedAt.toString()).put("expiresAt", expiresAt.toString()).put("channels", channels).put("revoked", revoked)
-            .putOpt("collections", collections).putOpt("revokedCollections", revokedCollections)
+            .put("collections", listed).put("revokedCollections", revokedCollections ?: JSONArray())
         val bytes = body.toString().toByteArray()
         val digest = JSONObject().put("type", "channel-list-digest").put("provider", id).put("seq", seq)
             .put("issuedAt", issuedAt.toString()).put("expiresAt", expiresAt.toString()).put("sha256", sha256(bytes)).put("size", bytes.size)
@@ -93,7 +106,7 @@ internal class TestPublisher {
         val manifest = JSONObject(
             """
             { "format": 1, "id": "$channel", "version": $version, "publisher": "$accountId",
-              "name": "鎌倉歴史散歩", "summary": "寺社と武士の歴史", "lang": "ja", "greeting": "歴史をたどりながら歩きましょう。",
+              "name": "鎌倉歴史散歩", "summary": "寺社と武士の歴史", "lang": "ja", "activities": ["walk"], "greeting": "歴史をたどりながら歩きましょう。",
               "talk": { "level": "normal", "events": { "spot": true, "revisit": true, "milestone": true, "rest": false, "start": true, "finish": true } },
               "spots": { "prefer": ["temple"], "skip": [] }, "guide": { "length": "long" }, "mood": { "tone": true, "sound": "temple" } }
             """.trimIndent(),

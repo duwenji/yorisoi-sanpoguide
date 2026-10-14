@@ -69,10 +69,6 @@ data class GuideSettings(
 class SettingsRepository(context: Context) {
     private val prefs = context.getSharedPreferences("guide_settings", Context.MODE_PRIVATE)
 
-    init {
-        migrateToStations()
-    }
-
     private val _settings = MutableStateFlow(load())
     val settings: StateFlow<GuideSettings> = _settings.asStateFlow()
 
@@ -176,23 +172,6 @@ class SettingsRepository(context: Context) {
         }.filterValues { !it.isEmpty }
     }
 
-    /**
-     * Before channels, how chatty the companion was and whether its tone followed the mood were
-     * app-wide settings. They become the standard channel's, once (docs/channels.md「今の設定の移行」).
-     */
-    private fun migrateToStations() {
-        if (!prefs.contains(KEY_TALK_LEVEL)) return
-        val moved = StationMigration.fromLegacy(
-            talkLevel = prefs.getString(KEY_TALK_LEVEL, null),
-            moodEnabled = prefs.getBoolean(KEY_MOOD, DEFAULTS.moodEnabled),
-        )
-        prefs.edit {
-            remove(KEY_TALK_LEVEL)
-            moved.talkLevel?.let { putString(stationPref(STANDARD, FIELD_TALK_LEVEL), it.name) }
-            moved.moodTone?.let { putBoolean(stationPref(STANDARD, FIELD_MOOD_TONE), it) }
-        }
-    }
-
     private fun stationPref(id: String, field: String) = "$STATION_PREFIX${id}_$field"
     private fun apiKeyPref(p: Provider) = "api_key_${p.name}"
     private fun thresholdPref(t: Threshold) = "threshold_${t.name}"
@@ -201,8 +180,6 @@ class SettingsRepository(context: Context) {
     private companion object {
         const val KEY_PROVIDER = "provider"
         const val KEY_CUSTOM_BASE_URL = "custom_base_url"
-        /** Before channels; moved to the standard channel by [migrateToStations]. */
-        const val KEY_TALK_LEVEL = "talk_level"
         const val KEY_STATION = "selected_station"
         /** `station_{id}_{field}`: the user's changes to a built-in channel. */
         const val STATION_PREFIX = "station_"

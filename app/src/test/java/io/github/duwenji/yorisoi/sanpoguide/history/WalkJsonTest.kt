@@ -19,17 +19,4 @@ class WalkJsonTest {
     fun `a walk survives a round trip, channels included`() {
         assertEquals(walk, WalkJson.fromJson(JSONObject(WalkJson.toJson(walk).toString())))
     }
-
-    @Test
-    fun `records from before channels still load`() {
-        val old = JSONObject(
-            """
-            {"id": 1, "startedAt": 1, "endedAt": 2, "distanceM": 10.0, "route": [],
-             "visits": [{"poiId": "way/1", "name": "段葛", "category": "史跡", "at": 1, "remark": null, "lat": 35.3, "lon": 139.5}]}
-            """.trimIndent(),
-        )
-        val read = WalkJson.fromJson(old)
-        assertTrue(read.stations.isEmpty())
-        assertNull(read.visits.single().station)
-    }
 }

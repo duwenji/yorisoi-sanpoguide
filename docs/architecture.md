@@ -280,7 +280,7 @@ flowchart LR
 | `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherChange | 650 |
 | `walk` | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知 | WalkService, CueShow | 624 |
 | `guide` | スポット解説とキャッシュ、AI サービスへの接続の生成 | GuideRepository, GuidePrompt | 96 |
-| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、古い形の設定の移行、話しかけの頻度の段階、しきい値 | SettingsRepository, StationMigration, OverrideCodec, TalkLevel, Threshold | 339 |
+| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値 | SettingsRepository, OverrideCodec, TalkLevel, Threshold | 339 |
 | `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 192 |
 | `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
 | `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |

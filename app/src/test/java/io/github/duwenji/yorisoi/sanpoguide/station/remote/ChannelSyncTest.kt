@@ -60,7 +60,7 @@ class ChannelSyncTest {
                 .put("name", "鎌倉歴史散歩").put("summary", "寺社と武士の歴史").put("lang", JSONArray(listOf("ja")))
                 .put("icon", JSONObject().put("url", "$base/icons/x.png").put("sha256", "0".repeat(64)))
                 .put("package", JSONObject().put("url", "$base/pkg/$sha.zip").put("sha256", sha).put("size", zip.size).put("format", 1))
-                .put("minAppVersion", 1).put("approvedAt", issuedAt.toString())
+                .put("approvedAt", issuedAt.toString())
                 .apply { if (change != null) put("publisherChange", change) }
         }
         files["$base/v1/channels.json"] = provider.list(seq, JSONArray(channels), revoked, issuedAt, issuedAt.plus(Duration.ofDays(14))).toByteArray()
