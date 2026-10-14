@@ -8,7 +8,7 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.duwenji.sanpoguide"
+group = "io.github.duwenji.yorisoi.sanpoguide"
 version = providers.gradleProperty("sanpoguidePromptsVersion").get()
 
 java {
