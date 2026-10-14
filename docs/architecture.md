@@ -270,7 +270,7 @@ flowchart LR
 
 ## パッケージ一覧
 
-アプリのパスは `app/src/main/java/io/github/duwenji/sanpoguide/` からの相対。行数は空行・コメントを含む。
+アプリのパスは `app/src/main/java/io/github/duwenji/yorisoi/sanpoguide/` からの相対。行数は空行・コメントを含む。
 
 アプリ（`:app`）のパッケージ（2026-10-12、RFC-002 の段階 1 の後）:
 
@@ -297,9 +297,9 @@ flowchart LR
 | `yorisoi-platform/kit-geo` | `…kit.geo`・`.weather`・`.map` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
 | `yorisoi-platform/kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する（[RFC-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-003-talk-decision.md)） | TalkEngine, TalkRule, TalkGates | 45 |
 | `yorisoi-platform/kit-mood` | `…kit.mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方 | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice | 622 |
-| `:prompts`（JVM） | `io.github.duwenji.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
+| `:prompts`（JVM） | `io.github.duwenji.yorisoi.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
 
-チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 

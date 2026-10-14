@@ -248,6 +248,11 @@ ADR-001 と API-002 は 2026-10-03 に承認した（同日、1.1 の改訂も�
 - [x] プロンプト・`PromptTemplates`・組み込みのチャンネルを `:station-format` に移し、審査の見本（`ReviewSamples`）を足した。GitHub Packages に `com.example.sanpoguide:station-format` として公開する（2026-10-03、[RFC-001](refactoring/RFC-001-prompts-to-station-format.md)）
 - [x] `:station-format` に ZIP の展開とチャンネル提供者の署名の確認（API-003 の手順 2・4）を足す（2026-10-04、station-format 1.1.0）。署名の確認は `Ed25519Verifier` を渡す（JVM は `JcaEd25519`。アプリは Android 8 で動く Tink の実装を、第三者のチャンネルの取り込み（ADR-001 T-5）のときに渡す）
 - [x] 識別子を `io.github.duwenji.sanpoguide` に揃えた（2026-10-11）。`applicationId`（Google Play の ID）・`namespace`・Kotlin のパッケージ・station-format の group を変え、station-format を 2.0.0 にした（1.3.0 は未公開のまま 2.0.0 に含めた）。タグ `station-format-v2.0.0` で公開し、yorisoi-console の validator（今は 2.1.0）と yorisoi-tutorial（PR #1）も追従した。前の APK（`com.example.sanpoguide`）とは別のアプリになるので、実機は入れ直す
+- [x] Google Play の公開に向けて、識別子を `io.github.duwenji.yorisoi.sanpoguide` に改めた（2026-10-14、開発者の判断）。名前に yorisoi を入れ、名前空間は自分の GitHub アカウント（duwenji）の下に置く（github.com/Yorisoi は別の人のアカウントのため `io.github.yorisoi` は使わない。platform の `io.github.duwenji.yorisoi` と同じ階層）。`applicationId`・`namespace`・Kotlin のパッケージと、プロンプト・パックの座標（`io.github.duwenji.yorisoi.sanpoguide:prompts` 3.0.0）を変えた。リソースのパス（`sanpoguide/channels/…`）は変えない。Play にはまだ上げていないので散策者への影響はない。実機は入れ直す
+  - [ ] タグ `prompts-v3.0.0` でプロンプト・パックを公開する
+  - [ ] yorisoi-console の validator を 3.0.0 に追従する
+  - [ ] yorisoi-tutorial を追従する
+  - [ ] yorisoi-platform の ADR-003 E-22・RFC-004 R-3（applicationId は変えない、の記述）を改訂する
 - [x] アプリ: リストの要約の確認（API-002 P-8）と、チャンネル提供者の鍵の移し替えの受け入れ（P-9）を、リストの取り込みの実装（ADR-001 T-5）に含める（2026-10-04、`ProviderDocuments`・`ChannelSync`）
 
 決めたこと（2026-10-03）:

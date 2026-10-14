@@ -12,12 +12,12 @@ val keystoreFile = rootProject.file("keystore.properties")
 val keystore = Properties().apply { if (keystoreFile.exists()) keystoreFile.inputStream().use(::load) }
 
 android {
-    namespace = "io.github.duwenji.sanpoguide"
+    namespace = "io.github.duwenji.yorisoi.sanpoguide"
     compileSdk = 35
 
     defaultConfig {
         // The Google Play ID: fixed once uploaded. The namespace and the Kotlin packages use the same name.
-        applicationId = "io.github.duwenji.sanpoguide"
+        applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 35
         versionCode = 3
