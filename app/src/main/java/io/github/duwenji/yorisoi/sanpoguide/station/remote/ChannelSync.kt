@@ -73,7 +73,7 @@ data class ProviderView(
  * added, their lists, and the packages the user chose. Plain JVM so it is tested without a device;
  * [ThirdPartyChannels] runs it on Android. Not thread-safe: the caller serializes calls.
  *
- * @param appVersion the app's versionCode, against `minAppVersion`.
+ * @param appVersion the app's versionCode, against `minAppVersions`.
  * @param allowLocalHttp debug builds may use `http://localhost` and `http://10.0.2.2` (the emulator's host).
  * @param mediaStage the material this app shows (API-003 M-1: 1 text and images, 2 audio, 3 video).
  * @param region the device's region and the eight around it (API-004 P-6), for the collections
@@ -224,7 +224,7 @@ class ChannelSync(
     fun install(providerId: String, channelId: String, unmetered: Boolean = false) {
         val (_, list) = validList(providerId) ?: throw ChannelSyncException("リストが有効ではありません。取得し直してください")
         val entry = list.channels.firstOrNull { it.id == channelId } ?: throw ChannelSyncException("リストにないチャンネルです")
-        if (entry.pkg.format !in StationValidator.FORMATS) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
+        if (entry.pkg.format != StationValidator.FORMAT) throw ChannelSyncException("このアプリでは使えない形式のチャンネルです")
         if (Compatibility.reasons(entry, profile).isNotEmpty()) throw ChannelSyncException("このアプリでは使えないチャンネルです")
         if (needsUpdate(entry)) throw ChannelSyncException("このチャンネルを使うには、アプリの更新が必要です")
         val installed = state.installed.firstOrNull { it.provider == providerId && it.id == channelId }
@@ -311,7 +311,7 @@ class ChannelSync(
             channels = list?.channels.orEmpty().filter { Compatibility.reasons(it, profile).isEmpty() }.map { entry ->
                 val installed = mine.firstOrNull { it.id == entry.id }
                 val status = when {
-                    entry.pkg.format !in StationValidator.FORMATS -> ListedStatus.UNSUPPORTED
+                    entry.pkg.format != StationValidator.FORMAT -> ListedStatus.UNSUPPORTED
                     needsUpdate(entry) -> ListedStatus.NEEDS_APP_UPDATE
                     installed == null -> ListedStatus.AVAILABLE
                     installed.blocked != null -> ListedStatus.BLOCKED

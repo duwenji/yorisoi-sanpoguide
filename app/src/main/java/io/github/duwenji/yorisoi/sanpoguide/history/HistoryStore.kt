@@ -24,11 +24,10 @@ data class SpotVisit(
     val category: String,
     val at: Long,
     val remark: String?,
-    /** Null for records saved before positions were stored. */
-    val lat: Double? = null,
-    val lon: Double? = null,
-    /** The channel in use when the companion spoke here (`Station.key`); null for records from before channels. */
-    val station: String? = null,
+    val lat: Double,
+    val lon: Double,
+    /** The channel in use when the companion spoke here (`Station.key`). */
+    val station: String,
 ) {
     /**
      * Whether this visit was to [poi]. OpenStreetMap often maps a place twice (as a point and
@@ -38,7 +37,6 @@ data class SpotVisit(
     fun matches(poi: Poi): Boolean {
         if (poiId == poi.id) return true
         if (name != poi.name) return false
-        if (lat == null || lon == null) return true
         // A large park's center can be far from the point an earlier visit recorded for it.
         poi.shape?.let { return it.distanceM(lat, lon) <= SAME_PLACE_RADIUS_M }
         val d = FloatArray(1)
@@ -58,8 +56,8 @@ data class WalkRecord(
     val distanceM: Double,
     val route: List<LatLon>,
     val visits: List<SpotVisit>,
-    /** The channels used, in order; empty for records from before channels (which were all the standard one). */
-    val stations: List<StationSegment> = emptyList(),
+    /** The channels used, in order. */
+    val stations: List<StationSegment>,
 ) {
     val durationMs: Long get() = endedAt - startedAt
 }
@@ -134,7 +132,7 @@ class HistoryStore(context: Context) {
     }
 }
 
-/** The history file's format, one walk at a time. Fields added later are optional, so old files still load. */
+/** The history file's format, one walk at a time. Its field names are a promise: renaming one loses every saved walk. */
 internal object WalkJson {
     fun toJson(w: WalkRecord): JSONObject = JSONObject()
         .put("id", w.id)
@@ -158,9 +156,9 @@ internal object WalkJson {
         })
 
     fun fromJson(o: JSONObject): WalkRecord {
-        val route = o.optJSONArray("route") ?: JSONArray()
-        val visits = o.optJSONArray("visits") ?: JSONArray()
-        val stations = o.optJSONArray("stations") ?: JSONArray()
+        val route = o.getJSONArray("route")
+        val visits = o.getJSONArray("visits")
+        val stations = o.getJSONArray("stations")
         return WalkRecord(
             id = o.getLong("id"),
             startedAt = o.getLong("startedAt"),
@@ -178,9 +176,9 @@ internal object WalkJson {
                     category = v.getString("category"),
                     at = v.getLong("at"),
                     remark = if (v.isNull("remark")) null else v.getString("remark"),
-                    lat = if (v.has("lat")) v.getDouble("lat") else null,
-                    lon = if (v.has("lon")) v.getDouble("lon") else null,
-                    station = v.optString("station").ifEmpty { null },
+                    lat = v.getDouble("lat"),
+                    lon = v.getDouble("lon"),
+                    station = v.getString("station"),
                 )
             },
             stations = (0 until stations.length()).map {

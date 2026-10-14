@@ -128,7 +128,6 @@ class StationAssetsTest {
     fun `the history names the channels of a walk`() {
         val repo = StationRepository(stations, MutableStateFlow(GuideSettings()), CoroutineScope(Dispatchers.Unconfined))
         fun walk(vararg keys: String) = WalkRecord(1, 0, 1, 0.0, emptyList(), emptyList(), keys.mapIndexed { i, k -> StationSegment(k, i.toLong()) })
-        assertEquals("標準", repo.namesOf(walk()))
         assertEquals("標準 → 歴史探訪", repo.namesOf(walk("builtin:standard@1", "builtin:history@1")))
         // A later version of the same channel is still that channel; back-to-back repeats collapse.
         assertEquals("自然観察", repo.namesOf(walk("builtin:nature@1", "builtin:nature@2")))

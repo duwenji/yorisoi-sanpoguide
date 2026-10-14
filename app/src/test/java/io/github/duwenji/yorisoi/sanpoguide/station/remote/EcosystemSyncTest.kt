@@ -51,16 +51,16 @@ class EcosystemSyncTest {
                 .put("id", id).put("version", 1).put("publisher", alice.accountId).put("publisherName", "鎌倉歴史散歩の会")
                 .put("name", id).put("summary", "s").put("lang", JSONArray(listOf("ja")))
                 .put("icon", JSONObject().put("url", "$base/icons/x.png").put("sha256", "0".repeat(64)))
-                .put("package", JSONObject().put("url", "$base/pkg/$sha.zip").put("sha256", sha).put("size", zip.size).put("format", extra?.optInt("format", 1) ?: 1))
-                .put("minAppVersion", 1).put("approvedAt", clock.toString())
+                .put("package", JSONObject().put("url", "$base/pkg/$sha.zip").put("sha256", sha).put("size", zip.size).put("format", 1))
+                .put("approvedAt", clock.toString())
                 .apply(listed)
         }
         files["$base/v1/channels.json"] = provider.list(1, JSONArray(entries), JSONArray(), clock, clock.plus(Duration.ofDays(14))).toByteArray()
         sync.addProvider(base, provider.id)
     }
 
-    private fun format2(vararg activities: String, change: JSONObject.() -> Unit = {}) =
-        JSONObject().put("format", 2).put("activities", JSONArray(activities.toList())).apply(change)
+    private fun forActivities(vararg activities: String, change: JSONObject.() -> Unit = {}) =
+        JSONObject().put("activities", JSONArray(activities.toList())).apply(change)
 
     private fun copies(vararg activities: String): JSONObject.() -> Unit = { put("activities", JSONArray(activities.toList())) }
 
@@ -69,20 +69,20 @@ class EcosystemSyncTest {
     @Test
     fun `walking channels are offered, others aren't (V-25, V-28)`() {
         publish(
-            Triple("walk-and-ride", format2("walk", "cycle"), copies("walk", "cycle")),
-            Triple("ride-only", format2("cycle"), copies("cycle")),
-            Triple("old-walk", null) {},
+            Triple("walk-and-ride", forActivities("walk", "cycle"), copies("walk", "cycle")),
+            Triple("ride-only", forActivities("cycle"), copies("cycle")),
+            Triple("walk-only", null) {},
         )
-        assertEquals(listOf("walk-and-ride", "old-walk"), offered())
+        assertEquals(listOf("walk-and-ride", "walk-only"), offered())
         assertThrows(ChannelSyncException::class.java) { sync.install(provider.id, "ride-only") }
         sync.install(provider.id, "walk-and-ride")
-        sync.install(provider.id, "old-walk")
-        assertEquals(setOf("walk-and-ride", "old-walk"), sync.stations(standard).map { it.manifest.id }.toSet())
+        sync.install(provider.id, "walk-only")
+        assertEquals(setOf("walk-and-ride", "walk-only"), sync.stations(standard).map { it.manifest.id }.toSet())
     }
 
     @Test
     fun `a channel needing what SanpoGuide lacks isn't offered`() {
-        val needsSound = format2("walk") { put("requires", JSONObject().put("features", JSONArray(listOf("present:play")))) }
+        val needsSound = forActivities("walk") { put("requires", JSONObject().put("features", JSONArray(listOf("present:play")))) }
         publish(Triple("with-sound", needsSound) { copies("walk")(); put("requires", JSONArray(listOf("present:play"))) })
         assertEquals(emptyList<String>(), offered())
     }
@@ -90,7 +90,7 @@ class EcosystemSyncTest {
     @Test
     fun `a package whose restrictions SanpoGuide can't read isn't taken in (V-26)`() {
         // A newer talk level: the list's copy can't say so, the package does.
-        val newer = format2("walk") { put("talk", JSONObject("""{ "level": "nonstop", "events": { "spot": true, "revisit": true, "milestone": true, "rest": false, "start": true, "finish": true } }""")) }
+        val newer = forActivities("walk") { put("talk", JSONObject("""{ "level": "nonstop", "events": { "spot": true, "revisit": true, "milestone": true, "rest": false, "start": true, "finish": true } }""")) }
         publish(Triple("newer", newer, copies("walk")))
         assertEquals(listOf("newer"), offered())
         val e = assertThrows(ChannelSyncException::class.java) { sync.install(provider.id, "newer") }
@@ -99,7 +99,7 @@ class EcosystemSyncTest {
 
     @Test
     fun `the package must agree with the list's copy (API-002 P-19)`() {
-        publish(Triple("walk-and-ride", format2("walk", "cycle"), copies("walk")))
+        publish(Triple("walk-and-ride", forActivities("walk", "cycle"), copies("walk")))
         val e = assertThrows(ChannelSyncException::class.java) { sync.install(provider.id, "walk-and-ride") }
         assertTrue(e.message!!.contains("bad_manifest"))
     }
@@ -107,8 +107,8 @@ class EcosystemSyncTest {
     @Test
     fun `SanpoGuide's own minimum version decides (API-002 P-20)`() {
         publish(
-            Triple("for-later", format2("walk")) { copies("walk")(); put("minAppVersion", 1); put("minAppVersions", JSONObject().put("sanpoguide", 9)) },
-            Triple("other-app-later", format2("walk")) { copies("walk")(); put("minAppVersion", 99); put("minAppVersions", JSONObject().put("cycle", 9)) },
+            Triple("for-later", forActivities("walk")) { copies("walk")(); put("minAppVersions", JSONObject().put("sanpoguide", 9)) },
+            Triple("other-app-later", forActivities("walk")) { copies("walk")(); put("minAppVersions", JSONObject().put("cycle", 9)) },
         )
         val status = sync.providers().single().channels.associate { it.channel.id to it.status }
         assertEquals(ListedStatus.NEEDS_APP_UPDATE, status["for-later"])

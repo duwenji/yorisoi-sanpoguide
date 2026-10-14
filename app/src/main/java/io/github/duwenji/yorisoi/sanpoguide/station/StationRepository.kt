@@ -38,12 +38,11 @@ class StationRepository(
     fun byId(id: String): Station = all.firstOrNull { it.id == id } ?: standard
 
     /**
-     * The channels of a walk in the history, in order (`標準 → 歴史探訪`). A walk from before
-     * channels was on the standard one; a channel the app no longer has shows as such.
+     * The channels of a walk in the history, in order (`標準 → 歴史探訪`). A channel the app no
+     * longer has shows as such.
      */
     fun namesOf(walk: WalkRecord): String {
-        val keys = walk.stations.map { it.station }.ifEmpty { listOf(standard.key) }
-        return keys.map { key -> all.firstOrNull { sameChannel(it.key, key) }?.name ?: "（今はないチャンネル）" }
+        return walk.stations.map { it.station }.map { key -> all.firstOrNull { sameChannel(it.key, key) }?.name ?: "（今はないチャンネル）" }
             .fold(emptyList<String>()) { acc, name -> if (acc.lastOrNull() == name) acc else acc + name }
             .joinToString(" → ")
     }

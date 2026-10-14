@@ -109,7 +109,7 @@ class CuesTest {
         val listed = ListedCollection(
             "kamakura-guide", 1, producer.accountId, "鎌倉市観光協会", null, "鎌倉音声ガイド", "寺社の解説と写真",
             listOf("text", "image"), photo.size.toLong(), listOf("history"), listOf("xn7"), Grants.EVERYONE,
-            PackageRef("https://x/col.zip", sha256(col), col.size, 1), 1, java.time.Instant.EPOCH, promotional = promotionalCollection,
+            PackageRef("https://x/col.zip", sha256(col), col.size, 1), java.time.Instant.EPOCH, mapOf("sanpoguide" to 1), promotional = promotionalCollection,
         )
         val status = if (usable) CollectionStatus.Usable(listed, colPkg) else CollectionStatus.Unusable(RejectCode.COLLECTION_NOT_LISTED, "revoked")
         val materials = ChannelMaterials(
