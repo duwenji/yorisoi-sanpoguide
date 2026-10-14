@@ -15,7 +15,7 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * SanpoGuide choosing from a list shared by every app of the ecosystem (API-003 2.0 G-4, API-002
+ * SanpoGuide choosing from a list shared by every app of the ecosystem (API-003 G-4, API-002
  * 1.4 P-19・P-20): only walking channels it can show are offered and taken in.
  */
 class EcosystemSyncTest {

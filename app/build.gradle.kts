@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     signingConfigs {
@@ -92,7 +92,7 @@ dependencies {
     implementation(libs.yorisoi.kit.mood)
     implementation(libs.yorisoi.kit.companion)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
-    // (ADR-001 T-5), and later API-001.
+    // and later API-001.
     implementation(libs.tink.android)
     // Test tickets' QR codes (API-002): Google's scanner UI, so the app needs no camera permission.
     implementation(libs.play.services.code.scanner)

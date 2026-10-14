@@ -10,7 +10,7 @@
 | 関連Skill | 020_api-contract-design |
 | 作成日 | 2026-09-29 |
 | 作成者 | Claude（開発者との検討） |
-| 承認者 | 開発者（2026-09-29） |
+| 承認者 | 開発者 |
 | ステータス | 承認済 |
 | 版 | 1.0 |
 
@@ -47,7 +47,7 @@
 
 ## 方針・決定事項
 
-### 決定事項（2026-09-29、段階7・13）
+### 決定事項
 
 | No. | 論点 | 決定 |
 |---|---|---|
@@ -864,8 +864,6 @@ sequenceDiagram
 
 ## 未決事項・リスク
 
-段階7・13 で決まった論点は[決定事項](#決定事項2026-09-29段階713)に移した。
-
 | No. | 内容 | 決める時期 |
 |---|---|---|
 | 1 | 鍵のバックアップの方法（合言葉で暗号化した書き出しファイル、または Google のバックアップ） | 実装着手前 |
@@ -881,16 +879,6 @@ sequenceDiagram
 - [api/sanpo-messages.openapi.yaml](api/sanpo-messages.openapi.yaml): 本書を機械で読める形にした OpenAPI 3.1（本書が正本）。各操作の `x-sanpo-feature`・`x-sanpo-release` で必要な機能と版を示す
 - [api/README.md](api/README.md): OpenAPI の見方・使い方と、利用の流れのシーケンス図
 - [TODO.md「位置に紐づく秘密メッセージ」](TODO.md#位置に紐づく秘密メッセージ)
-- [TODO.md「第三者の媒体・広告の再生」](TODO.md#第三者の媒体広告の再生)
 - RFC 9180（HPKE）、RFC 8032（Ed25519）、RFC 9457（Problem Details）、RFC 8615（Well-Known URI）
 - Tink（`HybridEncrypt` の HPKE、`PublicKeySign` の Ed25519、`AndroidKeysetManager`）
 - UnifiedPush（https://unifiedpush.org/）
-
-## 変更履歴
-
-| 日付 | 版 | 変更内容 | 変更者 |
-|---|---|---|---|
-| 2026-09-29 | 0.1 | 初版（案） | Claude |
-| 2026-09-29 | 0.2 | メッセージの管理（状態・版・配信状況）、配信とフィルター（配信条件・受信フィルター・フィルター式）、グループ、役割、プッシュ、運営 API、サーバーのデータの概要を追加 | Claude |
-| 2026-09-29 | 0.3 | 段階7 の決定を反映（第 1 版の範囲、トークン認証、プッシュは poll と UnifiedPush のみ、配信条件の属性は言語と興味のみ）。`features`・`unsupported_feature` を追加 | Claude |
-| 2026-09-29 | 1.0 | 承認。D-5（実装方法と置き場所は準拠していれば問わない）と「サーバーの準拠要件」を追加 | Claude |

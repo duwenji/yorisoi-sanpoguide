@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // The yorisoi platform (RFC-004 R-4). Reading GitHub Packages needs a token with
+        // The yorisoi platform. Reading GitHub Packages needs a token with
         // read:packages: $GITHUB_TOKEN in CI, or gpr.user / gpr.key in ~/.gradle/gradle.properties.
         // Without one, only versions published locally (`./gradlew publishToMavenLocal` in
         // yorisoi-platform) are used.
@@ -38,6 +38,6 @@ include(":app")
 include(":prompts")
 
 // To change the platform and the app together, build against yorisoi-platform's sources instead of
-// the published version (RFC-004 R-7): -Pyorisoi.platformDir=../yorisoi-platform, or set it in
+// the published version: -Pyorisoi.platformDir=../yorisoi-platform, or set it in
 // ~/.gradle/gradle.properties. Never set in CI.
 providers.gradleProperty("yorisoi.platformDir").orNull?.let { includeBuild(it) }

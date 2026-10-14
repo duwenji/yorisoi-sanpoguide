@@ -9,7 +9,7 @@ import java.io.File
 import java.security.MessageDigest
 
 /**
- * Pins what the app sends to the AI (RFC-002 G-2): every built-in channel's system prompts, its
+ * Pins what the app sends to the AI: every built-in channel's system prompts, its
  * extra instructions per event and the review samples, plus a hash of every prompt and channel
  * file. Moving code or files between modules must leave this byte for byte the same.
  *

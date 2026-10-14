@@ -78,8 +78,8 @@ data class ProviderView(
  * @param mediaStage the material this app shows (API-003 M-1: 1 text and images, 2 audio, 3 video).
  * @param region the device's region and the eight around it (API-004 P-6), for the collections
  *   selectors draw from; null while the location is unknown.
- * @param profile what this app is, for choosing the channels it can use (API-003 2.0 G-4) and the
- *   version it is against `minAppVersions` (API-002 1.4 P-20).
+ * @param profile what this app is, for choosing the channels it can use (API-003 G-4) and the
+ *   version it is against `minAppVersions` (API-002 P-20).
  */
 class ChannelSync(
     private val store: ChannelStore,
@@ -93,7 +93,7 @@ class ChannelSync(
     private val profile: AppProfile = SanpoProfile.of(appVersion),
 ) {
     companion object {
-        /** The app shows text and images (ADR-002 T-8). */
+        /** The app shows text and images. */
         const val MEDIA_STAGE = 1
         val REFRESH_EVERY: Duration = Duration.ofHours(24)
         const val DISCOVERY_PATH = "/.well-known/sanpo-channels"
@@ -208,7 +208,7 @@ class ChannelSync(
                 listed != null && listed.version > c.version && unmetered -> runCatching { download(providerId, listed, c, list, unmetered) }
             }
         }
-        // New versions of collections, and material a metered network left behind, come on Wi-Fi (ADR-002 T-8a).
+        // New versions of collections, and material a metered network left behind, come on Wi-Fi.
         if (unmetered) {
             for (c in state.installed.filter { it.provider == providerId }) {
                 open(c.sha256, ListedAs(c.id, c.version, c.publisher))?.let { fetchMaterials(providerId, list, it.pkg, c.publisher, unmetered) }
@@ -403,7 +403,7 @@ class ChannelSync(
         collectGarbage()
     }
 
-    // ---- material (ADR-002 T-8a) ----
+    // ---- material ----
 
     private class Opened(val pkg: StationPackage, val files: StationFiles)
 

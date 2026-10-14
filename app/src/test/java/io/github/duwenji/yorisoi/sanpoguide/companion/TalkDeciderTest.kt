@@ -17,7 +17,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * Scenes of a walk and what the companion says in each (RFC-003 D-6): every check of the decision
+ * Scenes of a walk and what the companion says in each: every check of the decision
  * (architecture.md 図 2), once where it speaks and once where it holds back, and the clashes
  * between them. The decision's order is the contract here, not how it is written.
  */

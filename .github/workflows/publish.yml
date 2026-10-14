@@ -1,5 +1,5 @@
 # Publishes SanpoGuide's prompt pack (:prompts, sanpoguidePromptsVersion) to GitHub Packages when
-# the tag prompts-v<version> is pushed (RFC-004 R-5). The tag must match the version in
+# the tag prompts-v<version> is pushed. The tag must match the version in
 # gradle.properties, and the yorisoi version it uses must be published first.
 name: Publish
 

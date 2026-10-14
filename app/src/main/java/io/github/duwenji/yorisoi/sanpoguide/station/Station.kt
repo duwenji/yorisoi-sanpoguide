@@ -37,7 +37,7 @@ data class StationOverrides(
  * @param id how settings name the channel: the manifest's id for a built-in one,
  *   `{provider id}/{channel id}` for a third party's (ids are unique only within a provider).
  * @param source who delivers a third party's channel; null for a built-in one.
- * @param materials what a third party's channel can show beyond words (ADR-002 T-8); null when
+ * @param materials what a third party's channel can show beyond words; null when
  *   it has no material.
  */
 class Station(
@@ -118,7 +118,7 @@ class Station(
 /**
  * Where a third party's channel comes from, for the screens (API-002 `publisherName`, the provider's
  * name). [trial] marks a package read from a test ticket, before review (API-002 試用チケット).
- * [promotional] is the list's mark (API-002 1.3 P-16), shown as「宣伝を含む」(ADR-002 D-32).
+ * [promotional] is the list's mark (API-002 P-16), shown as「宣伝を含む」(ADR-002 D-32).
  */
 data class StationSource(
     val providerId: String, val providerName: String, val publisherName: String, val trial: Boolean = false, val promotional: Boolean = false,

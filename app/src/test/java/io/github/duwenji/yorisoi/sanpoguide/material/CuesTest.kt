@@ -33,7 +33,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.ZoneId
 
-/** A third party's cues on the walk (ADR-002 T-8b): which fire, and what each presentation comes to. */
+/** A third party's cues on the walk: which fire, and what each presentation comes to. */
 class CuesTest {
     private val publisher = TestPublisher()
     private val producer = TestPublisher()

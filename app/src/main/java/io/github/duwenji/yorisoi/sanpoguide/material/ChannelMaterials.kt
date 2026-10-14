@@ -12,7 +12,7 @@ import io.github.duwenji.yorisoi.core.format.StationFiles
 import io.github.duwenji.yorisoi.core.format.StationMedia
 
 /**
- * What a third party's channel can show on this device (ADR-002 T-8a): its own resources, the
+ * What a third party's channel can show on this device: its own resources, the
  * collections it declares as resolved against its provider's list, and the outside resources
  * fetched ahead. Anything missing (not fetched yet, revoked, a later app stage) reads as null,
  * and the cue moves on to its next candidate (API-004 I-7).
@@ -20,7 +20,7 @@ import io.github.duwenji.yorisoi.core.format.StationMedia
  * @param collections by alias, as `CollectionReferences.resolve` gave them.
  * @param collectionFiles the files of each usable collection, by alias.
  * @param stored outside resources fetched ahead, by SHA-256.
- * @param selected the collections on the device each selector may draw from, best first, by its alias (T-8d).
+ * @param selected the collections on the device each selector may draw from, best first, by its alias.
  * @param lang the channel's language, which selectors ask for unless they name another.
  */
 class ChannelMaterials(

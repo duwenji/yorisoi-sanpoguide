@@ -8,7 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** How a cue's material is laid out and credited (ADR-002 T-8c, API-003「見せ方」). */
+/** How a cue's material is laid out and credited (API-003「見せ方」). */
 class CueLayoutTest {
     private fun text(t: String, credit: Credit? = null) = Material(MaterialType.TEXT, Content.Text(t), "self", credit)
     private fun image(alt: String, credit: Credit? = Credit("不明", "PD")) =
