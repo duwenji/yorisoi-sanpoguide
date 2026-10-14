@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
         openCue(intent)
     }
 
-    /** A channel's notification opens what its cue holds (ADR-002 T-8c). */
+    /** A channel's notification opens what its cue holds. */
     private fun openCue(intent: Intent?) {
         intent?.getStringExtra(EXTRA_CUE)?.let(viewModel::openCue)
     }

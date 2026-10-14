@@ -55,7 +55,7 @@ class CueFinder(private val memory: CueMemory, private val zone: () -> ZoneId = 
      * The first cue on [poi], a spot within reach: by its OSM id, or by its name (the area and
      * the node of one place have different ids, and a spot of that name within reach is the one meant).
      * A cue on any spot of its kind comes only when no cue names the spot, and counts per spot
-     * (API-003 1.2 題材を問わないきっかけ).
+     * (API-003 題材を問わないきっかけ).
      */
     fun spot(stationId: String, media: StationMedia, poi: Poi, distanceM: Int?, shownThisWalk: Set<String>, now: Long): CueFire? {
         val subject = Subject.Spot(poi, distanceM)
@@ -175,7 +175,7 @@ class CuePresenter(
         return text.codePointCount(0, text.length) <= max
     }
 
-    /** The channel's own resources as `self`, each usable collection by its alias, and each selector's producer (T-8d). */
+    /** The channel's own resources as `self`, each usable collection by its alias, and each selector's producer. */
     private fun producersOf(station: Station, materials: ChannelMaterials): Map<String, Producer> {
         val trial = station.source?.trial == true
         // A promotional channel's own resources are its publisher's promotion (ADR-002 D-32).

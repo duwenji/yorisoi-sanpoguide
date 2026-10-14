@@ -11,7 +11,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * Names the phone has already stored (RFC-002 R-8). Moving these types to other modules or
+ * Names the phone has already stored. Moving these types to other modules or
  * packages must not rename them, or an update loses the user's settings, API keys or
  * notification preferences. The Keystore entry for API keys is pinned in kit-llm (KeyCipherTest).
  */

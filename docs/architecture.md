@@ -2,7 +2,7 @@
 
 アプリ全体を 7 枚の図で説明する。最初に、アプリの中心にある「チャンネル」の考え方と関係者を示す。図 1 で「どこに何があるか」をつかみ、図 2〜7 で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追う。
 
-- ソース 90 ファイル / 約 11,940 行（アプリ 71 ファイル・9,505 行、チャンネルの形式のモジュール `:station-format` 19 ファイル・2,436 行。2026-10-12 時点。RFC-002 の手順 1 で `:platform:core-format`・`:platform:core-prompt`・`:apps:sanpoguide:prompts` に分けた）、アプリのパッケージ 11
+- ソース 51 ファイル / 約 7,300 行（アプリ 47 ファイル・7,046 行、プロンプト・パック `:prompts` 4 ファイル・277 行。共通の部品は yorisoi-platform）、アプリのパッケージ 11
 - 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネル・リストは設定で選んだときだけ）
 
 図はコードから手で書き起こしたもの。`WalkService` の判定順を変えたり、パッケージを追加したりしたときは、この文書も更新する。
@@ -94,7 +94,7 @@ flowchart TB
 
 ## 図 2 · 散策モード: 話しかけるまでの流れ
 
-位置が更新されるたびと、一定間隔のタイマーで `WalkService.maybeTalk()` が呼ばれる。`maybeTalk()` はその時の状況（`TalkSituation`。距離・経過時間・セッションの値などを計算済みの値で）を集め、`TalkDecider.decide()` が上から順に判定して、最初に当たった 1 件を決定（`TalkDecision`）として返す。判定は 8 つのルール（`TalkDecider.rules`）の並びで、それぞれ 4 つのゲート（`WalkGate`: スポットの間隔・雑談の間隔・とどまっていない・切り替えの直後でない）のうち要るものが開いているときだけ評価される。並びを評価するエンジンは `yorisoi-platform/kit-companion` の `TalkEngine`。`maybeTalk()` はその決定を実行する（読み上げ・通知・記録・セッションの更新）。判定は Android に依存しない純粋な関数で、場面ごとのテスト（`TalkDeciderTest`）がある（[RFC-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-003-talk-decision.md)）。
+位置が更新されるたびと、一定間隔のタイマーで `WalkService.maybeTalk()` が呼ばれる。`maybeTalk()` はその時の状況（`TalkSituation`。距離・経過時間・セッションの値などを計算済みの値で）を集め、`TalkDecider.decide()` が上から順に判定して、最初に当たった 1 件を決定（`TalkDecision`）として返す。判定は 8 つのルール（`TalkDecider.rules`）の並びで、それぞれ 4 つのゲート（`WalkGate`: スポットの間隔・雑談の間隔・とどまっていない・切り替えの直後でない）のうち要るものが開いているときだけ評価される。並びを評価するエンジンは `yorisoi-platform/kit-companion` の `TalkEngine`。`maybeTalk()` はその決定を実行する（読み上げ・通知・記録・セッションの更新）。判定は Android に依存しない純粋な関数で、場面ごとのテスト（`TalkDeciderTest`）がある。
 
 ```mermaid
 flowchart LR
@@ -272,7 +272,7 @@ flowchart LR
 
 アプリのパスは `app/src/main/java/io/github/duwenji/yorisoi/sanpoguide/` からの相対。行数は空行・コメントを含む。
 
-アプリ（`:app`）のパッケージ（2026-10-12、RFC-002 の段階 1 の後）:
+アプリ（`:app`）のパッケージ:
 
 | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---:|
@@ -280,13 +280,13 @@ flowchart LR
 | `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherChange | 650 |
 | `walk` | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知 | WalkService, CueShow | 624 |
 | `guide` | スポット解説とキャッシュ、AI サービスへの接続の生成 | GuideRepository, GuidePrompt | 96 |
-| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、話しかけの頻度の段階、しきい値 | SettingsRepository, StationMigration, OverrideCodec, TalkLevel, Threshold | 339 |
+| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、古い形の設定の移行、話しかけの頻度の段階、しきい値 | SettingsRepository, StationMigration, OverrideCodec, TalkLevel, Threshold | 339 |
 | `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 192 |
 | `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
 | `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |
 | (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 204 |
 
-共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[RFC-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-004-split-repositories.md)。[ADR-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-003-companion-app-platform.md)・[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）と SanpoGuide のプロンプト・パック:
+共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[ADR-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-003-companion-app-platform.md)）と SanpoGuide のプロンプト・パック:
 
 | モジュール | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---|---:|
@@ -295,11 +295,11 @@ flowchart LR
 | `yorisoi-platform/kit-voice` | `io.github.duwenji.yorisoi.kit.voice` | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生 | Speaker, AmbientPlayer, Voices, Soundscape | 500 |
 | `yorisoi-platform/kit-llm` | `…kit.llm` | AI サービスの抽象と実装、API キーの暗号化 | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, KeyCipher | 221 |
 | `yorisoi-platform/kit-geo` | `…kit.geo`・`.weather`・`.map` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
-| `yorisoi-platform/kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する（[RFC-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-003-talk-decision.md)） | TalkEngine, TalkRule, TalkGates | 45 |
+| `yorisoi-platform/kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する | TalkEngine, TalkRule, TalkGates | 45 |
 | `yorisoi-platform/kit-mood` | `…kit.mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方 | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice | 622 |
 | `:prompts`（JVM） | `io.github.duwenji.yorisoi.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
 
-チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある（[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
@@ -328,9 +328,9 @@ flowchart LR
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers` |
 | 素材集の取得（前もっての取得・基準で選ぶ取得）を変える | `material/ChannelMaterials.kt`・`material/Selectors.kt`、取得の実行は `ChannelSync` |
 
-## 計画中: 宣伝の表示と、素材の第 2 段以降
+## 計画中: 素材の第 2 段以降
 
-第三者のチャンネルの取り込み（図 6）と素材の第 1 段（文字・画像。図 7）は実装済み。宣伝を含むチャンネル・素材集の表示（「宣伝を含む」の表示、読み上げる前の一言、設定「宣伝の素材を出さない」。[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) T-12〜T-14）と、素材の第 2 段（音声）・第 3 段（映像）はまだ実装していない（[channels.md](channels.md) の段階 6・7）。審査は [channel-review-policy.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-review-policy.md) に従い、アプリとは別のチャンネル管理システムで行う。
+第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）、宣伝を含むチャンネル・素材集の表示は実装済み。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していない（[channels.md](channels.md)「素材・きっかけ・見せ方」）。審査は [channel-review-policy.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-review-policy.md) に従い、アプリとは別のチャンネル管理システムで行う。
 
 ## 計画中: 位置に紐づく秘密メッセージ
 

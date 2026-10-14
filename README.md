@@ -108,7 +108,7 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 - **素材・きっかけ・見せ方**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)、アプリの第 1 段: 文字と画像）: 配信されているチャンネルは、スポット・地点・出来事（選んだとき・散歩の開始・終了）をきっかけに、同梱の素材や、リストに載った素材集（第三者の素材提供者が作り、審査されたもの）の素材を出せる。見せ方は、読み上げ・発言カード（文字・画像）・通知（チャンネル「チャンネルの案内」）・解説の画面・全画面の画像。解説の画面と全画面はカード・通知をタップしたときだけ開き、全画面は歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える
   - 素材は、チャンネルを選んだときにまとめて取得し、端末で確かめてから使う（その後の更新は従量制でない回線のときだけ。映像を除いて 50MB まで）。スポットに近づいてから取得することはない
   - チャンネルが「基準」（種類・タグ）で素材を選ぶときは、今いる地域とその隣の地域（geohash 3 文字、約 150km 四方）に関する素材集と、地域を問わない素材集を、従量制でない回線のときだけ取得する
-- **宣伝の表示**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) D-29〜D-36、versionCode 3）: 宣伝を含むチャンネルは、一覧と選ぶ画面に「宣伝を含む」と出す。宣伝の素材集の素材と、宣伝のチャンネルの同梱の素材は、出典の行に「宣伝: 名前」と出し、読み上げる前に「ここからは〇〇の宣伝です」と言う。宣伝の素材集は基準で選ばない（チャンネルが名指ししたときだけ使う）。設定「宣伝の素材を出さない」をオンにすると、宣伝の素材を飛ばして次の候補（AI の解説など）に代える
+- **宣伝の表示**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) D-29〜D-36）: 宣伝を含むチャンネルは、一覧と選ぶ画面に「宣伝を含む」と出す。宣伝の素材集の素材と、宣伝のチャンネルの同梱の素材は、出典の行に「宣伝: 名前」と出し、読み上げる前に「ここからは〇〇の宣伝です」と言う。宣伝の素材集は基準で選ばない（チャンネルが名指ししたときだけ使う）。設定「宣伝の素材を出さない」をオンにすると、宣伝の素材を飛ばして次の候補（AI の解説など）に代える
 - **試用チケット（チャンネル提供者向け）**: 設定画面の一番下の「バージョン」を 7 回タップすると開発者モードになり、管理システムで発行した試用チケットの QR コードを読み込める（Google のコードスキャナを使うので、アプリにカメラの権限は要らない）。チケットのリストを先に足しておく。審査前のチャンネルを 7 日まで試せ、画面では「審査前の試用」、散策では最初に「審査前の試用のチャンネルです」と言う。開発者モードをオフにする・期限が切れると使えなくなる
 
 ## 雰囲気
@@ -164,7 +164,7 @@ API キーが未設定の場合は、地図データのタグから作る簡易�
 ./gradlew :app:installDebug
 ```
 
-アプリは `app/`（Gradle では `:app`）、プロンプト・パックは `prompts/`（`:prompts`）にある。共通の部品（コアとキット）は別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform) にあり、GitHub Packages に公開した版を使う（版は `gradle/libs.versions.toml` の `yorisoi`。[RFC-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-004-split-repositories.md)）。
+アプリは `app/`（Gradle では `:app`）、プロンプト・パックは `prompts/`（`:prompts`）にある。共通の部品（コアとキット）は別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform) にあり、GitHub Packages に公開した版を使う（版は `gradle/libs.versions.toml` の `yorisoi`）。
 
 GitHub Packages の Maven は、読むのにトークン（`read:packages`）が要る。`~/.gradle/gradle.properties` に `gpr.user`（GitHub のユーザー名）と `gpr.key`（トークン）を書く。トークンがなければ、yorisoi-platform で `./gradlew publishToMavenLocal` した版を使う。
 
@@ -215,7 +215,7 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 
-チャンネルの形式（[docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール（[RFC-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/refactoring/RFC-002-platform-stage1.md)）。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（[docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
 
 AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
 
@@ -252,11 +252,11 @@ AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追
 
 ## 今後の予定
 
-アプリの操作ではなく、散策全般の支援に広げている。雰囲気・背景画像・背景音と、第三者のチャンネル（素材の第 1 段: 文字と画像）は実装済み。宣伝を含むチャンネル・素材集の表示（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md) T-12〜T-14）も実装した。次は、素材の第 2 段（音声）、位置に紐づく秘密メッセージなど。項目と検討事項は [docs/TODO.md](docs/TODO.md) にまとめている。
+アプリの操作ではなく、散策全般の支援に広げている。雰囲気・背景画像・背景音と、第三者のチャンネル（素材の第 1 段: 文字と画像）、宣伝を含むチャンネル・素材集の表示は実装済み。次は、Google Play での公開、素材の第 2 段（音声）、位置に紐づく秘密メッセージなど。項目と検討事項は [docs/TODO.md](docs/TODO.md) にまとめている。
 
 ## 既知の課題
 
-- **スポット検索のタイムアウト**: 公開の Overpass サーバーが混雑していると、3つのサーバーすべてで失敗することがある（テストで発生、再検索で成功）。1 サーバーあたり最大 40 秒待つため、失敗までに時間がかかる。以前は OkHttp の読み取りタイムアウト（既定 10 秒）がクエリの制限時間（25 秒）より短く、処理中の応答を打ち切っていたので、30 秒に延ばした（エミュレータで、10 秒を超えて 23 秒で返った応答を確認）。各サーバーの応答時間と失敗はタグ `Overpass` でログに出るので、`adb logcat -s Overpass` で計測できる。
+- **スポット検索のタイムアウト**: 公開の Overpass サーバーが混雑していると、3つのサーバーすべてで失敗することがある（テストで発生、再検索で成功）。1 サーバーあたり最大 40 秒待つため、失敗までに時間がかかる。OkHttp の読み取りタイムアウトは、クエリの制限時間（25 秒）より長い 30 秒にしている（既定の 10 秒では、処理中の応答を打ち切ってしまう）。各サーバーの応答時間と失敗はタグ `Overpass` でログに出るので、`adb logcat -s Overpass` で計測できる。
 - **解説の正確さ**: プロンプトで創作を禁じているが、モデルの知識が古い・不正確な場合がある（例: DeepSeek による若宮大路の解説で、2016 年に作り直された段葛を「大正時代に整備」と説明）。モデルによって精度に差がある。
 - **解説の長さ・距離感**: 指示（200〜300 字）より長めになる（DeepSeek では鶴岡八幡宮で約 500 字）、離れたスポットを「今いらっしゃる辺り」と表現する、などのずれがある。
 - **「訪問」の判定**: スポットの 60m 以内を通過しただけでも訪問として記録する（実際に立ち寄ったかは区別しない）。

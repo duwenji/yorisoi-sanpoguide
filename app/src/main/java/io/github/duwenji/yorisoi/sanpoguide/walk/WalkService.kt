@@ -189,7 +189,7 @@ class WalkService : LifecycleService() {
         }
     }
 
-    /** Says what [TalkDecider] finds worth saying right now, if anything (RFC-003 D-4). */
+    /** Says what [TalkDecider] finds worth saying right now, if anything. */
     private suspend fun maybeTalk() {
         val s = session ?: return
         val location = lastLocation ?: return
@@ -259,7 +259,7 @@ class WalkService : LifecycleService() {
     }
 
     /**
-     * What [TalkDecider] reads, as of [now] (RFC-003 D-2). Only lookups, no decisions: a channel's
+     * What [TalkDecider] reads, as of [now]. Only lookups, no decisions: a channel's
      * cues and earlier visits are looked up for the spots within reach only, as they always were.
      */
     private fun situation(s: WalkSession, location: Location, station: Station, now: Long): TalkSituation {
@@ -333,7 +333,7 @@ class WalkService : LifecycleService() {
         if (fire != null && shown.isNotEmpty()) show(s, fire, shown, poi.name) else speakLine(text, poi.name)
     }
 
-    // ---- a channel's cues (ADR-002 T-8b) ----
+    // ---- a channel's cues ----
 
     private suspend fun present(s: WalkSession, fire: CueFire, station: Station): List<Shown> =
         app.cues.present(fire, station, MaterialContext(station, s, weather, app.mood.mood.value))

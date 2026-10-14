@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-// SanpoGuide's prompt pack (RFC-002 R-4): the app's prompt files, its built-in channels, how a
+// SanpoGuide's prompt pack: the app's prompt files, its built-in channels, how a
 // channel's slots go into its prompts and the review samples. Plain JVM so the channel
 // management system renders exactly the prompts the app sends (ADR-003 E-18).
 plugins {
@@ -54,7 +54,7 @@ sourceSets.main {
     resources.srcDir(channelIndex)
 }
 
-// Published to GitHub Packages for the channel management system (RFC-002 R-12, RFC-004 R-5).
+// Published to GitHub Packages for the channel management system.
 // The yorisoi version it depends on must be published first. Users add org.json themselves.
 publishing {
     publications {

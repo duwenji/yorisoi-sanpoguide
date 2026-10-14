@@ -13,7 +13,7 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
 
 /**
- * A spot within reach of the user, as the walk service sees it (RFC-003 D-2, D-5).
+ * A spot within reach of the user, as the walk service sees it.
  *
  * @param alreadyThisWalk talked about on this walk already (by id, or the same place by name)
  * @param visitedBefore visited on an earlier walk: a "welcome back" rather than a guide
@@ -28,8 +28,8 @@ data class NearbySpot(
 )
 
 /**
- * Everything [TalkDecider] reads, as plain values gathered by the walk service each time (RFC-003
- * D-2). No Android types, so a scene can be written down in a unit test.
+ * Everything [TalkDecider] reads, as plain values gathered by the walk service each time.
+ * No Android types, so a scene can be written down in a unit test.
  */
 data class TalkSituation(
     val now: Long,
@@ -74,7 +74,7 @@ data class TalkSituation(
     }
 }
 
-/** When a kind of talk may come up on a walk (RFC-003 D-10). The situation says which are open. */
+/** When a kind of talk may come up on a walk. The situation says which are open. */
 enum class WalkGate {
     /** The talk level's gap since the last spot talk has passed. */
     SPOT_GAP,
@@ -86,7 +86,7 @@ enum class WalkGate {
     SETTLED,
 }
 
-/** What to say now, one per tick (RFC-003 D-3). The walk service carries it out. */
+/** What to say now, one per tick. The walk service carries it out. */
 sealed interface TalkDecision {
     data class WeatherTurn(val change: WeatherChange) : TalkDecision
     /** The new channel's greeting; then its cues for being chosen, if [select]. */
@@ -110,7 +110,7 @@ private typealias Rule = TalkRule<TalkSituation, TalkDecision, WalkGate>
 
 /**
  * Decides whether anything is worth saying right now, most important first (architecture.md 図 2):
- * the walk's rules in order, each behind its gates (RFC-003 D-10〜D-12). Pure: the walk service
+ * the walk's rules in order, each behind its gates. Pure: the walk service
  * gathers a [TalkSituation] and carries out the [TalkDecision].
  */
 object TalkDecider {

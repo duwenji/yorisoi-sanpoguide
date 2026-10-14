@@ -1,4 +1,4 @@
-# Versions shared by the app, the platform kits and the core libraries (RFC-002 R-10).
+# Versions shared by the app, the platform kits and the core libraries.
 [versions]
 agp = "8.11.1"
 kotlin = "2.2.0"
@@ -16,7 +16,7 @@ anthropic = "2.34.0"
 tink = "1.23.0"
 json = "20240303"
 junit = "4.13.2"
-# The yorisoi platform (github.com/duwenji/yorisoi-platform, RFC-004 R-4): one version for all modules.
+# The yorisoi platform (github.com/duwenji/yorisoi-platform): one version for all modules.
 yorisoi = "1.0.0"
 
 [libraries]

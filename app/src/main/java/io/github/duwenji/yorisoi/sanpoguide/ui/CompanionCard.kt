@@ -42,7 +42,7 @@ import java.util.Locale
 /**
  * The companion's latest words, plus live walk figures. Tap to see earlier lines.
  * With a [scene], the figures sit on a small picture of the current mood. A channel's line may
- * carry an image and its credit, and a detail the user opens with [onOpen] (ADR-002 T-8c).
+ * carry an image and its credit, and a detail the user opens with [onOpen].
  */
 @Composable
 fun CompanionCard(live: LiveWalk?, lines: List<Utterance>, scene: Mood? = null, onOpen: (CueDetail) -> Unit = {}) {

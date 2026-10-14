@@ -93,7 +93,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <h1>散策ガイドの構造図</h1>
     <p>アプリ全体を 7 枚の図で説明します。はじめに、アプリの中心にある「チャンネル」の考え方と関係者を示します。最初の図で「どこに何があるか」をつかみ、残りの図で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追います。</p>
     <div class="facts">
-      <span>ソース <b>90 ファイル / 約 11,940 行</b>（うち :station-format 19 ファイル。2026-10-12 時点）</span>
+      <span>ソース <b>51 ファイル / 約 7,300 行</b>（共通の部品は yorisoi-platform）</span>
       <span>パッケージ <b>11</b></span>
       <span>画面 <b>4</b>（メイン・設定・記録・チャンネル）</span>
       <span>常駐サービス <b>1</b>（WalkService）</span>
@@ -482,7 +482,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     </div>
     <figure>
       <div class="scroll">
-      <svg viewBox="0 0 1000 300" role="img" aria-label=":station-format の sanpoguide/channels の組み込みのチャンネルを BuiltInChannels と StationValidator が確認して読み込み、StationRepository が設定の選択と散策者の変更を重ねて現在のチャンネルを作る。現在のチャンネルは GuideRepository、WalkCompanion、WalkService、画面が使う。第三者のチャンネルは、リストから ThirdPartyChannels と ChannelSync が取り込み、同じ確認を通す。">
+      <svg viewBox="0 0 1000 300" role="img" aria-label=":prompts の sanpoguide/channels の組み込みのチャンネルを BuiltInChannels と StationValidator が確認して読み込み、StationRepository が設定の選択と散策者の変更を重ねて現在のチャンネルを作る。現在のチャンネルは GuideRepository、WalkCompanion、WalkService、画面が使う。第三者のチャンネルは、リストから ThirdPartyChannels と ChannelSync が取り込み、同じ確認を通す。">
         <defs>
           <marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
         </defs>
@@ -589,7 +589,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td class="pk">sound</td><td>背景音の選択・その場での合成・再生</td><td class="files">Soundscape, Voices, AmbientPlayer</td><td><div class="loc"><span class="bar" style="width:16px"></span>448</div></td></tr>
           <tr><td class="pk">walk</td><td>散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知</td><td class="files">WalkService, CueShow</td><td><div class="loc"><span class="bar" style="width:22px"></span>624</div></td></tr>
           <tr><td class="pk">guide</td><td>AI サービスの抽象と実装、スポット解説とキャッシュ、TTS</td><td class="files">GuideRepository, ClaudeClient, OpenAiCompatibleClient, Speaker</td><td><div class="loc"><span class="bar" style="width:13px"></span>354</div></td></tr>
-          <tr><td class="pk">settings</td><td>設定の保存（選んでいるチャンネルと、その変更を含む）、チャンネル導入前の設定の移行、API キーの暗号化、話しかけの頻度の段階、しきい値、地図の種類</td><td class="files">SettingsRepository, StationMigration, OverrideCodec, KeyCipher, TalkLevel, Threshold, MapStyle</td><td><div class="loc"><span class="bar" style="width:15px"></span>409</div></td></tr>
+          <tr><td class="pk">settings</td><td>設定の保存（選んでいるチャンネルと、その変更を含む）、古い形の設定の移行、API キーの暗号化、話しかけの頻度の段階、しきい値、地図の種類</td><td class="files">SettingsRepository, StationMigration, OverrideCodec, KeyCipher, TalkLevel, Threshold, MapStyle</td><td><div class="loc"><span class="bar" style="width:15px"></span>409</div></td></tr>
           <tr><td class="pk">mood</td><td>雰囲気のモデル、場所の種類の推定、現在の雰囲気</td><td class="files">Mood, PlaceGuess, MoodSource</td><td><div class="loc"><span class="bar" style="width:7px"></span>186</div></td></tr>
           <tr><td class="pk">history</td><td>散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定</td><td class="files">HistoryStore（WalkJson）</td><td><div class="loc"><span class="bar" style="width:7px"></span>193</div></td></tr>
           <tr><td class="pk">station</td><td>チャンネル。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。<code>station/remote</code> は第三者のチャンネル（リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット）</td><td class="files">Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519</td><td><div class="loc"><span class="bar" style="width:43px"></span>1,193</div></td></tr>
@@ -598,7 +598,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         </tbody>
       </table>
     </div>
-    <p>チャンネルの形式（API-003）の読み込みと確認、リストの文書（API-002）の確認、素材集の形式と参照の解決・地域の計算（API-004）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない別のモジュール <code>:station-format</code>（<code>station-format/</code>）にあります。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>station-format/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
+    <p>チャンネルの形式（API-003）の読み込みと確認、リストの文書（API-002）の確認、素材集の形式と参照の解決・地域の計算（API-004）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない JVM のモジュールにあります。形式・リスト・素材集の確認は yorisoi-platform の <code>core-format</code>、プロンプトのファイルと組み込みのチャンネルは <code>:prompts</code> です。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>station-format/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
   </section>
 
   <!-- where to change -->
@@ -614,7 +614,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td>話しかけ・解説の文面を変える</td><td>枠は <code>sanpoguide/prompts/</code>（一覧は <code>docs/prompts.md</code>）、役割や話題はチャンネルの <code>sanpoguide/channels/{id}/prompts/</code></td></tr>
           <tr><td>話す条件や優先順位を変える</td><td><code>walk/WalkService.kt</code> の <code>maybeTalk()</code>。スポットの選び方は <code>companion/SpotChooser.kt</code></td></tr>
           <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>sanpoguide/channels/{id}/</code>（形式は <code>docs/channel-package-format.md</code>）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
-          <tr><td>チャンネルの形式の確認を変える</td><td><code>station-format/</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-003 も</td></tr>
+          <tr><td>チャンネルの形式の確認を変える</td><td>yorisoi-platform の <code>core-format</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-003 も</td></tr>
           <tr><td>チャンネルの設定画面の項目を変える</td><td><code>ui/SettingsScreen.kt</code> の <code>StationSettings</code>・<code>ui/SettingsViewModel.kt</code>、保存は <code>settings/SettingsRepository.kt</code></td></tr>
           <tr><td>距離・時間・気温などの既定値を変える</td><td><code>settings/Threshold.kt</code></td></tr>
           <tr><td>話しかけの頻度の段階を変える</td><td><code>settings/TalkLevel.kt</code></td></tr>
@@ -639,7 +639,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 
   <div class="plan">
     <h3>計画中：宣伝の表示と、素材の第 2 段以降</h3>
-    <p>第三者のチャンネルの取り込み（図 6）と素材の第 1 段（文字・画像。図 7）は実装済みです。宣伝を含むチャンネル・素材集の表示（「宣伝を含む」の表示、読み上げる前の一言、設定「宣伝の素材を出さない」。<code>docs/adr/ADR-002-material-producers.md</code> T-12〜T-14）と、素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/channels.md</code> の段階 6・7）。審査は <code>docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
+    <p>第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）、宣伝を含むチャンネル・素材集の表示は実装済みです。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/channels.md</code>「素材・きっかけ・見せ方」）。審査は <code>docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
   </div>
 
   <div class="plan">

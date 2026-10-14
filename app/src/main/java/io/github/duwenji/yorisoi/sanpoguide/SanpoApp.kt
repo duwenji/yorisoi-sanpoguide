@@ -67,7 +67,7 @@ class SanpoApp : Application() {
         private set
     lateinit var stations: StationRepository
         private set
-    /** Third parties' channels from the providers the user added (ADR-001 T-5). */
+    /** Third parties' channels from the providers the user added. */
     lateinit var channels: ThirdPartyChannels
         private set
     lateinit var guides: GuideRepository
@@ -82,12 +82,12 @@ class SanpoApp : Application() {
     lateinit var narration: Narration
         private set
 
-    /** A third party's cues: which fire now, and what they show (ADR-002 T-8b). */
+    /** A third party's cues: which fire now, and what they show. */
     lateinit var cueFinder: CueFinder
         private set
     lateinit var cues: CuePresenter
         private set
-    /** Shows what a cue came to: speech, cards, notifications, and what opens by a tap (T-8c). */
+    /** Shows what a cue came to: speech, cards, notifications, and what opens by a tap. */
     lateinit var cueShow: CueShow
         private set
     lateinit var mood: MoodSource

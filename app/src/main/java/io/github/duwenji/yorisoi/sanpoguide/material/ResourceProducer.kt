@@ -14,8 +14,8 @@ import io.github.duwenji.yorisoi.core.format.material.Trust
 
 /**
  * Material a third party made ahead: a channel's own resources (`self`) or a collection it
- * declares (by its alias). Everything was fetched and checked when the channel was chosen
- * (ADR-002 T-8a), so producing only reads the device and tells no one the subject (API-004 P-1).
+ * declares (by its alias). Everything was fetched and checked when the channel was chosen, so
+ * producing only reads the device and tells no one the subject (API-004 P-1).
  *
  * @param stage the app stage (API-003 M-1): resources of a later one are passed over.
  * @param producerName shown beside the credit (API-002 `collections[].producerName`); null for the channel's own.

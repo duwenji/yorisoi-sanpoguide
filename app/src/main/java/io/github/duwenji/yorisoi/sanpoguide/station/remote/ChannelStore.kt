@@ -51,7 +51,7 @@ data class TrialChannel(
 )
 
 /**
- * A third party's collection kept on the device for the channels that declare it (ADR-002 T-8a):
+ * A third party's collection kept on the device for the channels that declare it:
  * the version the provider's list named when it was fetched.
  */
 data class FetchedCollection(val provider: String, val id: String, val version: Int, val sha256: String)

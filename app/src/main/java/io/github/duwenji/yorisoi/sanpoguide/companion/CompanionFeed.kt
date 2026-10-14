@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 
 /**
  * A line the companion said, as shown in the app. A channel's cue may add an [image] (a card's),
- * the [credit] of its material, and a [detail] the user opens by tapping (ADR-002 T-8c).
+ * the [credit] of its material, and a [detail] the user opens by tapping.
  */
 data class Utterance(
     val at: Long,
