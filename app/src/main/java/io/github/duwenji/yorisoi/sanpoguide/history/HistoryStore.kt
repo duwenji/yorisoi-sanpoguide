@@ -132,7 +132,7 @@ class HistoryStore(context: Context) {
     }
 }
 
-/** The history file's format, one walk at a time. Fields added later are optional, so old files still load. */
+/** The history file's format, one walk at a time. Its field names are a promise: renaming one loses every saved walk. */
 internal object WalkJson {
     fun toJson(w: WalkRecord): JSONObject = JSONObject()
         .put("id", w.id)

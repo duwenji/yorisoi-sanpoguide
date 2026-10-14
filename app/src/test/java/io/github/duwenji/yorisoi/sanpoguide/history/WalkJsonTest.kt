@@ -3,8 +3,6 @@ package io.github.duwenji.yorisoi.sanpoguide.history
 import io.github.duwenji.yorisoi.kit.geo.LatLon
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WalkJsonTest {
