@@ -8,3 +8,4 @@ keystore.properties
 *.jks
 *.keystore
 docs/api/api.html
+release/
