@@ -3,3 +3,7 @@ title: 散策ガイド
 lang: ja
 exclude: ["*.md", "*.html", "api"]
 include: ["privacy-policy.md"]
+theme: jekyll-theme-primer
+defaults:
+  - scope: { path: "" }
+    values: { layout: default }
