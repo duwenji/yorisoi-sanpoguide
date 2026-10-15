@@ -1,0 +1,5 @@
+# GitHub Pages (main, /docs) publishes the privacy policy only; the rest is for the repository.
+title: 散策ガイド
+lang: ja
+exclude: ["*.md", "*.html", "api"]
+include: ["privacy-policy.md"]
