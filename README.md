@@ -158,7 +158,7 @@ API キーが未設定の場合は、地図データのタグから作る簡易�
 
 ## セットアップ
 
-必要な環境: JDK 17、Android SDK（compileSdk 35）。対応端末は Android 8.0（API 26）以上。
+必要な環境: JDK 17、Android SDK（compileSdk 36）。対応端末は Android 8.0（API 26）以上。
 
 ```sh
 ./gradlew :app:installDebug
