@@ -30,7 +30,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] リリースは AAB（`./gradlew bundleRelease`）で出す。署名の鍵（`release.jks`）は Play App Signing のアップロード鍵にする
 - [x] バックアップしない設定を Android 12 以上にも広げる（`dataExtractionRules`。端末間の移行も含めない）
 - [x] プライバシーポリシー（[privacy-policy.md](privacy-policy.md)）を GitHub Pages で公開する: https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy
-- [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告
+- [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告を入れる（答えは [play-console.md](play-console.md)。申告の動画を撮る）
 - [ ] ストアの素材: 512×512 のアイコン、1024×500 のフィーチャー画像、スクリーンショット、説明文
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト
 - [ ] 本番の管理システムで `promotionalMinAppVersions` を設定する（宣伝の表示に対応した版）
