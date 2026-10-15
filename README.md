@@ -96,7 +96,7 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 
 ### 配信されているチャンネル
 
-第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[ADR-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-001-third-party-channel-curation.md)、形式は [API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。
+第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[ADR-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-001-third-party-channel-curation.md)、形式は [API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。本番のリストができるまでは、このボタンは開発者モードのときだけ出る（それまでは内蔵のチャンネルだけ）。
 
 - リストは URL とリストID（`sc1…`）で足す。リストIDは運営のサイトなど別の方法で確かめたものを入れ、サーバーが返す鍵と照合する（URL からは取らない）。アプリに内蔵のリストは、公開の準備ができてから加わる
 - リストは、アプリの起動時と散策の開始時に、前回から 24 時間たっていれば取得する（画面から手動でも。散策中は取得しない）。署名・期限・巻き戻しを確かめ、だめなら前回のリストを期限まで使う

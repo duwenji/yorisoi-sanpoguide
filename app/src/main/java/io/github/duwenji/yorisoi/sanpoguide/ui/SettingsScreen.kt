@@ -77,6 +77,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val test by viewModel.test.collectAsStateWithLifecycle()
+    val developerMode by viewModel.developerMode.collectAsStateWithLifecycle()
     val provider = draft.provider
 
     Scaffold(
@@ -194,7 +195,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            OutlinedButton(onClick = onOpenChannels) { Text("配信されているチャンネル・リスト") }
+            // Built-in channels only until a list runs in production: lists are for developer mode.
+            if (developerMode) OutlinedButton(onClick = onOpenChannels) { Text("配信されているチャンネル・リスト") }
 
             // A third party's channel is as its publisher made it (ADR-001): nothing to adjust here.
             if (station.isBuiltIn) {
