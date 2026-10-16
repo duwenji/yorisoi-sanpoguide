@@ -48,7 +48,7 @@ class Narration(private val producers: Producers, private val station: () -> Sta
     suspend fun sheetGuide(poi: Poi, distanceM: Int?): MaterialResult {
         val request = request(Subject.Spot(poi, distanceM), MaterialType.TEXT)
         val ai = producers.first(listOf(BuiltInProducers.AI_GUIDE.id), request)
-        if (ai !is MaterialResult.Unavailable || ai.reason != MaterialResult.Reason.NO_KEY) return ai
+        if (ai !is MaterialResult.Unavailable || ai.reason !in FIXED_LINE_INSTEAD) return ai
         return producers.first(listOf(BuiltInProducers.FALLBACK_TEXT.id), request.copy(context = request.context.copy(after = ai)))
     }
 
@@ -64,6 +64,11 @@ class Narration(private val producers: Producers, private val station: () -> Sta
         val request = MaterialRequest(Subject.None, MaterialType.AUDIO, MaterialContext(channel, mood = mood))
         val ready = producers.first(Shorthand.AMBIENT, request) as? MaterialResult.Ready
         return (ready?.material?.content as? Content.Ambient)?.sound
+    }
+
+    private companion object {
+        /** Why the AI didn't answer, when the fixed line stands in on the sheet: none is set up, or today's limit is reached. */
+        val FIXED_LINE_INSTEAD = setOf(MaterialResult.Reason.NO_KEY, MaterialResult.Reason.LIMIT)
     }
 
     private fun request(subject: Subject, type: MaterialType, session: WalkSession? = null, weather: Weather? = null) =

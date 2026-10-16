@@ -42,7 +42,12 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
         val s = settings.settings.value
         if (!s.isConfigured) return MaterialResult.Unavailable(Reason.NO_KEY)
         return failing(TAG) {
-            val text = guides.guideFor(spot.poi, spot.distanceM, request.context.station, request.grounding)
+            // Over the limit, a narration made before still comes from the cache; a new one doesn't.
+            val text = try {
+                guides.guideFor(spot.poi, spot.distanceM, request.context.station, request.grounding)
+            } catch (e: IllegalStateException) {
+                if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e
+            }
             val basedOn = request.grounding.map { it.producerName }.distinct()
             ready(MaterialType.TEXT, Content.Text(text), descriptor.id, aiCredit(s.model()), basedOn)
         }
@@ -63,7 +68,7 @@ class AiCompanionProducer(private val companion: WalkCompanion, private val sett
         return failing(TAG) {
             val line = companion.aiLine(event, c.session, c.weather, c.station)
             when {
-                line == null -> MaterialResult.Unavailable(Reason.NO_KEY)
+                line == null -> MaterialResult.Unavailable(if (settings.settings.value.isConfigured) Reason.LIMIT else Reason.NO_KEY)
                 line.isBlank() -> MaterialResult.Unavailable(Reason.FAILED, "empty reply")
                 else -> ready(MaterialType.TEXT, Content.Text(line), descriptor.id, aiCredit(settings.settings.value.model()))
             }
