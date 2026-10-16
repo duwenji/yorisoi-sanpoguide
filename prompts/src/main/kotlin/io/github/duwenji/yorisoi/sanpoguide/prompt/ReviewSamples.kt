@@ -9,7 +9,7 @@ import io.github.duwenji.yorisoi.core.format.TalkEventKind
 data class ReviewSample(val id: String, val label: String, val system: String, val user: String)
 
 /**
- * The scenes of the review policy (docs/channel-review-policy.md 2.7), rendered for a channel
+ * The scenes of the review policy (yorisoi-platform/docs/channel-review-policy.md 2.7), rendered for a channel
  * exactly as the app would render them. The channel management system sends these to the AI
  * with the operator's key and shows the replies next to the package.
  *

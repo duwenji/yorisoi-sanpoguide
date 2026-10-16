@@ -334,4 +334,4 @@ flowchart LR
 
 ## 計画中: 位置に紐づく秘密メッセージ
 
-アプリの外にメッセージサーバーを置く予定。API の契約（[secret-messages-api.md](secret-messages-api.md)）と OpenAPI（[api/sanpo-messages.openapi.yaml](api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
+アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/secret-messages-api.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。

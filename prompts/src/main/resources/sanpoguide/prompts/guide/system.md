@@ -1,7 +1,7 @@
 {{!
   スポット解説のシステムプロンプト。
   使う場面: 散策モードで初めてのスポットに近づいたとき／一覧でスポットをタップしたとき
-  変数（選んでいるチャンネルから。docs/channel-package-format.md のスロット）:
+  変数（選んでいるチャンネルから。yorisoi-platform/docs/channel-package-format.md のスロット）:
     persona: 役割（スロット guide/persona）
     length: 解説の長さ（チャンネルの guide.length。例: 200〜300字程度、2〜3段落）
     focus: 内容の重点（スロット guide/focus）
