@@ -1,6 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.guide
 
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.sanpoguide.material.Ground
 import java.util.Locale
 
 /** Values for the spot-guide prompt files (`guide/user`, `fallback/guide`). The wording lives in the files. */
@@ -12,8 +13,11 @@ object GuidePrompt {
         "wikipedia", "wikidata", "opening_hours", "website", "ele",
     )
 
-    /** [shareLocation]: the user allows coordinates to go to the AI (off by default). */
-    fun spotVars(poi: Poi, distanceM: Int?, shareLocation: Boolean = false): Map<String, Any?> = mapOf(
+    /**
+     * [shareLocation]: the user allows coordinates to go to the AI (off by default). [grounds]: the
+     * reviewed texts the AI may take as fact (API-004「AI の根拠」), each with whose it is.
+     */
+    fun spotVars(poi: Poi, distanceM: Int?, shareLocation: Boolean = false, grounds: List<Ground> = emptyList()): Map<String, Any?> = mapOf(
         "name" to poi.name,
         "category" to poi.category,
         "distance_m" to distanceM,
@@ -21,7 +25,12 @@ object GuidePrompt {
         "tags" to poi.tags.filterKeys { it in USEFUL_TAGS || it.startsWith("name") }
             .map { (k, v) -> "$k=$v" },
         "coords" to if (shareLocation) formatLatLon(poi.lat, poi.lon) else null,
+        "grounded" to grounds.isNotEmpty(),
+        // A ground can't close its own tag and pass for the prompt (API-004 I-15).
+        "grounds" to grounds.map { mapOf("text" to fence(it.text), "source" to fence(it.producerName)) }.ifEmpty { null },
     )
+
+    private fun fence(text: String) = text.replace('<', '＜').replace('>', '＞')
 
     /** About 1m of precision; more digits only add noise to the prompt. */
     fun formatLatLon(lat: Double, lon: Double): String = "%.5f, %.5f".format(Locale.ROOT, lat, lon)

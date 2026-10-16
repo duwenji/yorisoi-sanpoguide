@@ -6,6 +6,7 @@ import io.github.duwenji.yorisoi.kit.llm.ClaudeClient
 import io.github.duwenji.yorisoi.kit.llm.OpenAiCompatibleClient
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.sanpoguide.material.Ground
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
@@ -23,17 +24,22 @@ class GuideRepository(
     private val cache = ConcurrentHashMap<String, String>()
     private var client: Pair<GuideSettings, LlmClient>? = null
 
-    /** The AI's narration of [poi] on [channel], whose slots and guide length shape it. Needs an AI set up. */
-    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station): String {
+    /**
+     * The AI's narration of [poi] on [channel], whose slots and guide length shape it, written from
+     * [grounds] when there are any (API-004「AI の根拠」). Needs an AI set up.
+     */
+    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station, grounds: List<Ground> = emptyList()): String {
         val settings = settingsRepo.settings.value
         check(settings.isConfigured) { "No AI service is set up" }
         val share = settings.shareLocationWithAi
-        // Each channel narrates in its own way, so a narration made for one isn't reused by another.
-        val cacheKey = "${settings.provider}/${settings.model()}/${channel.key}/${channel.guideLength}/${poi.id}/$share"
+        // Each channel narrates in its own way, so a narration made for one isn't reused by another;
+        // nor is one written before a collection's new version gave other grounds.
+        val from = grounds.joinToString(",") { "${it.collection}@${it.version}#${it.resource}" }
+        val cacheKey = "${settings.provider}/${settings.model()}/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from"
         cache[cacheKey]?.let { return it }
         val text = clientFor(settings).generate(
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
-            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share)),
+            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds)),
         )
         cache[cacheKey] = text
         return text

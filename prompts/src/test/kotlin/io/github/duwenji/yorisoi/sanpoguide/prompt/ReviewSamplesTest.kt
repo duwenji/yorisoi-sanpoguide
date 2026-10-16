@@ -48,7 +48,7 @@ class ReviewSamplesTest {
     fun `the standard channel has every scene of the review policy`() {
         val samples = ReviewSamples.build(standard, standard, prompts)
         assertEquals(
-            listOf("guide-shrine", "guide-park", "guide-small", "start-morning-sunny", "start-evening-rain", "revisit", "rest", "milestone", "finish"),
+            listOf("guide-shrine", "guide-park", "guide-small", "guide-grounded", "start-morning-sunny", "start-evening-rain", "revisit", "rest", "milestone", "finish"),
             samples.map { it.id },
         )
         samples.forEach { s ->
@@ -65,7 +65,7 @@ class ReviewSamplesTest {
     fun `scenes follow the channel's own settings and slots`() {
         val quiet = packages.getValue("quiet")
         val ids = ReviewSamples.build(quiet, standard, prompts).map { it.id }
-        assertEquals(listOf("guide-shrine", "guide-park", "guide-small", "start-morning-sunny", "start-evening-rain", "finish"), ids)
+        assertEquals(listOf("guide-shrine", "guide-park", "guide-small", "guide-grounded", "start-morning-sunny", "start-evening-rain", "finish"), ids)
 
         val history = packages.getValue("history")
         val shrine = ReviewSamples.build(history, standard, prompts).first { it.id == "guide-shrine" }

@@ -7,6 +7,9 @@
     inside      利用者がスポットの敷地内にいるなら true
     tags        OpenStreetMap のタグ（"key=value" のリスト。解説に役立つものだけ）
     coords      スポットの緯度経度（例: 35.32580, 139.55620）。設定で位置情報を AI に送らないときは null
+    grounded    資料があるなら true
+    grounds     このスポットについての資料（素材提供者の資料のうち、AI の根拠に使ってよいもの。yorisoi-platform/docs/material-producer-api.md「AI の根拠」）。
+                各要素は source（素材提供者名）と text（本文。山かっこは全角にしてある）。ないときは null
 }}
 散策中の利用者の近くにあるスポットを案内してください。
 名称: {{name}}
@@ -26,3 +29,11 @@ OpenStreetMapのタグ:
 {{#tags}}
 - {{.}}
 {{/tags}}
+{{#grounded}}
+資料（運営が審査した素材提供者の資料）:
+{{/grounded}}
+{{#grounds}}
+<資料 出典="{{source}}">
+{{text}}
+</資料>
+{{/grounds}}

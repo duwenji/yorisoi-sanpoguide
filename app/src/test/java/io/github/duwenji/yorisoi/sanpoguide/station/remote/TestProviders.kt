@@ -119,10 +119,12 @@ internal class TestPublisher {
     }
 
     /** A collection of [resources], with the files they point at. */
-    fun collectionZip(id: String, version: Int, resources: JSONArray, files: Map<String, ByteArray> = emptyMap(), grants: Any = "*"): ByteArray {
+    fun collectionZip(
+        id: String, version: Int, resources: JSONArray, files: Map<String, ByteArray> = emptyMap(), grants: Any = "*", grounding: Boolean = false,
+    ): ByteArray {
         val manifest = JSONObject().put("format", 1).put("id", id).put("version", version).put("producer", accountId)
             .put("name", "鎌倉音声ガイド").put("summary", "寺社の解説と写真").put("lang", "ja")
-            .put("grants", JSONObject().put("publishers", grants)).put("resources", resources)
+            .put("grants", JSONObject().put("publishers", grants).apply { if (grounding) put("grounding", true) }).put("resources", resources)
         val all = mapOf("collection.json" to manifest.toString().toByteArray()) + files
         val payload = JSONObject().put("type", "collection-package").put("collection", id).put("version", version).put("producer", accountId)
             .put("files", JSONObject(all.mapValues { (_, b) -> sha256(b) })).toString().toByteArray()

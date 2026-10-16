@@ -148,6 +148,7 @@ class CuePresenter(
             if (producer == null) continue
             val type = producer.descriptor.types.firstOrNull { it in accepts } ?: continue
             val request = MaterialRequest(subject, type, context.copy(after = after), id, accepts, presentAs.maxTextChars)
+                .groundedFor(producer.descriptor.generated)
             val result = try {
                 producer.produce(request)
             } catch (e: CancellationException) {
