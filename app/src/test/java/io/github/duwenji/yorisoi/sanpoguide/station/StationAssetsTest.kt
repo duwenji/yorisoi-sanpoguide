@@ -23,7 +23,7 @@ import org.junit.Test
 import java.io.File
 
 /**
- * The built-in channels under `prompts/src/main/resources/sanpoguide/channels/` (docs/channel-package-format.md,
+ * The built-in channels under `prompts/src/main/resources/sanpoguide/channels/` (yorisoi-platform/docs/channel-package-format.md,
  * 確認観点 V-01・V-02・V-09). Rendered system prompts go to `build/prompt-samples/channels/`.
  */
 class StationAssetsTest {

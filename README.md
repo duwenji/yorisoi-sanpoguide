@@ -74,7 +74,7 @@ API キーが未設定、または AI の呼び出しに失敗した場合は、
 
 ## チャンネル
 
-語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は [docs/stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)。
+語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [yorisoi-platform/docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は [yorisoi-platform/docs/stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)。
 
 | チャンネル | 語り手と話題 | 話しかける場面 | 頻度の既定 | 解説の長さ | 優先する話題 |
 |---|---|---|---|---|---|
@@ -215,7 +215,7 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 
-チャンネルの形式（[docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（[yorisoi-platform/docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
 
 AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
 

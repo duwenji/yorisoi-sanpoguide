@@ -106,7 +106,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <div class="sec-head">
       <div class="eyebrow">考え方 · チャンネルと関係者</div>
       <h2>同じ散歩を、違う体験に切り替える</h2>
-      <p>チャンネルは、語り手・話題・話す場面・話す量・トーン・背景音をまとめて切り替えるものです。ラジオの局のように散歩の途中でも切り替えられます（コード上の名前 <code>Station</code> はこのたとえから）。図 2〜4・7 の流れは、どれも選んでいるチャンネルを見て動きます。関係者は、散策者・チャンネル提供者・素材提供者と、そのあいだで審査と署名をする運営です（<code>docs/stakeholders.md</code>）。</p>
+      <p>チャンネルは、語り手・話題・話す場面・話す量・トーン・背景音をまとめて切り替えるものです。ラジオの局のように散歩の途中でも切り替えられます（コード上の名前 <code>Station</code> はこのたとえから）。図 2〜4・7 の流れは、どれも選んでいるチャンネルを見て動きます。関係者は、散策者・チャンネル提供者・素材提供者と、そのあいだで審査と署名をする運営です（<code>yorisoi-platform/docs/stakeholders.md</code>）。</p>
     </div>
     <figure>
       <div class="scroll">
@@ -478,7 +478,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <div class="sec-head">
       <div class="eyebrow">図 6 · チャンネル</div>
       <h2>選んだチャンネルが、解説・話しかけ・話す判断を変える</h2>
-      <p>選んだチャンネルが、アプリの中でどこに効くかを追います（考え方は冒頭の「チャンネルと関係者」、設計は <code>docs/channels.md</code>、形式は <code>docs/channel-package-format.md</code>）。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまりです。</p>
+      <p>選んだチャンネルが、アプリの中でどこに効くかを追います（考え方は冒頭の「チャンネルと関係者」、設計は <code>docs/channels.md</code>、形式は <code>yorisoi-platform/docs/channel-package-format.md</code>）。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまりです。</p>
     </div>
     <figure>
       <div class="scroll">
@@ -528,7 +528,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <div class="sec-head">
       <div class="eyebrow">図 7 · 素材ときっかけ</div>
       <h2>チャンネルが決めた場面で、決めた素材を出す</h2>
-      <p>チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せます（<code>docs/adr/ADR-002-material-producers.md</code>、<code>docs/channel-package-format.md</code>・<code>docs/material-producer-api.md</code>）。素材は、組み込みの素材提供者・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（<code>Producer</code>）で取り出します。</p>
+      <p>チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せます（<code>yorisoi-platform/docs/adr/ADR-002-material-producers.md</code>、<code>yorisoi-platform/docs/channel-package-format.md</code>・<code>yorisoi-platform/docs/material-producer-api.md</code>）。素材は、組み込みの素材提供者・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（<code>Producer</code>）で取り出します。</p>
     </div>
     <figure>
       <div class="scroll">
@@ -613,7 +613,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <tbody>
           <tr><td>話しかけ・解説の文面を変える</td><td>枠は <code>sanpoguide/prompts/</code>（一覧は <code>docs/prompts.md</code>）、役割や話題はチャンネルの <code>sanpoguide/channels/{id}/prompts/</code></td></tr>
           <tr><td>話す条件や優先順位を変える</td><td><code>walk/WalkService.kt</code> の <code>maybeTalk()</code>。スポットの選び方は <code>companion/SpotChooser.kt</code></td></tr>
-          <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>sanpoguide/channels/{id}/</code>（形式は <code>docs/channel-package-format.md</code>）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
+          <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>sanpoguide/channels/{id}/</code>（形式は <code>yorisoi-platform/docs/channel-package-format.md</code>）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
           <tr><td>チャンネルの形式の確認を変える</td><td>yorisoi-platform の <code>core-format</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-003 も</td></tr>
           <tr><td>チャンネルの設定画面の項目を変える</td><td><code>ui/SettingsScreen.kt</code> の <code>StationSettings</code>・<code>ui/SettingsViewModel.kt</code>、保存は <code>settings/SettingsRepository.kt</code></td></tr>
           <tr><td>距離・時間・気温などの既定値を変える</td><td><code>settings/Threshold.kt</code></td></tr>
@@ -639,12 +639,12 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 
   <div class="plan">
     <h3>計画中：宣伝の表示と、素材の第 2 段以降</h3>
-    <p>第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）、宣伝を含むチャンネル・素材集の表示は実装済みです。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/channels.md</code>「素材・きっかけ・見せ方」）。審査は <code>docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
+    <p>第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）、宣伝を含むチャンネル・素材集の表示は実装済みです。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/channels.md</code>「素材・きっかけ・見せ方」）。審査は <code>yorisoi-platform/docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
   </div>
 
   <div class="plan">
     <h3>計画中：位置に紐づく秘密メッセージ</h3>
-    <p>アプリの外にメッセージサーバーを置く予定です。API の契約（<code>docs/secret-messages-api.md</code>）と OpenAPI（<code>docs/api/sanpo-messages.openapi.yaml</code>）はできていますが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていません。進み具合は <code>docs/TODO.md</code> にあります。</p>
+    <p>アプリの外にメッセージサーバーを置く予定です。API の契約（<code>yorisoi-platform/docs/secret-messages-api.md</code>）と OpenAPI（<code>yorisoi-platform/docs/api/sanpo-messages.openapi.yaml</code>）はできていますが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていません。進み具合は <code>docs/TODO.md</code> にあります。</p>
   </div>
 </main>
 </body>

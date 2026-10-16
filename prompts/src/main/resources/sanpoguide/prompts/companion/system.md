@@ -1,7 +1,7 @@
 {{!
   散歩の友（話しかけ）のシステムプロンプト。
   使う場面: 散策モード中の、スポット解説以外のすべての発言（開始・再訪・区切り・休憩・終了）
-  変数（選んでいるチャンネルから。docs/channel-package-format.md のスロット）:
+  変数（選んでいるチャンネルから。yorisoi-platform/docs/channel-package-format.md のスロット）:
     persona: 役割（スロット companion/persona）
     topics: 話題の選び方（スロット companion/topics）
   チャンネルが変えられるのは変数の部分だけ。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
