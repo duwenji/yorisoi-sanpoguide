@@ -41,6 +41,7 @@ import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ThirdPartyChannels
 import io.github.duwenji.yorisoi.sanpoguide.walk.CueShow
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
+import io.github.duwenji.yorisoi.sanpoguide.report.Report
 import io.github.duwenji.yorisoi.sanpoguide.settings.AiUsage
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -117,6 +118,8 @@ class SanpoApp : Application() {
             spots.location.value?.let { Regions.around(it.latitude, it.longitude) }
         }
         stations = StationRepository(BuiltInStations.load(), settings.settings, appScope, channels.stations)
+        // Each line remembers the channel it was said on, for a report (platform ADR-004 H-11).
+        feed.channel = { Report.target(stations.current.value) }
         channels.refreshIfDue()
         appScope.launch {
             // A switch to or from a channel that prefers shops shows them, or clears them, right away.

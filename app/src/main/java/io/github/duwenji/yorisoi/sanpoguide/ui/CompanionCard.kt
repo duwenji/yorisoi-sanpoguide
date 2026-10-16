@@ -121,6 +121,8 @@ fun CompanionCard(live: LiveWalk?, lines: List<Utterance>, scene: Mood? = null, 
                         }
                     }
                     line.detail?.let { detail -> TextButton(onClick = { onOpen(detail) }) { Text("詳しく見る") } }
+                    // Opened lines only: a report is written while standing, not in passing.
+                    if (expanded) line.channel?.let { ReportLink(it, line.at to line.text, "この発言を知らせる") }
                 }
             }
         }

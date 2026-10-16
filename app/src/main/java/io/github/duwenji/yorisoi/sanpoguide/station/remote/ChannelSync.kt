@@ -292,7 +292,7 @@ class ChannelSync(
         val opened = open(c.sha256, ListedAs(c.id, c.version, c.publisher)) ?: return@mapNotNull null
         Station(
             opened.pkg, standard, key = "${c.provider}/${c.id}@${c.version}", id = "${c.provider}/${c.id}",
-            source = StationSource(provider.id, info.name, entry.publisherName),
+            source = StationSource(provider.id, info.name, entry.publisherName, contact = info.contact),
             materials = materials(c.provider, list, opened, c.publisher),
         )
     }.sortedBy { it.name }

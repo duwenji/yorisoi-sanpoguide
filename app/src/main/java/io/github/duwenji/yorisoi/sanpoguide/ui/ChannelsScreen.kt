@@ -194,6 +194,7 @@ private fun ChannelRow(providerId: String, view: ListedView, viewModel: Channels
                 ListedStatus.UNSUPPORTED -> Text("このアプリでは使えない形式です", style = MaterialTheme.typography.bodySmall)
             }
             if (view.installed != null) TextButton(onClick = { viewModel.remove(providerId, c.id) }, enabled = enabled) { Text("削除") }
+            if (view.installed != null) viewModel.reportTarget(providerId, c.id)?.let { ReportLink(it, null, "問題を知らせる") }
         }
     }
 }
