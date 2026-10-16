@@ -119,4 +119,6 @@ class Station(
  */
 data class StationSource(
     val providerId: String, val providerName: String, val publisherName: String, val trial: Boolean = false,
+    /** The list operator's contact (API-002 `contact`), where problems are reported (platform ADR-004 H-11). */
+    val contact: String? = null,
 )

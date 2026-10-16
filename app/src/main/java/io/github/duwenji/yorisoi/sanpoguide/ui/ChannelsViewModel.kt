@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
+import io.github.duwenji.yorisoi.sanpoguide.report.Report
+import io.github.duwenji.yorisoi.sanpoguide.report.ReportTarget
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice
@@ -64,6 +66,10 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
         }
         _pendingUse.value = PendingUse(providerId, channelId, AiCost.of(station, app.stations.byId(BuiltInStations.STANDARD), app.settings.settings.value.dailyAiLimit))
     }
+
+    /** Who answers for an installed channel, for a report (platform ADR-004 H-11). */
+    fun reportTarget(providerId: String, channelId: String): ReportTarget? =
+        app.stations.list.value.firstOrNull { it.id == "$providerId/$channelId" }?.let(Report::target)
 
     fun confirmUse() {
         val p = _pendingUse.value ?: return

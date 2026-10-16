@@ -5,6 +5,7 @@ import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
 import io.github.duwenji.yorisoi.sanpoguide.material.Material
+import io.github.duwenji.yorisoi.sanpoguide.report.ReportTarget
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +22,8 @@ data class Utterance(
     val image: Material? = null,
     val credit: String? = null,
     val detail: CueDetail? = null,
+    /** The channel in use when it was said, for a report (platform ADR-004 H-11). */
+    val channel: ReportTarget? = null,
 )
 
 /** Live walk figures for the UI; null while not walking. */
@@ -81,7 +84,10 @@ class CompanionFeed {
         _guiding.value = spot
     }
 
-    fun add(line: Utterance) = _lines.update { (listOf(line) + it).take(MAX_LINES) }
+    /** The channel in use now, stamped on each line as it is added. */
+    var channel: () -> ReportTarget? = { null }
+
+    fun add(line: Utterance) = _lines.update { (listOf(line.copy(channel = line.channel ?: channel())) + it).take(MAX_LINES) }
 
     private val _opened = MutableStateFlow<CueDetail?>(null)
     /** The cue detail the user opened from a card or a notification; null when none is open. */
