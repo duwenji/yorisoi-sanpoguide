@@ -120,7 +120,7 @@ class GroundingTest {
         assertTrue(heard.getValue(BuiltInProducers.FALLBACK_TEXT.id).isEmpty())
 
         val written = Material(MaterialType.TEXT, Content.Text("解説"), BuiltInProducers.AI_GUIDE.id, Credit("AI（model）", "generated"), basedOn = listOf("鎌倉市観光協会"))
-        assertTrue(creditLine(written)!!.endsWith("鎌倉市観光協会の資料をもとに作成"))
+        assertEquals("文: AI（model） / 鎌倉市観光協会の資料をもとに作成", creditLine(written))
         assertFalse(creditLine(written.copy(basedOn = emptyList()))!!.contains("資料"))
     }
 
