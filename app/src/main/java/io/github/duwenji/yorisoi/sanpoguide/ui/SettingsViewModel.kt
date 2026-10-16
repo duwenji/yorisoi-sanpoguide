@@ -42,6 +42,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val prompts = (application as SanpoApp).prompts
     private val stationRepo = (application as SanpoApp).stations
 
+    /** Today's AI calls, shown beside the limit. */
+    val aiCallsToday: StateFlow<Int> = (application as SanpoApp).aiUsage.count
+
     /** Saved at once (not part of the draft). */
     val developerMode: StateFlow<Boolean> = repo.settings.map { it.developerMode }
         .stateIn(viewModelScope, SharingStarted.Eagerly, repo.settings.value.developerMode)
@@ -95,6 +98,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAmbientEarphonesOnly(on: Boolean) = edit { it.copy(ambientEarphonesOnly = on) }
     fun setSpotPhotos(on: Boolean) = edit { it.copy(spotPhotos = on) }
     fun setPhotosOnMobileData(on: Boolean) = edit { it.copy(photosOnMobileData = on) }
+    fun setDailyAiLimit(limit: Int?) = edit { it.copy(dailyAiLimit = limit) }
+
     fun setShareLocationWithAi(on: Boolean) = edit { it.copy(shareLocationWithAi = on) }
     fun setMapStyle(style: MapStyle) = edit { it.copy(mapStyle = style) }
     fun setGoogleMapsApiKey(key: String) = edit { it.copy(googleMapsApiKey = key) }

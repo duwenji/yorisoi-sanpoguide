@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
+import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
@@ -165,6 +166,24 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+
+            SectionTitle("AI の利用の上限")
+            val callsToday by viewModel.aiCallsToday.collectAsStateWithLifecycle()
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                GuideSettings.DAILY_AI_LIMITS.forEach { limit ->
+                    FilterChip(
+                        selected = draft.dailyAiLimit == limit,
+                        onClick = { viewModel.setDailyAiLimit(limit) },
+                        label = { Text(limit?.let { "1 日 $it 回" } ?: "上限なし") },
+                    )
+                }
+            }
+            Text(
+                "今日は $callsToday 回使いました。上限に達すると、その日は AI の解説と話しかけを止め、決まった文で案内します" +
+                    "（天気の急変・日の入りなどの案内は続けます）。チャンネルが決める話す量も、この上限の中で動きます。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             val station = viewModel.draftStation(draft)
             SectionTitle("チャンネル")

@@ -41,6 +41,7 @@ import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ThirdPartyChannels
 import io.github.duwenji.yorisoi.sanpoguide.walk.CueShow
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiUsage
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -69,6 +70,9 @@ class SanpoApp : Application() {
         private set
     /** Third parties' channels from the providers the user added. */
     lateinit var channels: ThirdPartyChannels
+        private set
+    /** Today's AI calls against the user's limit (platform ADR-004 H-9). */
+    lateinit var aiUsage: AiUsage
         private set
     lateinit var guides: GuideRepository
         private set
@@ -124,7 +128,8 @@ class SanpoApp : Application() {
                 }
             }
         }
-        guides = GuideRepository(settings, prompts)
+        aiUsage = AiUsage.of(this)
+        guides = GuideRepository(settings, prompts, aiUsage)
         speaker = Speaker(this)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
