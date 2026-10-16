@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ListedStatus
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ListedView
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ProviderView
@@ -61,6 +62,7 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
     val message by viewModel.message.collectAsStateWithLifecycle()
     val developerMode by viewModel.developerMode.collectAsStateWithLifecycle()
     val trials by viewModel.trials.collectAsStateWithLifecycle()
+    val pendingUse by viewModel.pendingUse.collectAsStateWithLifecycle()
     var adding by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
@@ -107,6 +109,29 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
         }
     }
     if (adding) AddProviderDialog(onDismiss = { adding = false }, onAdd = { url, id -> viewModel.addProvider(url, id) { adding = false } })
+    pendingUse?.let { CostDialog(it.cost, onUse = viewModel::confirmUse, onCancel = viewModel::cancelUse) }
+}
+
+/** What the channel asks of the user's AI service, before it is used (platform ADR-004 H-9). */
+@Composable
+private fun CostDialog(cost: AiCost, onUse: () -> Unit, onCancel: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("「${cost.name}」を使いますか") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("話す量: ${cost.talk.label}、解説の長さ: ${cost.guideLabel}。散策者の API キーで AI を呼び、1 時間の散歩で多くて約 ${cost.maxCallsPerHour} 回になります。")
+                if (cost.moreThanStandard) Text("標準のチャンネルより AI を多く呼ぶため、費用が増えることがあります。", color = MaterialTheme.colorScheme.error)
+                Text(
+                    cost.dailyLimit?.let { "1 日の上限は $it 回です（設定で変えられます）。上限に達すると、その日は決まった文で案内します。" }
+                        ?: "1 日の上限はありません（設定で決められます）。",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = onUse) { Text("使う") } },
+        dismissButton = { TextButton(onClick = onCancel) { Text("使わない") } },
+    )
 }
 
 @Composable

@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
+import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
+import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelSyncException
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ProviderView
@@ -15,7 +17,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+/** A channel just taken onto the device, and what it asks of the AI. */
+data class PendingUse(val providerId: String, val channelId: String, val cost: AiCost)
 
 /** The providers the user added and the channels they deliver (API-002 設定画面のリスト). */
 class ChannelsViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,10 +46,36 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
     fun setEnabled(id: String, on: Boolean) = act { channels.setEnabled(id, on) }
     fun refresh() = act { channels.refreshNow() }
 
-    /** Takes the channel onto the device and makes it the one in use. */
+    private val _pendingUse = MutableStateFlow<PendingUse?>(null)
+    /** A channel taken onto the device, waiting for the user to accept what it asks of the AI (platform ADR-004 H-9). */
+    val pendingUse: StateFlow<PendingUse?> = _pendingUse.asStateFlow()
+
+    /**
+     * Takes the channel onto the device and shows what it asks of the user's AI service; it becomes
+     * the one in use only when the user accepts ([confirmUse]). Nothing calls the AI before that.
+     */
     fun use(providerId: String, channelId: String) = act {
         channels.install(providerId, channelId)
-        app.settings.save(app.settings.settings.value.copy(stationId = "$providerId/$channelId"))
+        val id = "$providerId/$channelId"
+        val station = withTimeoutOrNull(5_000) { app.stations.list.first { l -> l.any { it.id == id } } }?.first { it.id == id }
+        if (station == null) {
+            app.settings.save(app.settings.settings.value.copy(stationId = id))
+            return@act
+        }
+        _pendingUse.value = PendingUse(providerId, channelId, AiCost.of(station, app.stations.byId(BuiltInStations.STANDARD), app.settings.settings.value.dailyAiLimit))
+    }
+
+    fun confirmUse() {
+        val p = _pendingUse.value ?: return
+        _pendingUse.value = null
+        act { app.settings.save(app.settings.settings.value.copy(stationId = "${p.providerId}/${p.channelId}")) }
+    }
+
+    /** Not used after all: the package goes too. */
+    fun cancelUse() {
+        val p = _pendingUse.value ?: return
+        _pendingUse.value = null
+        act { channels.uninstall(p.providerId, p.channelId) }
     }
 
     fun update(providerId: String, channelId: String) = act { channels.install(providerId, channelId) }
