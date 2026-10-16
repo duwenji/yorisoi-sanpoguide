@@ -55,8 +55,6 @@ class Station(
     /** The name as screens show it: a channel on trial says so (API-002 試用チケット). */
     val displayName: String get() = when {
         source?.trial == true -> "$name（審査前の試用）"
-        // ADR-002 D-32: wherever the channel is listed or chosen.
-        source?.promotional == true -> "$name（宣伝を含む）"
         else -> name
     }
 
@@ -118,8 +116,7 @@ class Station(
 /**
  * Where a third party's channel comes from, for the screens (API-002 `publisherName`, the provider's
  * name). [trial] marks a package read from a test ticket, before review (API-002 試用チケット).
- * [promotional] is the list's mark (API-002 P-16), shown as「宣伝を含む」(ADR-002 D-32).
  */
 data class StationSource(
-    val providerId: String, val providerName: String, val publisherName: String, val trial: Boolean = false, val promotional: Boolean = false,
+    val providerId: String, val providerName: String, val publisherName: String, val trial: Boolean = false,
 )

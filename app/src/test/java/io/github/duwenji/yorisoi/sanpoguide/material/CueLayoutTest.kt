@@ -56,20 +56,6 @@ class CueLayoutTest {
     }
 
     @Test
-    fun `promotion is named first, once, and said before the line (ADR-002 D-32)`() {
-        val ad = text("お店の案内", Credit(null, null, via = "鎌倉商店会")).copy(promotedBy = "鎌倉商店会")
-        assertEquals("宣伝: 鎌倉商店会", creditLine(ad))
-        val photo = image("店先", Credit("店主", "permission", via = "鎌倉商店会")).copy(promotedBy = "鎌倉商店会")
-        assertEquals("宣伝: 鎌倉商店会 / 画像: 店主 / 許諾を得て掲載", creditLine(photo))
-        // A promotional channel's own text may have no credit at all.
-        assertEquals("宣伝: 鎌倉歴史散歩の会", creditLine(text("案内").copy(promotedBy = "鎌倉歴史散歩の会")))
-        assertEquals("ここからは鎌倉商店会の宣伝です。", promotionNotice(ad))
-        assertNull(promotionNotice(text("案内")))
-        val line = io.github.duwenji.yorisoi.sanpoguide.companion.Utterance(0, "お店の案内", "小町通り", spokenPrefix = promotionNotice(ad))
-        assertEquals("小町通り。ここからは鎌倉商店会の宣伝です。お店の案内", io.github.duwenji.yorisoi.sanpoguide.walk.CueShow.spoken(line))
-    }
-
-    @Test
     fun `walking is a fresh location at walking speed`() {
         assertTrue(Pace.walking(0.5f, 0))
         assertTrue(Pace.walking(1.2f, Pace.FRESH_MS))

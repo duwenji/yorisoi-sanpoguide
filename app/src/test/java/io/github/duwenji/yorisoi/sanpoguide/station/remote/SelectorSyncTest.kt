@@ -150,12 +150,12 @@ class SelectorSyncTest {
     }
 
     @Test
-    fun `a promotional collection is never drawn from, only named by a channel (ADR-002 D-33)`() {
-        val ads = Col("shop-notes", templeGuild, "お店の紹介です", "history", null, null, clock, promotional = true)
-        publish(listOf(everywhere, ads))
+    fun `a list's leftover promotional mark is ignored, so the collection is drawn from like any other (ADR-004 H-16)`() {
+        val shop = Col("shop-notes", templeGuild, "お店の紹介です", "history", null, null, clock.plusSeconds(60), promotional = true)
+        publish(listOf(everywhere, shop))
         sync.addProvider(base, provider.id)
         sync.install(provider.id, "kamakura-history", unmetered = true)
-        assertEquals(listOf("shrine-notes"), selected())
+        assertEquals(listOf("shop-notes", "shrine-notes"), selected())
     }
 
     @Test
