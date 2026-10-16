@@ -17,8 +17,8 @@ import kotlin.coroutines.cancellation.CancellationException
 // The producers built into the app (API-004「組み込みの素材提供者」). Each wraps the code that made
 // this material before producers existed, so what the user sees and hears stays the same.
 
-private fun ready(type: MaterialType, content: Content, producer: String, credit: Credit? = null) =
-    MaterialResult.Ready(Material(type, content, producer, credit))
+private fun ready(type: MaterialType, content: Content, producer: String, credit: Credit? = null, basedOn: List<String> = emptyList()) =
+    MaterialResult.Ready(Material(type, content, producer, credit, basedOn = basedOn))
 
 /** The AI names itself as the author of what it writes (API-004 P-3). */
 private fun aiCredit(model: String) = Credit(author = "AI（$model）", license = "generated")
@@ -42,8 +42,9 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
         val s = settings.settings.value
         if (!s.isConfigured) return MaterialResult.Unavailable(Reason.NO_KEY)
         return failing(TAG) {
-            val text = guides.guideFor(spot.poi, spot.distanceM, request.context.station)
-            ready(MaterialType.TEXT, Content.Text(text), descriptor.id, aiCredit(s.model()))
+            val text = guides.guideFor(spot.poi, spot.distanceM, request.context.station, request.grounding)
+            val basedOn = request.grounding.map { it.producerName }.distinct()
+            ready(MaterialType.TEXT, Content.Text(text), descriptor.id, aiCredit(s.model()), basedOn)
         }
     }
 

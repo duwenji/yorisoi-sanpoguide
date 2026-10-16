@@ -40,7 +40,8 @@ data class MaterialContext(
 /**
  * A request for one piece of material (API-004 I-4): by [id] when a cue names the resource,
  * otherwise by [subject]. Built-in producers make [type]; resources may be any of [accepts]
- * (what the presentation can show), a text no longer than [maxTextChars].
+ * (what the presentation can show), a text no longer than [maxTextChars]. [grounding] is what a
+ * generated producer may take as fact (API-004 I-14); empty for the others.
  */
 data class MaterialRequest(
     val subject: Subject,
@@ -49,6 +50,7 @@ data class MaterialRequest(
     val id: String? = null,
     val accepts: Set<MaterialType> = setOf(type),
     val maxTextChars: Int? = null,
+    val grounding: List<Ground> = emptyList(),
 )
 
 /** The material itself, in the forms the app shows. */
@@ -68,9 +70,11 @@ data class Credit(val author: String?, val license: String?, val source: String?
 
 /**
  * One piece of material with where it came from (API-004「素材」); [alt] describes an image in words (API-003 F-11).
+ * [basedOn] names the producers whose texts the AI wrote it from (API-004 `basedOn`).
  */
 data class Material(
     val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null, val alt: String? = null,
+    val basedOn: List<String> = emptyList(),
 )
 
 /** What a producer gave back (API-004「結果」). Producers return these instead of throwing. */
@@ -131,7 +135,7 @@ class Producers(
         for (id in sources) {
             val producer = byId[id] ?: continue
             val result = try {
-                producer.produce(request.copy(context = request.context.copy(after = after)))
+                producer.produce(request.copy(context = request.context.copy(after = after)).groundedFor(producer.descriptor.generated))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

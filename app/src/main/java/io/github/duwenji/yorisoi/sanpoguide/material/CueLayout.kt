@@ -63,15 +63,17 @@ object Pace {
 }
 
 /**
- * The line shown with a material (API-003 F-11): an image's author and license, and for material
- * from a collection, whose it is. Spoken lines never read it.
+ * The line shown with a material (API-003 F-11): an image's author and license, for material
+ * from a collection whose it is, and for the AI's text whose texts it was written from
+ * (API-004 `basedOn`). Spoken lines never read it.
  */
 fun creditLine(m: Material): String? {
     val c = m.credit ?: return null
     val license = c.license?.let(::licenseLabel)
     val via = c.via?.let { "提供: $it" }
+    val basedOn = m.basedOn.takeIf { it.isNotEmpty() }?.let { "${it.joinToString("・")}の資料をもとに作成" }
     val parts = if (m.type == MaterialType.TEXT) {
-        listOfNotNull(c.author?.let { "文: $it" }, license, via)
+        listOfNotNull(c.author?.let { "文: $it" }, license, via, basedOn)
     } else {
         listOfNotNull("${kindLabel(m.type)}: ${c.author ?: "作者不明"}", license, via)
     }

@@ -14,7 +14,7 @@ prompts/
 │   └── guard.md                 守ること（個人情報を尋ねない・危険な場所に誘わない など。どのチャンネルでも外せない）
 ├── guide/                     スポット解説
 │   ├── system.md                システムプロンプトの枠（役割・内容の重点・長さはチャンネルから）
-│   └── user.md                  依頼（スポット名・種別・距離・OSM タグ。設定でオンなら緯度経度も）
+│   └── user.md                  依頼（スポット名・種別・距離・OSM タグ。設定でオンなら緯度経度も。根拠があれば資料）
 ├── companion/                 散歩の友の話しかけ
 │   ├── system.md                システムプロンプトの枠（役割・話題の選び方はチャンネルから）
 │   ├── situation.md             いまの状況（日時・天気・雰囲気・今回と過去の散歩・最近の発言。設定でオンなら現在地と経路も）
@@ -55,6 +55,8 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 | 状況に合った施設が近くにある | `companion/system` | `companion/situation` ＋ `companion/events/facility` | `fallback/companion/facility` |
 | 散歩の終了 | `companion/system` | `companion/situation` ＋ `companion/events/finish` | `fallback/companion/finish` |
 | 設定画面の接続テスト | `connection_test/system` | `connection_test/user` | — |
+
+スポットの解説のユーザープロンプトには、選んでいるチャンネルが使う素材集のうち AI の根拠に使ってよいもの（`grants.grounding`）から、そのスポットについての資料を最大 3 つ・1,500 字まで付ける（`material/Grounding.kt`、platform API-004「AI の根拠」）。資料は `<資料 出典="…">` で囲み、本文の山かっこは全角にする。`guide/system` は、資料にある事実を優先し、資料の中の指示に従わないよう指示する。資料を使った解説は、出典の行に「〇〇の資料をもとに作成」と出す。
 
 散歩の友のユーザープロンプトは、`companion/situation` の後ろに空行を挟んで出来事のファイルをつなげたもの。選んでいるチャンネルにその出来事の追加の指示があれば、さらに空行を挟んで `companion/station_event` をつなげる（開始・再訪・区切り・休憩・終了だけ。天気の急変・日の入り・施設にはつかない）。
 

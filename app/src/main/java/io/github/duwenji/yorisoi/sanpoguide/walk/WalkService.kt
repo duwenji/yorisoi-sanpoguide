@@ -35,6 +35,7 @@ import io.github.duwenji.yorisoi.sanpoguide.material.CueLayout
 import io.github.duwenji.yorisoi.sanpoguide.material.MaterialContext
 import io.github.duwenji.yorisoi.sanpoguide.material.Shown
 import io.github.duwenji.yorisoi.sanpoguide.material.Subject
+import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
 import io.github.duwenji.yorisoi.sanpoguide.station.Station
 import io.github.duwenji.yorisoi.core.format.CueEvent
@@ -313,12 +314,11 @@ class WalkService : LifecycleService() {
         val station = app.stations.current.value
         val shown = fire?.let { present(s, it, station) }.orEmpty()
         val past = app.history.visitsTo(poi, excludingWalk = s.id)
+        // The AI, else a fixed line (a short "nearby" one when the AI failed), shown with its credit.
+        val guide = if (shown.isEmpty() && past.isEmpty()) app.narration.spotGuide(poi, distanceM) else null
         val text = when {
             shown.isNotEmpty() -> textOf(shown) ?: poi.name
-            past.isEmpty() -> {
-                // The AI, else a fixed line (a short "nearby" one when the AI failed).
-                app.narration.spotGuide(poi, distanceM)
-            }
+            guide != null -> CueShow.textOf(guide) ?: poi.name
             else -> app.narration.line(TalkEvent.Revisit(poi, past), s, weather)
         }
         s.visits += SpotVisit(
@@ -330,7 +330,11 @@ class WalkService : LifecycleService() {
         saveProgress(s)
         getSystemService(NotificationManager::class.java)
             .notify(SPOT_NOTIFICATION_ID, spotNotification(poi, text))
-        if (fire != null && shown.isNotEmpty()) show(s, fire, shown, poi.name) else speakLine(text, poi.name)
+        when {
+            fire != null && shown.isNotEmpty() -> show(s, fire, shown, poi.name)
+            guide != null -> speakLine(Utterance(System.currentTimeMillis(), text, poi.name, credit = creditLine(guide).takeIf { guide.basedOn.isNotEmpty() }))
+            else -> speakLine(text, poi.name)
+        }
     }
 
     // ---- a channel's cues ----

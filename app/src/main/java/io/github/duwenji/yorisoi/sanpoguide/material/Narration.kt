@@ -34,9 +34,12 @@ class Narration(private val producers: Producers, private val station: () -> Sta
     suspend fun line(event: TalkEvent, session: WalkSession?, weather: Weather?): String =
         text(Shorthand.COMPANION, request(Subject.Event(event), MaterialType.TEXT, session, weather))
 
-    /** A spot's narration when the walk reaches it. */
-    suspend fun spotGuide(poi: Poi, distanceM: Int?): String =
-        text(Shorthand.SPOT_GUIDE, request(Subject.Spot(poi, distanceM), MaterialType.TEXT))
+    /** A spot's narration when the walk reaches it, with its credit to show. */
+    suspend fun spotGuide(poi: Poi, distanceM: Int?): Material =
+        when (val result = producers.first(Shorthand.SPOT_GUIDE, request(Subject.Spot(poi, distanceM), MaterialType.TEXT))) {
+            is MaterialResult.Ready -> result.material
+            else -> error("No text from ${Shorthand.SPOT_GUIDE}: $result")
+        }
 
     /**
      * A spot's narration for its sheet. Unlike on a walk, an AI failure is shown as one (the user

@@ -18,7 +18,7 @@ class PromptFilesTest {
     private val root = File("../prompts/src/main/resources/sanpoguide/prompts")
     private val prompts = PromptTemplates { name -> File(root, "$name.md").readText() }
 
-    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社")
+    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社", "grounded" to false, "grounds" to null)
 
     /** System prompts take the channel's slots; the standard channel's are the realistic sample. */
     private val standard = BuiltInStations.load { id -> DirectoryStationFiles(File("../prompts/src/main/resources/sanpoguide/channels/$id")) }
@@ -56,6 +56,10 @@ class PromptFilesTest {
             ),
             spot + mapOf("distance_m" to 0, "inside" to true, "tags" to listOf("leisure=park"), "coords" to null),
             spot + mapOf("distance_m" to null, "inside" to false, "tags" to emptyList<String>(), "coords" to null),
+            spot + mapOf(
+                "distance_m" to 45, "inside" to false, "tags" to emptyList<String>(), "coords" to null,
+                "grounded" to true, "grounds" to listOf(mapOf("source" to "鎌倉市観光協会", "text" to "本宮は石段の上にあります。")),
+            ),
         ),
         Prompts.Talk.SYSTEM to listOf(standard.companionSystemVars()),
         Prompts.Talk.STATION_EVENT to listOf(mapOf("text" to "- 歩いてきた道の歴史にひとこと触れる")),

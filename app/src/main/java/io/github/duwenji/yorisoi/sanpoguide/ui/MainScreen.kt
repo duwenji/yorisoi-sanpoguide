@@ -358,6 +358,7 @@ private fun GuideSheet(spot: SelectedSpot, onSpeak: (String) -> Unit, onStop: ()
             is GuideState.Failed -> Text(guide.message, color = MaterialTheme.colorScheme.error)
             is GuideState.Ready -> {
                 Text(guide.text, style = MaterialTheme.typography.bodyLarge)
+                guide.credit?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Spacer(Modifier.height(20.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(onClick = { onSpeak(guide.text) }) {
