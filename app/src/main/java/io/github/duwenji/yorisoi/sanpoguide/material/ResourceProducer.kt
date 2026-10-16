@@ -19,9 +19,6 @@ import io.github.duwenji.yorisoi.core.format.material.Trust
  *
  * @param stage the app stage (API-003 M-1): resources of a later one are passed over.
  * @param producerName shown beside the credit (API-002 `collections[].producerName`); null for the channel's own.
- * @param promotedBy whose promotion these are (ADR-002 D-32): a promotional collection's producer, or a
- *   promotional channel's publisher for its own; null when they aren't.
- * @param hidePromotions the user's setting (D-34): promotion is then passed over for the next candidate.
  */
 class ResourceProducer(
     id: String,
@@ -31,8 +28,6 @@ class ResourceProducer(
     trial: Boolean,
     private val stage: Int,
     private val producerName: String? = null,
-    private val promotedBy: String? = null,
-    private val hidePromotions: () -> Boolean = { false },
 ) : Producer {
     override val descriptor = ProducerDescriptor(
         id, 1, MaterialType.entries.toSet(), setOf(SubjectKind.SPOT, SubjectKind.POINT),
@@ -40,8 +35,6 @@ class ResourceProducer(
     )
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
-        // API-004 I-7: promotion the user turned off is material this producer can't show.
-        if (promotedBy != null && hidePromotions()) return MaterialResult.None
         val id = request.id
         val candidates = if (id != null) {
             listOfNotNull(resources[id])
@@ -50,7 +43,7 @@ class ResourceProducer(
         }
         var missing = false
         for (r in candidates) {
-            when (val read = readResource(r, request, stage, text, bytes, descriptor.id, producerName, promotedBy)) {
+            when (val read = readResource(r, request, stage, text, bytes, descriptor.id, producerName)) {
                 is ResourceRead.Ok -> return MaterialResult.Ready(read.material)
                 ResourceRead.Missing -> missing = true
                 ResourceRead.No -> Unit
@@ -74,7 +67,7 @@ internal sealed interface ResourceRead {
  */
 internal fun readResource(
     r: Resource, request: MaterialRequest, stage: Int, text: (Resource) -> String?, bytes: (Resource) -> ByteArray?,
-    producerId: String, producerName: String?, promotedBy: String? = null,
+    producerId: String, producerName: String?,
 ): ResourceRead {
     if (r.type !in request.accepts || stageOf(r.type) > stage) return ResourceRead.No
     val content = when (r.type) {
@@ -86,7 +79,7 @@ internal fun readResource(
     // A collection's text often has no credit of its own; whose it is is still shown.
     val credit = r.credit?.let { Credit(it.author, it.license, it.source, via = producerName) }
         ?: producerName?.let { Credit(null, null, via = it) }
-    return ResourceRead.Ok(Material(r.type, content, producerId, credit, alt = r.alt, promotedBy = promotedBy))
+    return ResourceRead.Ok(Material(r.type, content, producerId, credit, alt = r.alt))
 }
 
 private fun stageOf(type: MaterialType) = when (type) {

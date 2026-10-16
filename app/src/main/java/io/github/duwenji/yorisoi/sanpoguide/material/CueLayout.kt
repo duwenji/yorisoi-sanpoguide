@@ -63,25 +63,21 @@ object Pace {
 }
 
 /**
- * The line shown with a material (API-003 F-11): whose promotion it is first (ADR-002 D-32), an
- * image's author and license, and for material from a collection, whose it is. Spoken lines never read it.
+ * The line shown with a material (API-003 F-11): an image's author and license, and for material
+ * from a collection, whose it is. Spoken lines never read it.
  */
 fun creditLine(m: Material): String? {
-    val promotion = m.promotedBy?.let { "宣伝: $it" }
-    val c = m.credit ?: return promotion
+    val c = m.credit ?: return null
     val license = c.license?.let(::licenseLabel)
-    // Named once: the promotion already says whose it is.
-    val via = c.via?.takeIf { it != m.promotedBy }?.let { "提供: $it" }
+    val via = c.via?.let { "提供: $it" }
     val parts = if (m.type == MaterialType.TEXT) {
-        listOfNotNull(promotion, c.author?.let { "文: $it" }, license, via)
+        listOfNotNull(c.author?.let { "文: $it" }, license, via)
     } else {
-        listOfNotNull(promotion, "${kindLabel(m.type)}: ${c.author ?: "作者不明"}", license, via)
+        listOfNotNull("${kindLabel(m.type)}: ${c.author ?: "作者不明"}", license, via)
     }
     return parts.joinToString(" / ").ifEmpty { null }
 }
 
-/** Said before a promotion's line (ADR-002 D-32), so it is never taken for the companion's own words. */
-fun promotionNotice(m: Material): String? = m.promotedBy?.let { "ここからは${it}の宣伝です。" }
 
 private fun kindLabel(type: MaterialType) = when (type) {
     MaterialType.AUDIO -> "音声"

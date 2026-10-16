@@ -68,11 +68,9 @@ data class Credit(val author: String?, val license: String?, val source: String?
 
 /**
  * One piece of material with where it came from (API-004「素材」); [alt] describes an image in words (API-003 F-11).
- * [promotedBy] names whose promotion it is, shown and said with it (ADR-002 D-32); null when it isn't.
  */
 data class Material(
     val type: MaterialType, val content: Content, val producer: String, val credit: Credit? = null, val alt: String? = null,
-    val promotedBy: String? = null,
 )
 
 /** What a producer gave back (API-004「結果」). Producers return these instead of throwing. */

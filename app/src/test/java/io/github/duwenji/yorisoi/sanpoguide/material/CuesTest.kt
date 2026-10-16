@@ -81,7 +81,6 @@ class CuesTest {
 
     private fun station(
         cues: JSONArray, stored: Map<String, ByteArray> = mapOf(sha256(photo) to photo, sha256(gate) to gate), usable: Boolean = true,
-        promotionalCollection: Boolean = false, promotionalChannel: Boolean = false,
     ): Station {
         val manifest = JSONObject()
             .put("resources", JSONArray()
@@ -109,7 +108,7 @@ class CuesTest {
         val listed = ListedCollection(
             "kamakura-guide", 1, producer.accountId, "鎌倉市観光協会", null, "鎌倉音声ガイド", "寺社の解説と写真",
             listOf("text", "image"), photo.size.toLong(), listOf("history"), listOf("xn7"), Grants.EVERYONE,
-            PackageRef("https://x/col.zip", sha256(col), col.size, 1), java.time.Instant.EPOCH, mapOf("sanpoguide" to 1), promotional = promotionalCollection,
+            PackageRef("https://x/col.zip", sha256(col), col.size, 1), java.time.Instant.EPOCH, mapOf("sanpoguide" to 1),
         )
         val status = if (usable) CollectionStatus.Usable(listed, colPkg) else CollectionStatus.Unusable(RejectCode.COLLECTION_NOT_LISTED, "revoked")
         val materials = ChannelMaterials(
@@ -117,11 +116,11 @@ class CuesTest {
             if (usable) mapOf("kamakura" to PackageArchive.open(col)) else emptyMap(), stored::get,
         )
         return Station(pkg, BuiltInStations.standardPackage(), "p/kamakura-history@1", id = "p/kamakura-history",
-            source = StationSource("p", "提供元", "鎌倉歴史散歩の会", promotional = promotionalChannel), materials = materials)
+            source = StationSource("p", "提供元", "鎌倉歴史散歩の会"), materials = materials)
     }
 
-    private fun present(station: Station, fire: CueFire, ai: String? = "AI の解説です。", hidePromotions: Boolean = false) = runBlocking {
-        CuePresenter(builtIns(ai), stage = 1, hidePromotions = { hidePromotions }, log = { _, _ -> }).present(fire, station, MaterialContext(station))
+    private fun present(station: Station, fire: CueFire, ai: String? = "AI の解説です。") = runBlocking {
+        CuePresenter(builtIns(ai), stage = 1, log = { _, _ -> }).present(fire, station, MaterialContext(station))
     }
 
     private fun text(m: Material) = (m.content as Content.Text).text
@@ -208,25 +207,6 @@ class CuesTest {
         val again = present(revoked, fire, ai = "長".repeat(250))
         assertArrayEquals(ownImage, (again[0].items.single().content as Content.EncodedImage).bytes)
         assertEquals("決まった解説です。", text(again[1].items.single()))
-    }
-
-    @Test
-    fun `promotion carries whose it is, and the user's setting passes it over for the next candidate (ADR-002 D-32, D-34)`() {
-        val cues = JSONArray().put(cue("hachimangu", spotTrigger, card("kamakura", "builtin:ai-guide"), card("self#intro", "builtin:ai-guide")))
-        val ads = station(cues, promotionalCollection = true)
-        val fire = CueFinder(Memory()).spot(ads.id, ads.materials!!.media, hachimangu, 20, emptySet(), day1)!!
-        val shown = present(ads, fire)
-        assertEquals("鎌倉市観光協会", shown[0].items.single().promotedBy)
-        // The channel itself isn't promotional: its own line isn't either.
-        assertNull(shown[1].items.single().promotedBy)
-        val hidden = present(ads, fire, hidePromotions = true)
-        assertEquals("AI の解説です。", text(hidden[0].items.single()))
-        assertNull(hidden[0].items.single().promotedBy)
-
-        // A promotional channel's own resources are its publisher's promotion.
-        val channelAds = station(cues, promotionalChannel = true)
-        assertEquals("鎌倉歴史散歩の会", present(channelAds, fire)[1].items.single().promotedBy)
-        assertEquals("AI の解説です。", text(present(channelAds, fire, hidePromotions = true)[1].items.single()))
     }
 
     @Test
