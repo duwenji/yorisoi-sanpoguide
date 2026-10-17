@@ -17,6 +17,8 @@
 - **散歩の記録**: 散歩ごとの日時・距離・時間・経路・案内したスポットと話した内容を端末内に保存し、記録画面（右上の時計アイコン）で振り返れる
 - **設定**: 設定画面（右上の歯車）で AI サービス・API キー・モデル・チャンネルと話しかけの頻度・雰囲気・背景音・写真・案内のしきい値を選ぶ
 
+使い方と運用の手順は、関係者（散策者・チャンネル提供者・素材提供者・運営）ごとに yorisoi-platform の [docs/manual/](https://github.com/duwenji/yorisoi-platform/blob/main/docs/manual/README.md) にまとめている。
+
 ## 散歩の友（話しかけ）
 
 散策モードでは、次の場面で音声で話しかける。話しかけた内容はメイン画面上部のカードに表示される（タップで過去の発言を展開）。
@@ -187,6 +189,8 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 ```
 
 出力: `app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
+
+Google Play に出す手順（版の上げ方、AAB、Play Console の登録、不具合の版を出したとき）は [docs/release.md](docs/release.md) にある。
 
 ### アプリが求める権限
 
