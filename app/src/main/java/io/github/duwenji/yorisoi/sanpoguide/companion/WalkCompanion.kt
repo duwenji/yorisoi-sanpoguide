@@ -88,6 +88,7 @@ class WalkCompanion(
             "now" to formatDateTime(now),
             "time_of_day" to TimeOfDay.of(now).label,
             "season" to Season.of(now).label,
+            "plan" to session?.plan?.promptSummary(),
             // Spot lines should be about the spot, like the weather below.
             "mood" to mood()?.takeIf { event !is TalkEvent.Revisit }?.let { mapOf("summary" to it.summary) },
             // Spot lines should be about the spot; given the weather, models mention it every time.
