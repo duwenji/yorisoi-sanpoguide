@@ -14,7 +14,7 @@
 関係者は、チャンネルを選んで歩く**散策者**、チャンネルを作る**チャンネル提供者**、チャンネルが使う素材を作る**素材提供者**、そのあいだで審査と署名をする**運営**（[stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)）。
 
 ```mermaid
-flowchart LR
+flowchart TB
   CP["チャンネル提供者"] -- "チャンネル（署名つき）" --> OPS
   MP["素材提供者"] -- "素材集（署名つき）" --> OPS
   OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>yorisoi-console"] -- "API-002" --> Sync
