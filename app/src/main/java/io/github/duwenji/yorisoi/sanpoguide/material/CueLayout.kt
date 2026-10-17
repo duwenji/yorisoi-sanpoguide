@@ -88,8 +88,10 @@ private fun kindLabel(type: MaterialType) = when (type) {
 }
 
 /** API-003 `credit.license`: an SPDX id is shown as it is. */
-private fun licenseLabel(license: String) = when (license) {
+private fun licenseLabel(license: String): String? = when (license) {
     "PD" -> "パブリックドメイン"
     "permission" -> "許諾を得て掲載"
+    // The AI's own text: its author already says 「AI（model）」.
+    "generated" -> null
     else -> license
 }
