@@ -25,6 +25,8 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.TalkSituation
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkEvent
 import io.github.duwenji.yorisoi.sanpoguide.companion.WeatherChangeKind
 import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlanJson
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkSession
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.kit.geo.Poi
@@ -54,6 +56,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.io.IOException
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * Walk mode: tracks the walk in the foreground and lets the companion talk — a greeting,
@@ -87,13 +92,28 @@ class WalkService : LifecycleService() {
             return START_NOT_STICKY
         }
         if (session == null) {
+            val plan = try {
+                when {
+                    intent == null -> app.activeWalkPlan.load() ?: WalkPlan()
+                    intent.hasExtra(EXTRA_PLAN) -> {
+                        val json = intent.getStringExtra(EXTRA_PLAN)
+                            ?: throw JSONException("Active walk plan extra is missing")
+                        WalkPlanJson.fromJson(JSONObject(json))
+                    }
+                    else -> WalkPlan()
+                }
+            } catch (e: IOException) {
+                return failToResume(startId, e)
+            } catch (e: JSONException) {
+                return failToResume(startId, e)
+            }
             ServiceCompat.startForeground(
                 this, NOTIFICATION_ID, walkingNotification("いってらっしゃい。近くに来たらお知らせします"),
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
             )
             // Lists are fetched when a walk starts if a day has passed, never during it (API-002 取得の時期).
             app.channels.refreshIfDue()
-            val s = WalkSession()
+            val s = WalkSession(plan = plan)
             s.startStation(app.stations.current.value.key)
             // A channel on trial says so first (API-002 試用チケット).
             app.stations.current.value.takeIf { it.source?.trial == true }?.let { s.pendingGreeting = trialNotice(it) + it.manifest.greeting }
@@ -418,6 +438,11 @@ class WalkService : LifecycleService() {
         val record = s.toRecord()
         val lastWeather = weather
         app.feed.endWalk()
+        try {
+            app.activeWalkPlan.clear()
+        } catch (e: IOException) {
+            Log.e(TAG, "Could not clear the active walk plan", e)
+        }
         if (record.durationMs < MIN_SAVED_WALK_MS && record.visits.isEmpty()) return
         val station = app.stations.current.value
         val summarize = station.talksOn(TalkEventKind.FINISH)
@@ -476,13 +501,31 @@ class WalkService : LifecycleService() {
             .setAutoCancel(true)
             .build()
 
+    private fun failToResume(startId: Int, error: Exception): Int {
+        Log.e(TAG, "Could not restore the active walk plan", error)
+        getSystemService(NotificationManager::class.java).notify(
+            RESUME_ERROR_NOTIFICATION_ID,
+            NotificationCompat.Builder(this, SanpoApp.CHANNEL_WALK)
+                .setSmallIcon(R.drawable.ic_walk)
+                .setContentTitle("散策を再開できませんでした")
+                .setContentText("プランを読み込めませんでした。アプリを開いて、もう一度散策を開始してください。")
+                .setContentIntent(openAppIntent())
+                .setAutoCancel(true)
+                .build(),
+        )
+        stopSelf(startId)
+        return START_NOT_STICKY
+    }
+
     companion object {
         private const val TAG = "WalkService"
         private const val NOTIFICATION_ID = 1
         // One slot for spot talks: each new spot replaces the last instead of piling up.
         private const val SPOT_NOTIFICATION_ID = 2
         private const val ALERT_NOTIFICATION_ID = 3
+        private const val RESUME_ERROR_NOTIFICATION_ID = 4
         private const val ACTION_STOP = "stop"
+        private const val EXTRA_PLAN = "walk_plan"
         private const val TICK_MS = 30_000L
         // Often enough that the lookahead for weather changes stays current.
         private const val WEATHER_REFRESH_MS = 15 * 60_000L
@@ -496,7 +539,24 @@ class WalkService : LifecycleService() {
         val walking: StateFlow<Boolean> = _walking.asStateFlow()
 
         fun start(context: Context) {
-            context.startForegroundService(Intent(context, WalkService::class.java))
+            start(context, WalkPlan())
+        }
+
+        fun start(context: Context, plan: WalkPlan) {
+            val app = context.applicationContext as SanpoApp
+            app.activeWalkPlan.save(plan)
+            val intent = Intent(context, WalkService::class.java)
+                .putExtra(EXTRA_PLAN, WalkPlanJson.toJson(plan).toString())
+            try {
+                context.startForegroundService(intent)
+            } catch (e: RuntimeException) {
+                try {
+                    app.activeWalkPlan.clear()
+                } catch (clearError: IOException) {
+                    e.addSuppressed(clearError)
+                }
+                throw e
+            }
         }
 
         fun stop(context: Context) {

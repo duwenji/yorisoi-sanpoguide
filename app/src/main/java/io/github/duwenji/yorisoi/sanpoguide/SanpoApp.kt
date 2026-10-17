@@ -15,6 +15,7 @@ import io.github.duwenji.yorisoi.kit.geo.SpotRepository
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
 import io.github.duwenji.yorisoi.kit.voice.Speaker
 import io.github.duwenji.yorisoi.sanpoguide.history.HistoryStore
+import io.github.duwenji.yorisoi.sanpoguide.walk.ActiveWalkPlanStore
 import io.github.duwenji.yorisoi.sanpoguide.material.AiCompanionProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.AiGuideProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.AmbientProducer
@@ -56,6 +57,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.osmdroid.config.Configuration
+import java.io.File
 
 class SanpoApp : Application() {
     /** For work that must outlive a screen or the walk service, such as the end-of-walk summary. */
@@ -80,6 +82,8 @@ class SanpoApp : Application() {
     lateinit var speaker: Speaker
         private set
     lateinit var history: HistoryStore
+        private set
+    lateinit var activeWalkPlan: ActiveWalkPlanStore
         private set
     lateinit var companion: WalkCompanion
         private set
@@ -136,6 +140,7 @@ class SanpoApp : Application() {
         speaker = Speaker(this)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
+        activeWalkPlan = ActiveWalkPlanStore(File(filesDir, "active_walk_plan.json"))
         mood = MoodSource(spots, feed.weather, appScope)
         companion = WalkCompanion(
             guides, history, prompts,
