@@ -274,6 +274,7 @@ class WalkService : LifecycleService() {
                     poi, d, already,
                     visitedBefore = !already && app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty(),
                     cue = if (already) null else media?.let { app.cueFinder.spot(station.id, it, poi, d.toInt(), s.shownCues, now) },
+                    planned = s.plan.stops.any { it.poiId == poi.id },
                 )
             }
         return TalkSituation(

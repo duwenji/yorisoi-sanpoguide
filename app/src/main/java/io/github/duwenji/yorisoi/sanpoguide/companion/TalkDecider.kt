@@ -25,6 +25,7 @@ data class NearbySpot(
     val alreadyThisWalk: Boolean,
     val visitedBefore: Boolean,
     val cue: CueFire? = null,
+    val planned: Boolean = false,
 )
 
 /**
@@ -141,7 +142,7 @@ object TalkDecider {
             nearby.firstOrNull { it.cue != null }?.let { TalkDecision.SpotCue(it.poi, it.distanceM.toInt(), it.cue!!) }
                 // One spot per tick, by distance from the user (spots' distances to each other don't matter).
                 ?: SpotChooser.pick(
-                    nearby.map { SpotCandidate(it.poi, it.distanceM, it.visitedBefore) },
+                    nearby.map { SpotCandidate(it.poi, it.distanceM, it.visitedBefore, planned = it.planned) },
                     s.preferredCategories, s.skippedCategories,
                     newSpots = TalkEventKind.SPOT in s.events, revisits = TalkEventKind.REVISIT in s.events,
                 )?.let { TalkDecision.Spot(it.poi, it.distanceM.toInt()) }
