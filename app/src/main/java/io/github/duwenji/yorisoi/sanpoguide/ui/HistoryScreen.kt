@@ -160,11 +160,18 @@ private fun WalkRow(walk: WalkRecord, stations: String) {
     ListItem(
         headlineContent = { Text(date) },
         supportingContent = {
-            Text(
-                "${WalkCompanion.km(walk.distanceM)}km・${formatDuration(WalkCompanion.minutes(walk.durationMs))}" +
-                    "\nチャンネル: $stations" +
-                    if (walk.visits.isEmpty()) "" else "\n" + walk.visits.joinToString("、") { it.name },
-            )
+            val details = buildList {
+                add("${WalkCompanion.km(walk.distanceM)}km・${formatDuration(WalkCompanion.minutes(walk.durationMs))}")
+                add("チャンネル: $stations")
+                if (walk.visits.isNotEmpty()) add(walk.visits.joinToString("、") { it.name })
+                walk.plan.themeCategory?.takeIf { it.isNotBlank() }?.let { add("テーマ: $it") }
+                walk.plan.durationMinutes?.let { add("時間の目安: ${it}分") }
+                walk.plan.distanceKm?.let { add("距離の目安: ${it}km") }
+                walk.plan.stops.takeIf { it.isNotEmpty() }
+                    ?.let { stops -> add("立ち寄り先: ${stops.joinToString("、") { it.name }}") }
+                walk.plan.note?.takeIf { it.isNotBlank() }?.let { add("メモ: $it") }
+            }.joinToString("\n")
+            Text(details)
         },
     )
 }
