@@ -8,6 +8,7 @@ data class SpotCandidate(
     val distanceM: Float,
     /** Visited on an earlier walk: the companion would say "welcome back" rather than guide. */
     val visitedBefore: Boolean,
+    val planned: Boolean = false,
 )
 
 /** Picks the one spot to talk about next, the way the channel in use wants it. */
@@ -27,12 +28,23 @@ object SpotChooser {
         skip: Set<String>,
         newSpots: Boolean,
         revisits: Boolean,
-    ): SpotCandidate? = candidates
+    ): SpotCandidate? = rank(candidates, prefer, skip, newSpots, revisits).firstOrNull()
+
+    fun rank(
+        candidates: List<SpotCandidate>,
+        prefer: Set<String>,
+        skip: Set<String>,
+        newSpots: Boolean,
+        revisits: Boolean,
+    ): List<SpotCandidate> = candidates
         .filter { it.poi.category !in skip }
         .filter { if (it.visitedBefore) revisits else newSpots }
         // The candidates not picked stay candidates: they get their turn once the gap passes, if still in reach.
-        .sortedWith(compareByDescending<SpotCandidate> { score(it.poi, prefer) }.thenBy { it.distanceM })
-        .firstOrNull()
+        .sortedWith(
+            compareByDescending<SpotCandidate> { it.planned }
+                .thenByDescending { score(it.poi, prefer) }
+                .thenBy { it.distanceM }
+        )
 
     private fun score(poi: Poi, prefer: Set<String>): Int = poi.notability + if (poi.category in prefer) PREFER_BONUS else 0
 }

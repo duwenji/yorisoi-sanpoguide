@@ -8,7 +8,10 @@ import io.github.duwenji.yorisoi.sanpoguide.history.StationSegment
 import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
 
 /** Mutable state of the walk in progress. Owned and mutated by the walk service only. */
-class WalkSession(val startedAt: Long = System.currentTimeMillis()) {
+class WalkSession(
+    val startedAt: Long = System.currentTimeMillis(),
+    val plan: WalkPlan = WalkPlan(),
+) {
     val id: Long = startedAt
     var distanceM = 0.0
         private set
@@ -122,6 +125,7 @@ class WalkSession(val startedAt: Long = System.currentTimeMillis()) {
     fun toRecord(endedAt: Long = System.currentTimeMillis()) = WalkRecord(
         id = id, startedAt = startedAt, endedAt = endedAt, distanceM = distanceM,
         route = route.toList(), visits = visits.toList(), stations = stations.toList(),
+        plan = plan,
     )
 
     private fun trackRest(location: Location) {

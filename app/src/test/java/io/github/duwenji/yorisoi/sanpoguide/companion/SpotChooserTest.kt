@@ -54,4 +54,33 @@ class SpotChooserTest {
         // The quiet channel talks about neither.
         assertNull(pick(newPark, oldShrine, newSpots = false, revisits = false))
     }
+
+    @Test
+    fun `a planned spot is selected before a nearer unplanned spot`() {
+        val result = SpotChooser.pick(
+            candidates = listOf(
+                SpotCandidate(spot("近い公園", "公園"), 10f, false),
+                SpotCandidate(spot("予定した神社", "神社"), 80f, false, planned = true),
+            ),
+            prefer = emptySet(),
+            skip = emptySet(),
+            newSpots = true,
+            revisits = true,
+        )
+
+        assertEquals("予定した神社", result?.poi?.name)
+    }
+
+    @Test
+    fun `a planned spot in a skipped category remains ineligible`() {
+        val result = SpotChooser.pick(
+            candidates = listOf(SpotCandidate(shrine, 10f, false, planned = true)),
+            prefer = emptySet(),
+            skip = setOf("神社"),
+            newSpots = true,
+            revisits = true,
+        )
+
+        assertNull(result)
+    }
 }

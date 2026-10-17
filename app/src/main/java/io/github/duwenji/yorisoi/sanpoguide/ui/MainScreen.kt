@@ -251,7 +251,7 @@ fun MainScreen(
  * dark on photos.
  */
 @Composable
-private fun GoogleAttribution(tiles: MapTiles.Google, copyright: String?, modifier: Modifier = Modifier) {
+internal fun GoogleAttribution(tiles: MapTiles.Google, copyright: String?, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.Bottom) {
         Image(
             painterResource(

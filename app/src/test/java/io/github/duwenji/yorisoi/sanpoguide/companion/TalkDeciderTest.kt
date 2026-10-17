@@ -39,8 +39,15 @@ class TalkDeciderTest {
     )
 
     private fun poi(name: String, category: String = "神社") = Poi(name, name, 35.0, 139.0, category, emptyMap())
-    private fun spot(name: String, distanceM: Float, category: String = "神社", visitedBefore: Boolean = false, already: Boolean = false, cue: CueFire? = null) =
-        NearbySpot(poi(name, category), distanceM, already, visitedBefore, cue)
+    private fun spot(
+        name: String,
+        distanceM: Float,
+        category: String = "神社",
+        visitedBefore: Boolean = false,
+        already: Boolean = false,
+        cue: CueFire? = null,
+        planned: Boolean = false,
+    ) = NearbySpot(poi(name, category), distanceM, already, visitedBefore, cue, planned)
     private fun cue(key: String) = CueFire(Cue(key, Trigger.Point(35.0, 139.0, 50), null, Repeat.ONCE_PER_WALK, emptyList()), Subject.None, key)
 
     /** Clear now, a thunderstorm within the next quarter hour. */
@@ -128,6 +135,28 @@ class TalkDeciderTest {
         assertEquals(TalkDecision.SpotCue(poi("祠"), 40, near), decide(s))
         // Still not while standing still, nor right after a switch.
         assertEquals(TalkDecision.Nothing, decide(s.copy(restMinutes = TalkDecider.STATIONARY_MINUTES)))
+    }
+
+    @Test
+    fun `planned spots do not outrank weather or channel cues and remain subject to skips`() {
+        val planned = spot("予定した公園", 20f, category = "公園", planned = true)
+        val warning = decide(calm.copy(weather = thunderComing, spots = listOf(planned)))
+        assertEquals(WeatherChangeKind.THUNDER, (warning as TalkDecision.WeatherTurn).change.kind)
+
+        val fire = cue("temple")
+        val withCue = calm.copy(spots = listOf(planned, spot("寺", 50f, cue = fire)))
+        assertEquals(TalkDecision.SpotCue(poi("寺"), 50, fire), decide(withCue))
+
+        val skipped = calm.copy(spots = listOf(planned), skippedCategories = setOf("公園"))
+        assertEquals(TalkDecision.Nothing, decide(skipped))
+    }
+
+    @Test
+    fun `an active point cue is not delayed by a planned stop`() {
+        val point = cue("point")
+        val planned = spot("予定した公園", 20f, category = "公園", planned = true)
+
+        assertEquals(TalkDecision.PointCue(point), decide(calm.copy(pointCue = point, spots = listOf(planned))))
     }
 
     // ---- ④ a point the channel put a cue on ----

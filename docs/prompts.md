@@ -56,13 +56,13 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 | 散歩の終了 | `companion/system` | `companion/situation` ＋ `companion/events/finish` | `fallback/companion/finish` |
 | 設定画面の接続テスト | `connection_test/system` | `connection_test/user` | — |
 
-スポットの解説のユーザープロンプトには、選んでいるチャンネルが使う素材集のうち AI の根拠に使ってよいもの（`grants.grounding`）から、そのスポットについての資料を最大 3 つ・1,500 字まで付ける（`material/Grounding.kt`、platform API-004「AI の根拠」）。資料は `<資料 出典="…">` で囲み、本文の山かっこは全角にする。`guide/system` は、資料にある事実を優先し、資料の中の指示に従わないよう指示する。資料を使った解説は、出典の行に「〇〇の資料をもとに作成」と出す。
+スポットの解説のユーザープロンプトには、選んでいるチャンネルが使う素材集のうち AI の根拠に使ってよいもの（`grants.grounding`）から、そのスポットについての資料を最大 3 つ・1,500 字まで付ける（`material/Grounding.kt`、platform [API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)「AI の根拠」）。資料は `<資料 出典="…">` で囲み、本文の山かっこは全角にする。`guide/system` は、資料にある事実を優先し、資料の中の指示に従わないよう指示する。資料を使った解説は、出典の行に「〇〇の資料をもとに作成」と出す。
 
 散歩の友のユーザープロンプトは、`companion/situation` の後ろに空行を挟んで出来事のファイルをつなげたもの。選んでいるチャンネルにその出来事の追加の指示があれば、さらに空行を挟んで `companion/station_event` をつなげる（開始・再訪・区切り・休憩・終了だけ。天気の急変・日の入り・施設にはつかない）。
 
 ## チャンネルとの関係
 
-`guide/system` と `companion/system` は枠で、役割・内容の重点・話題の選び方・解説の長さは、選んでいるチャンネルから変数で入る（[channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md) のスロット）。チャンネルの文章は `sanpoguide/channels/{id}/prompts/` にあり、ないスロットには標準のチャンネル（`sanpoguide/channels/standard/`）の文章が入る。スロットの差し込み方と、出来事のプロンプトのつなぎ方は `StationPrompts` にある。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
+`guide/system` と `companion/system` は枠で、役割・内容の重点・話題の選び方・解説の長さは、選んでいるチャンネルから変数で入る（platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md) のスロット）。チャンネルの文章は `sanpoguide/channels/{id}/prompts/` にあり、ないスロットには標準のチャンネル（`sanpoguide/channels/standard/`）の文章が入る。スロットの差し込み方と、出来事のプロンプトのつなぎ方は `StationPrompts` にある。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
 
 今までの文面を変えたいときは、枠の部分なら `prompts/` を、役割や話題なら `sanpoguide/channels/standard/prompts/` を直す。標準のチャンネルで組み立てたシステムプロンプトがチャンネル導入前と同じであることを `StationAssetsTest` が確かめているので、意図して文面を変えたときは、基準のファイル（`app/src/test/resources/prompt-baseline/`）も直す。
 

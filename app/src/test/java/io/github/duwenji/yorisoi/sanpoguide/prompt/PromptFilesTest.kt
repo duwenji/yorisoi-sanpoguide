@@ -66,6 +66,7 @@ class PromptFilesTest {
         Prompts.Talk.SITUATION to listOf(
             mapOf(
                 "now" to "9月28日（月）14:05", "time_of_day" to "昼", "season" to "秋",
+                "plan" to "テーマ: 公園・時間: 60分",
                 "weather" to "霧雨、気温19℃",
                 "mood" to mapOf("summary" to "秋の昼、雨、寺社の近く"),
                 "walk" to mapOf("minutes" to 12, "km" to "0.8", "spots" to "段葛、鶴岡八幡宮"),
@@ -81,6 +82,7 @@ class PromptFilesTest {
             ),
             mapOf(
                 "now" to "9月28日（月）14:10", "time_of_day" to "昼", "season" to "秋",
+                "plan" to null,
                 "weather" to null, "mood" to null,
                 "walk" to mapOf("minutes" to 0, "km" to "0.0", "spots" to null),
                 "last_walk" to null, "recent" to null,
@@ -88,7 +90,7 @@ class PromptFilesTest {
             ),
             mapOf(
                 "now" to "9月28日（月）8:00", "time_of_day" to "朝", "season" to "秋",
-                "weather" to null, "mood" to null, "walk" to null, "last_walk" to null, "recent" to null,
+                "plan" to null, "weather" to null, "mood" to null, "walk" to null, "last_walk" to null, "recent" to null,
                 "location" to null,
             ),
         ),
@@ -152,8 +154,12 @@ class PromptFilesTest {
 
     @Test
     fun `optional parts disappear cleanly`() {
+        val withPlan = prompts.render(Prompts.Talk.SITUATION, samples.getValue(Prompts.Talk.SITUATION)[0])
+        assertTrue(withPlan.contains("散策の希望（目安）: テーマ: 公園・時間: 60分"))
+
         val minimal = prompts.render(Prompts.Talk.SITUATION, samples.getValue(Prompts.Talk.SITUATION)[1])
         assertTrue(minimal.contains("初めての散歩"))
+        assertFalse(minimal.contains("散策の希望"))
         assertFalse(minimal.contains("天気"))
         assertFalse(minimal.contains("最近話したこと"))
 

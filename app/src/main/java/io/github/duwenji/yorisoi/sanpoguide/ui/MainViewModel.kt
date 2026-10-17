@@ -15,7 +15,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.LiveWalk
+import io.github.duwenji.yorisoi.sanpoguide.companion.PlanSuggestions
+import io.github.duwenji.yorisoi.sanpoguide.companion.SpotCandidate
 import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
 import io.github.duwenji.yorisoi.kit.geo.Facility
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapsException
 import io.github.duwenji.yorisoi.kit.geo.FacilityKind
@@ -136,6 +139,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
             .sortedBy { it.distanceM ?: Int.MAX_VALUE }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    private val _planDraft = MutableStateFlow(WalkPlan())
+    val planDraft: StateFlow<WalkPlan> = _planDraft.asStateFlow()
+
+    val suggestions: StateFlow<List<SpotCandidate>> = combine(spots, planDraft) { nearby, plan ->
+        PlanSuggestions.recommend(
+            nearby.mapNotNull { item ->
+                item.distanceM?.let { SpotCandidate(item.poi, it.toFloat(), visitedBefore = false) }
+            },
+            plan.themeCategory,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun updatePlan(transform: (WalkPlan) -> WalkPlan) {
+        _planDraft.update(transform)
+    }
+
+    fun resetPlanDraft() {
+        _planDraft.value = WalkPlan()
+    }
 
     val facilities: StateFlow<List<FacilityItem>> = combine(app.spots.facilities, app.spots.location) { list, loc ->
         list.map { FacilityItem(it, loc?.let { l -> it.distanceFrom(l).toInt() }) }
