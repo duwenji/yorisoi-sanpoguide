@@ -190,6 +190,8 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 
 出力: `app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
 
+
+Google Play に出す手順（版の上げ方、AAB、Play Console の登録、不具合の版を出したとき）は [docs/release.md](docs/release.md) にある。
 ### アプリが求める権限
 
 | 権限 | 用途 |
