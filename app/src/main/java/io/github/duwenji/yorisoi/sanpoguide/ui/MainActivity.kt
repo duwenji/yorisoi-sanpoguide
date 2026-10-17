@@ -20,7 +20,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
+import java.io.IOException
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -28,7 +30,7 @@ class MainActivity : ComponentActivity() {
     private val historyViewModel: HistoryViewModel by viewModels()
     private val channelsViewModel: ChannelsViewModel by viewModels()
 
-    private enum class Screen { MAIN, SETTINGS, HISTORY, CHANNELS }
+    private enum class Screen { MAIN, SETTINGS, HISTORY, CHANNELS, PLAN }
     private var hasLocationPermission by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
@@ -59,6 +61,7 @@ class MainActivity : ComponentActivity() {
                 var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
                 // The channels screen opens from the main screen or the settings, and goes back there.
                 var channelsFrom by rememberSaveable { mutableStateOf(Screen.MAIN) }
+                var plannerStartError by rememberSaveable { mutableStateOf<String?>(null) }
                 fun openChannels(from: Screen) {
                     channelsViewModel.clearMessage()
                     channelsFrom = from
@@ -68,6 +71,20 @@ class MainActivity : ComponentActivity() {
                     if (channelsFrom == Screen.SETTINGS) settingsViewModel.takeSavedStation()
                     screen = channelsFrom
                 }
+                fun startWalk(plan: WalkPlan) {
+                    plannerStartError = null
+                    try {
+                        WalkService.start(this, plan)
+                        viewModel.resetPlanDraft()
+                        screen = Screen.MAIN
+                    } catch (e: IOException) {
+                        plannerStartError = "散策プランを保存できませんでした: ${e.message ?: "端末の保存領域を確認してください"}"
+                    } catch (e: IllegalStateException) {
+                        plannerStartError = "散策を開始できませんでした: ${e.message ?: "もう一度お試しください"}"
+                    } catch (e: SecurityException) {
+                        plannerStartError = "散策を開始できませんでした。位置情報の権限を確認してください。"
+                    }
+                }
                 if (screen == Screen.CHANNELS) BackHandler { closeChannels() } else if (screen != Screen.MAIN) BackHandler { screen = Screen.MAIN }
                 when (screen) {
                     Screen.SETTINGS -> SettingsScreen(
@@ -76,6 +93,18 @@ class MainActivity : ComponentActivity() {
                     )
                     Screen.CHANNELS -> ChannelsScreen(channelsViewModel, onClose = ::closeChannels)
                     Screen.HISTORY -> HistoryScreen(historyViewModel, onClose = { screen = Screen.MAIN })
+                    Screen.PLAN -> WalkPlanScreen(
+                        viewModel = viewModel,
+                        startError = plannerStartError,
+                        onBack = { screen = Screen.MAIN },
+                        onCancel = {
+                            viewModel.resetPlanDraft()
+                            plannerStartError = null
+                            screen = Screen.MAIN
+                        },
+                        onStartWithPlan = { startWalk(viewModel.planDraft.value) },
+                        onStartWithoutPlan = { startWalk(WalkPlan()) },
+                    )
                     Screen.MAIN -> MainScreen(
                         viewModel = viewModel,
                         hasLocationPermission = hasLocationPermission,
@@ -84,7 +113,12 @@ class MainActivity : ComponentActivity() {
                             startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                         },
                         onToggleWalk = { walking ->
-                            if (walking) WalkService.stop(this) else WalkService.start(this)
+                            if (walking) {
+                                WalkService.stop(this)
+                            } else {
+                                plannerStartError = null
+                                screen = Screen.PLAN
+                            }
                         },
                         onOpenSettings = {
                             settingsViewModel.reset()
