@@ -6,6 +6,8 @@ import android.location.Location
 import android.util.AtomicFile
 import android.util.Log
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
+import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlanJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -58,6 +60,7 @@ data class WalkRecord(
     val visits: List<SpotVisit>,
     /** The channels used, in order. */
     val stations: List<StationSegment>,
+    val plan: WalkPlan = WalkPlan(),
 ) {
     val durationMs: Long get() = endedAt - startedAt
 }
@@ -154,6 +157,7 @@ internal object WalkJson {
         .put("stations", JSONArray().apply {
             w.stations.forEach { put(JSONObject().put("station", it.station).put("from", it.fromMs)) }
         })
+        .put("plan", WalkPlanJson.toJson(w.plan))
 
     fun fromJson(o: JSONObject): WalkRecord {
         val route = o.getJSONArray("route")
@@ -184,6 +188,11 @@ internal object WalkJson {
             stations = (0 until stations.length()).map {
                 val seg = stations.getJSONObject(it)
                 StationSegment(seg.getString("station"), seg.getLong("from"))
+            },
+            plan = if (o.has("plan")) {
+                WalkPlanJson.fromJson(o.getJSONObject("plan"))
+            } else {
+                WalkPlan()
             },
         )
     }
