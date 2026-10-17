@@ -145,7 +145,11 @@ object TalkDecider {
                     nearby.map { SpotCandidate(it.poi, it.distanceM, it.visitedBefore, planned = it.planned) },
                     s.preferredCategories, s.skippedCategories,
                     newSpots = TalkEventKind.SPOT in s.events, revisits = TalkEventKind.REVISIT in s.events,
-                )?.let { TalkDecision.Spot(it.poi, it.distanceM.toInt()) }
+                )?.let { chosen ->
+                    // A plan can't jump ahead of an active point cue; ordinary spot ordering stays unchanged.
+                    s.pointCue?.takeIf { chosen.planned }?.let(TalkDecision::PointCue)
+                        ?: TalkDecision.Spot(chosen.poi, chosen.distanceM.toInt())
+                }
         },
         // A point the channel put a cue on, as for spots: not while standing still (API-003「きっかけ」).
         Rule("point", setOf(WalkGate.MOVING, WalkGate.SETTLED)) { s -> s.pointCue?.let(TalkDecision::PointCue) },

@@ -116,7 +116,6 @@ class MainActivity : ComponentActivity() {
                             if (walking) {
                                 WalkService.stop(this)
                             } else {
-                                plannerStartError = null
                                 screen = Screen.PLAN
                             }
                         },

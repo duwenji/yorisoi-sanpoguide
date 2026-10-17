@@ -151,6 +151,14 @@ class TalkDeciderTest {
         assertEquals(TalkDecision.Nothing, decide(skipped))
     }
 
+    @Test
+    fun `an active point cue is not delayed by a planned stop`() {
+        val point = cue("point")
+        val planned = spot("予定した公園", 20f, category = "公園", planned = true)
+
+        assertEquals(TalkDecision.PointCue(point), decide(calm.copy(pointCue = point, spots = listOf(planned))))
+    }
+
     // ---- ④ a point the channel put a cue on ----
 
     @Test
