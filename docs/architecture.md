@@ -2,7 +2,7 @@
 
 アプリ全体を 7 枚の図で説明する。最初に、アプリの中心にある「チャンネル」の考え方と関係者を示す。図 1 で「どこに何があるか」をつかみ、図 2〜7 で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追う。
 
-- ソース 51 ファイル / 約 7,300 行（アプリ 47 ファイル・7,046 行、プロンプト・パック `:prompts` 4 ファイル・277 行。共通の部品は yorisoi-platform）、アプリのパッケージ 11
+- ソース 56 ファイル / 約 7,700 行（アプリ 52 ファイル・7,424 行、プロンプト・パック `:prompts` 4 ファイル・290 行。共通の部品は yorisoi-platform）、アプリのパッケージ 11
 - 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネル・リストは設定で選んだときだけ）
 
 図はコードから手で書き起こしたもの。`WalkService` の判定順を変えたり、パッケージを追加したりしたときは、この文書も更新する。
@@ -45,7 +45,8 @@ flowchart TB
     MainScreen["MainScreen<br/>SpotMap・CompanionCard・StationPicker<br/>CueViews（解説の画面・全画面の画像）"] --> MainViewModel
     SettingsScreen --> SettingsViewModel
     HistoryScreen --> HistoryViewModel
-    ChannelsScreen["ChannelsScreen<br/>リスト・配信されているチャンネル・試用チケット"] --> ChannelsViewModel
+    ChannelsScreen["ChannelsScreen<br/>リスト・配信されているチャンネル・試用チケット<br/>AI の費用の目安"] --> ChannelsViewModel
+    ReportLink["ReportLink<br/>問題を知らせる（メールの下書き）"]
   end
 
   subgraph WALK["常駐処理（walk）"]
@@ -56,13 +57,13 @@ flowchart TB
   subgraph APP["共有部品（SanpoApp.onCreate() で生成）"]
     prompt["プロンプト（:prompts・yorisoi-platform/core-prompt）<br/>PromptTemplates・StationPrompts<br/>← sanpoguide/prompts/*.md"]
     history["history<br/>HistoryStore<br/>walk_history.json（端末内）"]
-    settings["settings<br/>SettingsRepository・Threshold<br/>（API キーの暗号化は kit-llm の KeyCipher）"]
+    settings["settings<br/>SettingsRepository・Threshold・AiUsage<br/>（API キーの暗号化は kit-llm の KeyCipher）"]
     mood["kit-mood<br/>MoodSource・Mood・PlaceGuess"]
     station["station<br/>StationRepository・Station<br/>← sanpoguide/channels/（yorisoi-platform/core-format で確認）<br/>station/remote: ThirdPartyChannels・ChannelSync"]
-    material["material<br/>Producers・Narration<br/>CueFinder・CuePresenter・ChannelMaterials"]
+    material["material<br/>Producers・Narration・Grounding<br/>CueFinder・CuePresenter・ChannelMaterials"]
     data["kit-geo<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・WeatherClient・GoogleMapTiles"]
-    guide["guide・kit-llm・kit-voice<br/>GuideRepository・Speaker<br/>LlmClient・Provider"]
-    companion["companion<br/>WalkCompanion・CompanionFeed<br/>WeatherChange ほか"]
+    guide["guide・kit-llm・kit-voice<br/>GuideRepository・OutputCheck・Speaker<br/>LlmClient・Provider"]
+    companion["companion<br/>TalkDecider・WalkCompanion・CompanionFeed<br/>WeatherChange ほか"]
     sound["kit-voice<br/>AmbientPlayer・Voices<br/>※ WalkService が生成"]
   end
 
@@ -75,6 +76,7 @@ flowchart TB
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
     GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
     Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: yorisoi-console"]
+    Mail["メールアプリ<br/>散策者が書いて送る"]
   end
 
   MainActivity -- "開始・終了" --> WalkService
@@ -88,9 +90,13 @@ flowchart TB
   sound --> Device
   MainScreen -. "SpotMap が直接取得" .-> GSI
   MainScreen -. "rememberHeading が読む" .-> Device
+  MainScreen & ChannelsScreen --> ReportLink
+  ReportLink -. "下書きを開く（report/Report）" .-> Mail
 ```
 
 `WalkService` がアプリの中心。散策モード中は画面を閉じても動き続け、位置・天気・周辺スポットと、選んでいるチャンネル（`station`）を見て「いま何を話すか」を決める。`sound` だけは SanpoApp ではなく、WalkService が必要になったときに作る。話す文・写真・背景音は、`material` の素材提供者（`Producers`）を通して取り出す（図 7）。
+
+発言カードの発言と、取り込んだチャンネルには「問題を知らせる」がある（`ui/ReportLink`・`report/Report`）。チャンネルを出したリストの連絡先（組み込みのチャンネルと、連絡先のないリストはアプリの開発者）宛てのメールの下書きを開くだけで、アプリからは何も送らない。下書きにはチャンネル・リストと、発言なら時刻と文を入れ、位置は入れない。
 
 ## 図 2 · 散策モード: 話しかけるまでの流れ
 
@@ -106,7 +112,7 @@ flowchart LR
   Talk -- "TalkEvent" --> Compose["<b>文を作る</b>（Narration）<br/>初訪問のスポット: GuideRepository.guideFor()<br/>それ以外（再訪を含む）: WalkCompanion.say()<br/>文面は sanpoguide/prompts/ と、選んでいるチャンネルから"]
   Talk -- "きっかけ（CueFire）" --> CueShow["CuePresenter → CueShow<br/>チャンネルの素材（図 7）"]
   Compose -- "生成" --> AI["AI サービス<br/>LlmClient"]
-  Compose -. "キー未設定・通信失敗" .-> Fallback["定型文<br/>sanpoguide/prompts/fallback/"]
+  Compose -. "キー未設定・1 日の上限・通信失敗<br/>連絡先を含む返事" .-> Fallback["定型文<br/>sanpoguide/prompts/fallback/"]
   Compose --> Speak["speakLine(text)"]
   Speak --> Speaker["読み上げ<br/>Speaker（TTS）"]
   Speak --> Feed["画面のカード<br/>CompanionFeed"]
@@ -120,6 +126,8 @@ flowchart LR
 - チャンネルを切り替えると、次に話すのは新しいチャンネルの一言（`WalkSession.pendingGreeting`）。その後 1 分はスポット案内と休憩・区切りを控える（`WalkSession.justSwitched()`）。
 - チャンネルのきっかけ（スポット・地点）は、チャンネルが「話題」や「話す場面」で除いているスポットでも出す（チャンネルが意図して置いたため）。どちらも、とどまっている間と切り替えの直後は出さない。スポットのきっかけは、スポット案内の間隔（`TalkLevel.spotGapMs`）も守る。散歩の開始・終了のきっかけは開始・終了の一言のあとに出す。
 - 読み上げ中は判定しない（`Speaker.isSpeaking` と `Mutex` で 1 件ずつ）。
+- AI を呼ぶのは 1 日に設定の上限まで（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる。`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。上限に達したら定型文にする。
+- AI の返事に URL・メールアドレス・電話番号があれば使わず、定型文にする（`guide/OutputCheck`。全角の数字・記号は半角にそろえてから見る）。
 - 記録の保存は、スポット案内・距離の区切り・散歩の終了のときに行う。区切りで話さないチャンネルでも、区切りの時点で保存だけはする。
 
 ### スポットが近くに複数あるとき
@@ -138,14 +146,17 @@ flowchart LR
 
 ## 図 3 · スポット解説: 地図でスポットをタップしたとき
 
-解説と写真は別々に取りに行く。解説は「AI サービス・モデル・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
+解説と写真は別々に取りに行く。解説は「AI サービス・モデル・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
+
+チャンネルが使う素材集のうち、素材提供者が AI の根拠にすることを認めたもの（`grants.grounding`）に同じスポットについての資料があれば、それを根拠として AI に渡す（`material/Grounding`。3 件・1,500 字まで。前もって取得した分だけを読み、そのために取得はしない）。根拠を使った解説には、もとにした素材提供者を添える。
 
 ```mermaid
 flowchart LR
   Tap["タップ<br/>MainScreen"] --> Select["MainViewModel<br/>select()"]
   Select --> Guide["GuideRepository<br/>キャッシュになければ生成"]
   Select --> Photos["SpotPhotos<br/>写真の手がかりがあるときだけ"]
-  Guide --> AI["AI サービス<br/>キー無しは定型文"]
+  Grounds["根拠<br/>素材集の資料（Grounding）"] -.-> Guide
+  Guide --> AI["AI サービス<br/>キー無し・上限・連絡先を含む返事は定型文"]
   Photos --> Wiki["Wikimedia<br/>既定は Wi-Fi 時のみ"]
   AI --> Panel["解説パネル<br/>文・写真・読み上げボタン"]
   Wiki --> Panel
@@ -238,6 +249,7 @@ flowchart LR
 - 散歩中に切り替えると、`WalkService` が `current` の変化を見て、記録に区間を足し（`WalkSession.stations`）、一言を予約する。同じチャンネルの設定を変えただけでは切り替えとみなさない。
 - 第三者のチャンネルは、散策者が足したリスト（API-002）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
 - 第三者のチャンネルは散策者が変えられない（使う・使わないだけ）。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せる
+- 第三者のチャンネルを使う前に、AI の費用の目安を出す（`station/AiCost`。話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限）。散策者が「使う」を選ぶまで、そのチャンネルで AI は呼ばない
 - 天気の急変・日の入り・施設の案内は、チャンネルに項目がない（止められない）。
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
@@ -257,6 +269,7 @@ flowchart LR
   Walk["散歩の状態<br/>スポット・地点・出来事"] --> Finder["<b>CueFinder</b><br/>きっかけの判定・repeat・順番待ち<br/>cues.json に記録"]
   Finder -- "CueFire" --> Presenter["<b>CuePresenter</b><br/>候補の順番に素材を取り出す<br/>段 2・3 の素材は飛ばす"]
   BuiltIn & Res & Col & Sel --> Presenter
+  Col & Sel -. "根拠（Grounding）" .-> BuiltIn
   Presenter --> Layout["CueLayout<br/>見せ方の並べ方"]
   Layout --> Show["<b>CueShow</b><br/>読み上げ・発言カード・通知"]
   Show -- "タップ" --> Sheet["解説の画面・全画面の画像<br/>ui/CueViews"]
@@ -267,6 +280,8 @@ flowchart LR
 - アプリが出せるのは第 1 段（文字と画像）まで（`ChannelSync.MEDIA_STAGE`）。音声・映像を指す候補は飛ばして次の候補へ進む
 - 見せ方の安全の決まりはアプリが強制する。全画面の画像はタップしたときだけ開き、歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える（`MaterialCredit`）
 - 散歩の外でチャンネルを選んだときの `select` のきっかけは `SanpoApp.showEventCues()` が出す。散歩の終了のきっかけも同じ
+- 素材集の資料を根拠として添えるのは、AI が作る素材提供者（`generated`）への依頼だけ（`groundedFor()`、図 3）。ほかの素材提供者には渡さない
+- アプリが出せる範囲（録音した音声を除くすべてのスロット・きっかけ・見せ方）は `station/SanpoProfile` にまとめ、`ChannelSync` はこれに合わないチャンネルを一覧に出さず、取り込まない
 
 ## パッケージ一覧
 
@@ -276,28 +291,29 @@ flowchart LR
 
 | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---:|
-| `ui` | Compose の 4 画面、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット、きっかけの解説の画面と全画面の画像、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, StationPicker, CueViews, CompanionCard, MainViewModel | 2,500 |
-| `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択 | WalkCompanion, WalkSession, SpotChooser, FacilityAdvisor, WeatherChange | 650 |
-| `walk` | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知 | WalkService, CueShow | 624 |
-| `guide` | スポット解説とキャッシュ、AI サービスへの接続の生成 | GuideRepository, GuidePrompt | 96 |
-| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値 | SettingsRepository, OverrideCodec, TalkLevel, Threshold | 339 |
-| `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 192 |
-| `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,193 |
-| `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout | 1,014 |
-| (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 204 |
+| `ui` | Compose の 4 画面、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット・AI の費用の目安、きっかけの解説の画面と全画面の画像、問題を知らせる入口、ViewModel | MainScreen, SettingsScreen, ChannelsScreen, StationPicker, CueViews, CompanionCard, ReportLink, MainViewModel | 2,626 |
+| `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択 | TalkDecider, WalkCompanion, WalkSession, CompanionFeed, SpotChooser, FacilityAdvisor, WeatherChange | 838 |
+| `walk` | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知 | WalkService, CueShow | 591 |
+| `guide` | スポット解説とキャッシュ、AI サービスへの接続の生成、使わない返事（連絡先を含む）の判定 | GuideRepository, GuidePrompt, OutputCheck | 159 |
+| `settings` | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値、今日 AI を呼んだ回数 | SettingsRepository, OverrideCodec, TalkLevel, Threshold, AiUsage | 362 |
+| `history` | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定 | HistoryStore（WalkJson） | 190 |
+| `station` | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名、AI の費用の目安、アプリが出せる範囲。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, AiCost, SanpoProfile, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,268 |
+| `material` | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方、AI の根拠、画像の縮小（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)） | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout, Grounding, MaterialImages | 1,123 |
+| `report` | 問題を知らせるメールの宛先と下書き | Report | 55 |
+| (root) | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ | SanpoApp | 212 |
 
 共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[ADR-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-003-companion-app-platform.md)）と SanpoGuide のプロンプト・パック:
 
 | モジュール | パッケージ | 役割 | 主なファイル | 行数 |
 |---|---|---|---|---:|
-| `yorisoi-platform/core-format`（JVM） | `io.github.duwenji.yorisoi.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など） | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions | 2,078 |
+| `yorisoi-platform/core-format`（JVM） | `io.github.duwenji.yorisoi.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など） | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions | 2,330 |
 | `yorisoi-platform/core-prompt`（JVM） | `…core.prompt` | プロンプトのテンプレート | PromptTemplates | 90 |
 | `yorisoi-platform/kit-voice` | `io.github.duwenji.yorisoi.kit.voice` | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生 | Speaker, AmbientPlayer, Voices, Soundscape | 500 |
 | `yorisoi-platform/kit-llm` | `…kit.llm` | AI サービスの抽象と実装、API キーの暗号化 | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, KeyCipher | 221 |
 | `yorisoi-platform/kit-geo` | `…kit.geo`・`.weather`・`.map` | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
-| `yorisoi-platform/kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する | TalkEngine, TalkRule, TalkGates | 45 |
+| `yorisoi-platform/kit-companion`（JVM） | `…kit.companion` | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する | TalkEngine, TalkRule, TalkGates | 42 |
 | `yorisoi-platform/kit-mood` | `…kit.mood` | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方 | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice | 622 |
-| `:prompts`（JVM） | `io.github.duwenji.yorisoi.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 277 |
+| `:prompts`（JVM） | `io.github.duwenji.yorisoi.sanpoguide.prompt` | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本 | Prompts, StationPrompts, BuiltInChannels, ReviewSamples | 290 |
 
 チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
@@ -327,6 +343,11 @@ flowchart LR
 | きっかけの見せ方（カード・通知・解説の画面）を変える | `material/CueLayout.kt`・`walk/CueShow.kt`・`ui/CueViews.kt` |
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers` |
 | 素材集の取得（前もっての取得・基準で選ぶ取得）を変える | `material/ChannelMaterials.kt`・`material/Selectors.kt`、取得の実行は `ChannelSync` |
+| AI の根拠（素材集の資料の選び方・量）を変える | `material/Grounding.kt`。プロンプトへの入れ方は `guide/GuidePrompt.kt` |
+| AI を呼ぶ回数の上限を変える | `settings/AiUsage.kt`（数え方）・`settings/SettingsRepository.kt` の `dailyAiLimit`（既定値）・`ui/SettingsScreen.kt`（選択肢） |
+| 使わない返事の条件を変える | `guide/OutputCheck.kt` |
+| AI の費用の目安を変える | `station/AiCost.kt`（計算）・`ui/ChannelsScreen.kt` の `CostDialog`（表示） |
+| 問題を知らせるメールの宛先・文面を変える | `report/Report.kt`（入口は `ui/ReportLink.kt`） |
 
 ## 計画中: 素材の第 2 段以降
 
