@@ -17,7 +17,7 @@
 - **散歩の記録**: 散歩ごとの日時・距離・時間・経路・案内したスポットと話した内容を端末内に保存し、記録画面（右上の時計アイコン）で振り返れる
 - **設定**: 設定画面（右上の歯車）で AI サービス・API キー・モデル・チャンネルと話しかけの頻度・雰囲気・背景音・写真・案内のしきい値を選ぶ
 
-使い方と運用の手順は、関係者（散策者・チャンネル提供者・素材提供者・運営）ごとに yorisoi-platform の [docs/manual/](https://github.com/duwenji/yorisoi-platform/blob/main/docs/manual/README.md) にまとめている。
+アプリ固有の設計・運用資料は [docs/ の案内](docs/README.md) から参照できる。使い方と運用の手順は、関係者（散策者・チャンネル提供者・素材提供者・運営）ごとの [SanpoGuide 手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/README.md) を参照する。
 
 ## 散歩の友（話しかけ）
 
@@ -76,7 +76,7 @@ API キーが未設定、AI の呼び出しに失敗した、または 1 日の�
 
 ## チャンネル
 
-語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [yorisoi-platform/docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は [yorisoi-platform/docs/stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)。
+語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）。メイン画面上部の「チャンネル」のチップか、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は platform の[関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 | チャンネル | 語り手と話題 | 話しかける場面 | 頻度の既定 | 解説の長さ | 優先する話題 |
 |---|---|---|---|---|---|
@@ -98,16 +98,16 @@ API キーが未設定、AI の呼び出しに失敗した、または 1 日の�
 
 ### 配信されているチャンネル
 
-第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[ADR-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-001-third-party-channel-curation.md)、形式は [API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。本番のリストができるまでは、このボタンは開発者モードのときだけ出る（それまでは内蔵のチャンネルだけ）。
+第三者が配信するチャンネルは、運営（チャンネル管理システム）が審査して署名したものだけを取り込む（[platform ADR-CHANNEL-CURATION（旧 ADR-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md)、形式は [platform API-CHANNEL-LIST（旧 API-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）。設定画面の「配信されているチャンネル・リスト」で扱う。本番のリストができるまでは、このボタンは開発者モードのときだけ出る（それまでは内蔵のチャンネルだけ）。
 
 - リストは URL とリストID（`sc1…`）で足す。リストIDは運営のサイトなど別の方法で確かめたものを入れ、サーバーが返す鍵と照合する（URL からは取らない）。アプリに内蔵のリストは、公開の準備ができてから加わる
 - リストは、アプリの起動時と散策の開始時に、前回から 24 時間たっていれば取得する（画面から手動でも。散策中は取得しない）。署名・期限・巻き戻しを確かめ、だめなら前回のリストを期限まで使う
-- チャンネルのパッケージは「取り込んで使う」を押したときだけ取得し、大きさ・SHA-256・チャンネル提供者の署名を確かめてから使う。使い始める前に、話す量・解説の長さ・1 時間の散歩で AI を呼ぶ回数の目安（多くて 10〜30 回）と、標準のチャンネルより多いかを出し、散策者が「使う」を選んだときだけ切り替える（「使わない」ならパッケージを消す。platform ADR-004 H-9）。新しい版は従量制でない回線のとき自動で、またはボタンで取り込む
+- チャンネルのパッケージは「取り込んで使う」を押したときだけ取得し、大きさ・SHA-256・チャンネル提供者の署名を確かめてから使う。使い始める前に、話す量・解説の長さ・1 時間の散歩で AI を呼ぶ回数の目安（多くて 10〜30 回）と、標準のチャンネルより多いかを出し、散策者が「使う」を選んだときだけ切り替える（「使わない」ならパッケージを消す。platform ADR-AI-ROLES（旧 ADR-004）H-9）。新しい版は従量制でない回線のとき自動で、またはボタンで取り込む
 - 取り下げられたチャンネルは端末から消し、理由を知らせて標準のチャンネルに戻す。リストの期限が切れたリストのチャンネルは使わない。チャンネル提供者の鍵が移し替えられたときは、リストの裏付け（`publisherChange`）があるときだけ新しい版を受け入れ、一度知らせる
 - 配信されているチャンネルの話しかけの頻度や場面はチャンネル提供者が決める（設定画面では変えられない）。天気の急変・日の入りなどの案内と共通の決まりは、どのチャンネルでも同じ
 - 署名の確認には Tink（Ed25519）を使う
 - デバッグ版だけ、`http://localhost`・`http://10.0.2.2`（エミュレータから見た PC）のリストを使える
-- **素材・きっかけ・見せ方**（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)、アプリの第 1 段: 文字と画像）: 配信されているチャンネルは、スポット・地点・出来事（選んだとき・散歩の開始・終了）をきっかけに、同梱の素材や、リストに載った素材集（第三者の素材提供者が作り、審査されたもの）の素材を出せる。見せ方は、読み上げ・発言カード（文字・画像）・通知（チャンネル「チャンネルの案内」）・解説の画面・全画面の画像。解説の画面と全画面はカード・通知をタップしたときだけ開き、全画面は歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える
+- **素材・きっかけ・見せ方**（[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、アプリの第 1 段: 文字と画像）: 配信されているチャンネルは、スポット・地点・出来事（選んだとき・散歩の開始・終了）をきっかけに、同梱の素材や、リストに載った素材集（第三者の素材提供者が作り、審査されたもの）の素材を出せる。見せ方は、読み上げ・発言カード（文字・画像）・通知（チャンネル「チャンネルの案内」）・解説の画面・全画面の画像。解説の画面と全画面はカード・通知をタップしたときだけ開き、全画面は歩いている間（0.5m/s 以上）は開けない。画像には作者・ライセンス・素材提供者を添える
   - 素材は、チャンネルを選んだときにまとめて取得し、端末で確かめてから使う（その後の更新は従量制でない回線のときだけ。映像を除いて 50MB まで）。スポットに近づいてから取得することはない
   - チャンネルが「基準」（種類・タグ）で素材を選ぶときは、今いる地域とその隣の地域（geohash 3 文字、約 150km 四方）に関する素材集と、地域を問わない素材集を、従量制でない回線のときだけ取得する
 - **試用チケット（チャンネル提供者向け）**: 設定画面の一番下の「バージョン」を 7 回タップすると開発者モードになり、管理システムで発行した試用チケットの QR コードを読み込める（Google のコードスキャナを使うので、アプリにカメラの権限は要らない）。チケットのリストを先に足しておく。審査前のチャンネルを 7 日まで試せ、画面では「審査前の試用」、散策では最初に「審査前の試用のチャンネルです」と言う。開発者モードをオフにする・期限が切れると使えなくなる
@@ -218,7 +218,7 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 
-チャンネルの形式（[yorisoi-platform/docs/channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（platform の [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
 
 AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
 

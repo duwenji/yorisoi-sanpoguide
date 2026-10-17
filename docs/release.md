@@ -1,6 +1,6 @@
 # アプリの公開と更新
 
-散策ガイドを Google Play に公開し、版を上げて出すときの手順。運営がアプリの側で受け持つほかの運用（通報の受け方、組み込みのチャンネルの確認、障害のときの判断など）は、yorisoi-platform の[運営の手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/manual/operator.md)にある。
+散策ガイドを Google Play に公開し、版を上げて出すときの手順。運営がアプリの側で受け持つほかの運用（通報の受け方、組み込みのチャンネルの確認、障害のときの判断など）は、[SanpoGuide 運営の手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/operator.md)を参照する。
 
 ## 版を出すとき
 
@@ -34,4 +34,3 @@
 | 段階的な公開の途中 | Play Console で公開を止める（ロールアウトの停止） |
 | すでに全員に出た | 前の版のコードで `versionCode` を上げた版を作り、出し直す（同じ `versionCode` には戻せない） |
 | 組み込みのチャンネルの語りだけが問題 | 該当のチャンネルを直した版を急いで出す。第三者のチャンネルのような取り下げの仕組みはない |
-

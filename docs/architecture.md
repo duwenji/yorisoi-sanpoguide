@@ -11,7 +11,7 @@
 
 チャンネルは、語り手・話題・話す場面・話す量・トーン・背景音をまとめて切り替え、**同じ散歩を違う体験にする**もの。ラジオの局のように散歩の途中でも切り替えられる（コード上の名前 `Station` はこのたとえから）。図 2〜4・7 の流れは、どれも選んでいるチャンネルを見て動く。
 
-関係者は、チャンネルを選んで歩く**散策者**、チャンネルを作る**チャンネル提供者**、チャンネルが使う素材を作る**素材提供者**、そのあいだで審査と署名をする**運営**（[stakeholders.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/stakeholders.md)）。
+関係者は、チャンネルを選んで歩く**散策者**、チャンネルを作る**チャンネル提供者**、チャンネルが使う素材を作る**素材提供者**、そのあいだで審査と署名をする**運営**（platform の[関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)）。
 
 ```mermaid
 flowchart TB
@@ -228,7 +228,7 @@ flowchart LR
 
 ## 図 6 · チャンネル: 選んだチャンネルが、解説・話しかけ・話す判断を変える
 
-考え方は[チャンネルという考え方](#チャンネルという考え方)、設計は [channels.md](channels.md)、形式は [channel-package-format.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)。ここでは、選んだチャンネルがアプリの中でどこに効くかを追う。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまり。
+考え方は[チャンネルという考え方](#チャンネルという考え方)、設計は [channels.md](channels.md)、形式は platform の [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)。ここでは、選んだチャンネルがアプリの中でどこに効くかを追う。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまり。
 
 ```mermaid
 flowchart LR
@@ -254,7 +254,7 @@ flowchart LR
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
 
-チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)、[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)・[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
+チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、[platform API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)・[platform API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
 
 ```mermaid
 flowchart LR
@@ -298,11 +298,11 @@ flowchart LR
 | `settings`  | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値、今日 AI を呼んだ回数                                                                                                                                                                                                                | SettingsRepository, OverrideCodec, TalkLevel, Threshold, AiUsage                                                                                                         |   362 |
 | `history`   | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定                                                                                                                                                                                                                                                | HistoryStore（WalkJson）                                                                                                                                                 |   190 |
 | `station`   | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名、AI の費用の目安、アプリが出せる範囲。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, AiCost, SanpoProfile, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,268 |
-| `material`  | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方、AI の根拠、画像の縮小（[ADR-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-002-material-producers.md)）                                                 | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout, Grounding, MaterialImages                      | 1,123 |
+| `material`  | 素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方、AI の根拠、画像の縮小（[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)）                                                 | Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout, Grounding, MaterialImages                      | 1,123 |
 | `report`    | 問題を知らせるメールの宛先と下書き                                                                                                                                                                                                                                                                                        | Report                                                                                                                                                                   |    55 |
 | (root)        | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ                                                                                                                                                                                                                                                                | SanpoApp                                                                                                                                                                 |   212 |
 
-共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[ADR-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/adr/ADR-003-companion-app-platform.md)）と SanpoGuide のプロンプト・パック:
+共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM（旧 ADR-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
 
 | モジュール                                | パッケージ                                               | 役割                                                                                                                                                                 | 主なファイル                                                                                                                 |  行数 |
 | ----------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----: |
@@ -315,7 +315,7 @@ flowchart LR
 | `yorisoi-platform/kit-mood`             | `…kit.mood`                                           | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方                                                                                             | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice                                                         |   622 |
 | `:prompts`（JVM）                       | `io.github.duwenji.yorisoi.sanpoguide.prompt`          | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本                                                                              | Prompts, StationPrompts, BuiltInChannels, ReviewSamples                                                                      |   290 |
 
-チャンネルの形式（[API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。[API-002](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-list-api.md)）の確認、素材集の形式と参照の解決・地域の計算（[API-004](https://github.com/duwenji/yorisoi-platform/blob/main/docs/material-producer-api.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST（旧 API-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
@@ -323,7 +323,7 @@ flowchart LR
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 話しかけ・解説の文面を変える                               | 枠は `prompts/src/main/resources/sanpoguide/prompts/`（一覧は [prompts.md](prompts.md)）、役割や話題はチャンネルの `sanpoguide/channels/{id}/prompts/`                                                               |
 | 話す条件や優先順位を変える                                 | `companion/TalkDecider.kt` の `rules`（ルールの並びとゲート。場面のテストは `TalkDeciderTest`）。決まったことの実行は `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
-| 組み込みのチャンネルを追加・変更する                       | `prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は [API-003](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-package-format.md)）と、`BuiltInChannels.kt` の `IDS`                  |
+| 組み込みのチャンネルを追加・変更する                       | `prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）と、`BuiltInChannels.kt` の `IDS`                  |
 | チャンネルの形式の確認を変える                             | `yorisoi-platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も                                                                                                                        |
 | チャンネルの設定画面の項目を変える                         | `ui/SettingsScreen.kt` の `StationSettings`・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt`                                                                                                 |
 | 距離・時間・気温などの既定値を変える                       | `settings/Threshold.kt`                                                                                                                                                                                               |
@@ -351,8 +351,8 @@ flowchart LR
 
 ## 計画中: 素材の第 2 段以降
 
-第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）は実装済み。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していない（[channels.md](channels.md)「素材・きっかけ・見せ方」）。審査は [channel-review-policy.md](https://github.com/duwenji/yorisoi-platform/blob/main/docs/channel-review-policy.md) に従い、アプリとは別のチャンネル管理システムで行う。
+第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）は実装済み。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していない（[channels.md](channels.md)「素材・きっかけ・見せ方」）。審査は platform の[チャンネル審査方針](https://github.com/duwenji/yorisoi-platform/blob/main/docs/policies/channel-review.md)に従い、アプリとは別のチャンネル管理システムで行う。
 
 ## 計画中: 位置に紐づく秘密メッセージ
 
-アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-001](https://github.com/duwenji/yorisoi-platform/blob/main/docs/secret-messages-api.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
+アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-SECRET-MESSAGES（旧 API-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
