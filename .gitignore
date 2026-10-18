@@ -8,3 +8,5 @@ keystore.properties
 *.jks
 *.keystore
 release/
+# Walk records pulled from a device for review: routes and AI prompts, never committed.
+history-data/

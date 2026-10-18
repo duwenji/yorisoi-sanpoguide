@@ -214,6 +214,7 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 | `material` | 素材の素材提供者の共通の IF（`Producer`）と組み込みの素材提供者、チャンネルの素材（`ChannelMaterials`）、きっかけの判定（`CueFinder`）と素材への変換（`CuePresenter`）、基準で選ぶ素材提供者（`SelectorProducer`）、見せ方の並べ方（`CueLayout`） |
 | `companion` | 散歩の友の発話（状況を集めてプロンプト変数にする。`WalkCompanion`）、進行中の散歩の状態（チャンネルの切り替えを含む。`WalkSession`）、画面向けの発言・散歩状況（`CompanionFeed`）、天気の取得（`WeatherClient`）、話題にするスポットの選択（`SpotChooser`） |
 | `history` | 散歩の記録の保存（`HistoryStore`。使ったチャンネルの区間を含む） |
+| `diagnostics` | 開発者モードでの散歩の詳しい記録（`WalkDiagnostics`）と書き出し（`WalkExport`）。[docs/walk-diagnostics.md](docs/walk-diagnostics.md) |
 | `settings` | 設定の保存（`SettingsRepository`。選んでいるチャンネルとその変更を含む）、API キーの暗号化（`KeyCipher`）、話しかけの頻度の段階（`TalkLevel`） |
 | `station` | チャンネル（`Station`）、組み込みのチャンネルの読み込み（`BuiltInStations`）、選んでいるチャンネルに散策者の変更を重ねる（`StationRepository`） |
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
@@ -245,6 +246,7 @@ AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追
 - スポットの写真を取得するときは、スポットの Wikidata の ID または Commons のファイル名を Wikimedia に送る。緯度経度は送らない。
 - 保存する散歩は最新 500 件まで。記録画面のゴミ箱アイコンですべて削除できる。
 - 1 分未満で、スポットの案内もなかった散歩は保存しない。
+- 開発者モードで始めた散歩は、位置・話しかけの判定・発言・AI に送ったプロンプトと答え・スポット検索と天気の取得の結果も、別のファイル（`diagnostics/`、最新 30 件）に残す。記録の画面から JSON に書き出せるのは開発者モードのときだけで、保存先は散策者が選ぶ。アプリからは送らない（[docs/walk-diagnostics.md](docs/walk-diagnostics.md)）。
 
 ## 外部サービス
 
