@@ -30,7 +30,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [x] バックアップしない設定を Android 12 以上にも広げる（`dataExtractionRules`。端末間の移行も含めない）
 - [x] プライバシーポリシー（[privacy-policy.md](privacy-policy.md)）を GitHub Pages で公開する: https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy
 - [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告を入れる（答えは [play-console.md](play-console.md)。申告の動画を撮る）
-- [ ] ストアの素材: 512×512 のアイコン、1024×500 のフィーチャー画像、スクリーンショットを作る（内容と説明文は [play-console.md](play-console.md#ストアの掲載情報)）
+- [x] ストアの素材: 512×512 のアイコン、1024×500 のフィーチャー画像、スクリーンショット（`store/`。内容と説明文は [play-console.md](play-console.md#ストアの掲載情報)）
 - [ ] ストアの設定で決めること: 外部マーケティング（Google が Play の外で宣伝してよいか）、公開する国・地域（日本語だけなので日本だけが候補）、有料か無料か（無料から有料には戻せない。有料ならお支払いプロファイルと価格の設定が要る）
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト
 
