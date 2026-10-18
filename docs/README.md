@@ -7,6 +7,7 @@
 | 知りたいこと | 文書 |
 |---|---|
 | アプリの機能と部品のつながり | [構造図](architecture.md) |
+| 主な処理の呼び出しの順番 | [シーケンス図](sequences.md) |
 | チャンネルのアプリ側での動作と実装 | [チャンネルの設計](channels.md) |
 | AI に渡すプロンプトと変更方法 | [プロンプト一覧](prompts.md) |
 | Google Play Console への申告内容 | [Play Console の申告](play-console.md) |
