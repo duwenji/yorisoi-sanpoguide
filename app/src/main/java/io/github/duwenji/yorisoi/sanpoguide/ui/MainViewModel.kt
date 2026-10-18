@@ -383,6 +383,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stopSpeaking() = app.speaker.stop()
 
+    /** The phone cannot read Japanese aloud, so it would read the guide in another language. */
+    val japaneseVoiceMissing: StateFlow<Boolean> = app.speaker.japaneseMissing
+
+    /** Back from the voice settings, the Japanese voice may be there now. */
+    fun recheckVoice() = app.speaker.recheck()
+
     @SuppressLint("MissingPermission")
     private fun locationUpdates() = callbackFlow<Location?> {
         trySend(null)
