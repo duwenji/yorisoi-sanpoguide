@@ -2,6 +2,7 @@ package io.github.duwenji.yorisoi.sanpoguide.ui
 
 import io.github.duwenji.yorisoi.kit.mood.MoodTheme
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -20,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.duwenji.yorisoi.kit.voice.Speaker
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
 import java.io.IOException
@@ -112,6 +114,7 @@ class MainActivity : ComponentActivity() {
                         onOpenLocationSettings = {
                             startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                         },
+                        onOpenVoiceSettings = ::openVoiceSettings,
                         onToggleWalk = { walking ->
                             if (walking) {
                                 WalkService.stop(this)
@@ -144,6 +147,20 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         if (hasLocationPermission) viewModel.recheckLocationSetting()
+        viewModel.recheckVoice()
+    }
+
+    /** The engine's screen for adding voice data, or the text-to-speech settings when it has none. */
+    private fun openVoiceSettings() {
+        try {
+            startActivity(Speaker.installVoiceDataIntent())
+        } catch (e: ActivityNotFoundException) {
+            try {
+                startActivity(Intent(TTS_SETTINGS))
+            } catch (e: ActivityNotFoundException) {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
+        }
     }
 
     private fun requestPermissions() {
@@ -163,5 +180,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** The id of the cue detail a notification opens. */
         const val EXTRA_CUE = "cue"
+
+        /** Android's text-to-speech settings; not in [Settings], and a few phones lack it. */
+        private const val TTS_SETTINGS = "com.android.settings.TTS_SETTINGS"
     }
 }

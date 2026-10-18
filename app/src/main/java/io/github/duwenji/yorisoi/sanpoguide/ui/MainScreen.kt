@@ -92,6 +92,7 @@ fun MainScreen(
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
     onOpenLocationSettings: () -> Unit,
+    onOpenVoiceSettings: () -> Unit,
     onToggleWalk: (walking: Boolean) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenHistory: () -> Unit,
@@ -105,6 +106,7 @@ fun MainScreen(
     val loading by viewModel.loading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val locationOff by viewModel.locationOff.collectAsStateWithLifecycle()
+    val voiceMissing by viewModel.japaneseVoiceMissing.collectAsStateWithLifecycle()
     val walking by viewModel.walking.collectAsStateWithLifecycle()
     val selected by viewModel.selected.collectAsStateWithLifecycle()
     val facilities by viewModel.facilities.collectAsStateWithLifecycle()
@@ -170,6 +172,9 @@ fun MainScreen(
             }
             if (locationOff) {
                 Banner("端末の位置情報がオフのため、現在地を取得できません。タップして設定を開く", onOpenLocationSettings)
+            }
+            if (voiceMissing) {
+                Banner("端末に日本語の読み上げ音声がないため、案内が日本語で読まれません。タップして音声を追加", onOpenVoiceSettings)
             }
             error?.let {
                 Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = Modifier.fillMaxWidth()) {
