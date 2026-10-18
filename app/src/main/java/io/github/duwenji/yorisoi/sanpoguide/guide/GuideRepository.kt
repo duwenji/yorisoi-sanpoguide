@@ -13,6 +13,22 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.yorisoi.sanpoguide.station.Station
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.cancellation.CancellationException
+
+/**
+ * One call to the AI service, for the developer's record of a walk: what was asked, what came
+ * back (or why nothing did) and how long it took. [violation] is what [OutputCheck] found.
+ */
+data class AiCall(
+    val kind: String,
+    val model: String,
+    val system: String,
+    val user: String,
+    val reply: String?,
+    val error: String?,
+    val violation: String?,
+    val ms: Long,
+)
 
 /**
  * The AI service: narrations for spots, cached so each spot is generated (and billed) once, and
@@ -29,6 +45,9 @@ class GuideRepository(
     private val cache = ConcurrentHashMap<String, String>()
     private var client: Pair<GuideSettings, LlmClient>? = null
 
+    /** Hears of every call made, for the developer's record of a walk. */
+    var onCall: (AiCall) -> Unit = {}
+
     /**
      * The AI's narration of [poi] on [channel], whose slots and guide length shape it, written from
      * [grounds] when there are any (API-004「AI の根拠」). Needs an AI set up.
@@ -43,7 +62,8 @@ class GuideRepository(
         val cacheKey = "${settings.provider}/${settings.model()}/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from"
         cache[cacheKey]?.let { return it }
         check(usage.tryUse(settings.dailyAiLimit)) { "The daily limit of AI calls is reached" }
-        val text = clientFor(settings).generate(
+        val text = generate(
+            "guide", settings,
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
             prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds)),
         )
@@ -59,8 +79,25 @@ class GuideRepository(
     suspend fun chat(system: String, user: String): String? {
         val settings = settingsRepo.settings.value
         if (!settings.isConfigured || !usage.tryUse(settings.dailyAiLimit)) return null
-        val text = clientFor(settings).generate(system, user)
+        val text = generate("chat", settings, system, user)
         return if (OutputCheck.violation(text) != null) "" else text
+    }
+
+    private suspend fun generate(kind: String, settings: GuideSettings, system: String, user: String): String {
+        val startedAt = System.currentTimeMillis()
+        fun report(reply: String?, error: String?) = onCall(
+            AiCall(kind, settings.model(), system, user, reply, error, reply?.let(OutputCheck::violation), System.currentTimeMillis() - startedAt),
+        )
+        val text = try {
+            clientFor(settings).generate(system, user)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            report(null, "${e.javaClass.simpleName}: ${e.message}")
+            throw e
+        }
+        report(text, null)
+        return text
     }
 
     @Synchronized

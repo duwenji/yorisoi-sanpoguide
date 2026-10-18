@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.util.Log
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.sanpoguide.companion.CompanionFeed
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.TimingInterceptor
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkDiagnostics
 import io.github.duwenji.yorisoi.kit.geo.weather.WeatherClient
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapTiles
 import io.github.duwenji.yorisoi.kit.geo.OverpassClient
@@ -56,8 +58,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.OkHttpClient
 import org.osmdroid.config.Configuration
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class SanpoApp : Application() {
     /** For work that must outlive a screen or the walk service, such as the end-of-walk summary. */
@@ -101,6 +105,9 @@ class SanpoApp : Application() {
         private set
     lateinit var mood: MoodSource
         private set
+    /** The developer's detailed record of each walk taken in developer mode. */
+    lateinit var diagnostics: WalkDiagnostics
+        private set
     lateinit var photos: SpotPhotos
         private set
     val weather = WeatherClient()
@@ -113,8 +120,9 @@ class SanpoApp : Application() {
         Configuration.getInstance().userAgentValue = "SanpoGuide/${BuildConfig.VERSION_NAME} (Android)"
 
         settings = SettingsRepository(this)
+        diagnostics = WalkDiagnostics(File(filesDir, "diagnostics"))
         // The channel decides which shops to search for; read when searching, after start-up.
-        spots = SpotRepository(OverpassClient(), shops = { stations.current.value.searchedKinds })
+        spots = SpotRepository(OverpassClient(overpassHttp()), shops = { stations.current.value.searchedKinds })
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
         // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
@@ -137,6 +145,13 @@ class SanpoApp : Application() {
         }
         aiUsage = AiUsage.of(this)
         guides = GuideRepository(settings, prompts, aiUsage)
+        guides.onCall = { call ->
+            diagnostics.event(
+                "ai", "kind" to call.kind, "model" to call.model, "ms" to call.ms,
+                "system" to call.system, "user" to call.user, "reply" to call.reply,
+                "error" to call.error, "violation" to call.violation,
+            )
+        }
         speaker = Speaker(this)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
@@ -155,7 +170,11 @@ class SanpoApp : Application() {
                 CommonsPhotoProducer(photos, settings),
                 AmbientProducer(),
                 MoodSceneProducer(),
-            )
+            ),
+            log = { message, e ->
+                Log.w("Producers", message, e)
+                diagnostics.event("producer", "message" to message, "error" to e?.toString())
+            },
         )
         narration = Narration(producers, station = { stations.current.value })
         cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
@@ -205,6 +224,20 @@ class SanpoApp : Application() {
             cueShow.show(CueLayout.of("${fire.key}@$now", cues.present(fire, station, context)), station.name, spotName = null)
         }
     }
+
+    /**
+     * Overpass's own settings (kit-geo's `OverpassClient` defaults) plus a record of each server
+     * tried, so a walk's record shows how often the public servers give up.
+     */
+    private fun overpassHttp(): OkHttpClient = OkHttpClient.Builder()
+        .callTimeout(40, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(
+            TimingInterceptor({ host, status, error, ms ->
+                diagnostics.event("overpass", "host" to host, "status" to status, "error" to error, "ms" to ms)
+            }),
+        )
+        .build()
 
     companion object {
         // A chosen channel becomes the current one at once, unless its package is still being read.

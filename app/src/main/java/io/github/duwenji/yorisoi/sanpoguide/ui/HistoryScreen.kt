@@ -1,6 +1,10 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
 import android.app.Application
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,27 +36,65 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkDiagnostics
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkExport
 import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
-    private val history = (application as SanpoApp).history
-    private val stations = (application as SanpoApp).stations
+    private val app = application as SanpoApp
+    private val history = app.history
+    private val stations = app.stations
     val walks = history.walks
+
+    /** The export is for the developer, to review walks afterwards; it shows only in developer mode. */
+    val developerMode = app.settings.settings.map { it.developerMode }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), app.settings.settings.value.developerMode)
+
+    fun exportFileName(): String = WalkExport.fileName(SimpleDateFormat("yyyyMMdd-HHmm", Locale.JAPAN).format(Date()))
+
+    /** Writes every walk, with its detailed record if it has one, to [uri]; [done] hears how it went. */
+    fun export(uri: Uri, done: (String) -> Unit) {
+        viewModelScope.launch {
+            val message = try {
+                val count = withContext(Dispatchers.IO) {
+                    val walks = history.walks.value
+                    val json = WalkExport.toJson(walks, app.diagnostics::read, BuildConfig.VERSION_NAME, System.currentTimeMillis())
+                    val out = app.contentResolver.openOutputStream(uri) ?: error("Could not open $uri")
+                    out.use { it.write(json.toString().toByteArray(Charsets.UTF_8)) }
+                    walks.size
+                }
+                "${count}件の散歩を書き出しました"
+            } catch (e: Exception) {
+                "書き出せませんでした（${e.message}）"
+            }
+            done(message)
+        }
+    }
 
     fun stationsOf(walk: WalkRecord): String = stations.namesOf(walk)
 
     fun clearAll() {
-        viewModelScope.launch { history.clear() }
+        viewModelScope.launch {
+            history.clear()
+            withContext(Dispatchers.IO) { app.diagnostics.clear() }
+        }
     }
 }
 
@@ -59,7 +102,12 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
 @Composable
 fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
     val walks by viewModel.walks.collectAsStateWithLifecycle()
+    val developerMode by viewModel.developerMode.collectAsStateWithLifecycle()
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri?.let { viewModel.export(it) { message -> Toast.makeText(context, message, Toast.LENGTH_LONG).show() } }
+    }
 
     Scaffold(
         topBar = {
@@ -71,6 +119,11 @@ fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
                     }
                 },
                 actions = {
+                    if (walks.isNotEmpty() && developerMode) {
+                        IconButton(onClick = { exporter.launch(viewModel.exportFileName()) }) {
+                            Icon(Icons.Filled.FileDownload, contentDescription = "記録を書き出す（開発者向け）")
+                        }
+                    }
                     if (walks.isNotEmpty()) {
                         IconButton(onClick = { confirmClear = true }) {
                             Icon(Icons.Filled.DeleteOutline, contentDescription = "記録をすべて削除")
@@ -95,7 +148,11 @@ fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
             }
             item {
                 Text(
-                    "記録はこの端末内にだけ保存されます。",
+                    if (developerMode) {
+                        "記録はこの端末内にだけ保存されます。開発者モードでは、散歩ごとの詳しい記録（位置・判定・AI とのやり取り）も最新 ${WalkDiagnostics.MAX_WALKS} 件まで残り、右上のボタンで書き出せます。"
+                    } else {
+                        "記録はこの端末内にだけ保存されます。"
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp),

@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.sanpoguide.R
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.FacilityAdvice
@@ -30,6 +31,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlanJson
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkSession
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.DiagnosticFields
 import io.github.duwenji.yorisoi.sanpoguide.history.SpotVisit
 import io.github.duwenji.yorisoi.sanpoguide.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
@@ -119,6 +121,7 @@ class WalkService : LifecycleService() {
             // A channel on trial says so first (API-002 試用チケット).
             app.stations.current.value.takeIf { it.source?.trial == true }?.let { s.pendingGreeting = trialNotice(it) + it.manifest.greeting }
             session = s
+            if (app.settings.settings.value.developerMode) startDiagnostics(s)
             app.feed.startWalk(s)
             startLocationUpdates()
             startTicker()
@@ -179,10 +182,32 @@ class WalkService : LifecycleService() {
         app.stations.current.collect { station ->
             val s = session ?: return@collect
             if (s.stations.lastOrNull()?.station == station.key) return@collect
+            app.diagnostics.event("station", "station" to station.key, "level" to station.talkLevel.name)
             s.switchStation(station.key, trialNotice(station) + station.manifest.greeting)
             s.pendingSelect = true
             maybeTalk()
         }
+    }
+
+    /** Developer mode: the walk is recorded in detail, starting with how it was set up. */
+    private fun startDiagnostics(s: WalkSession) {
+        val settings = app.settings.settings.value
+        val station = app.stations.current.value
+        app.diagnostics.start(
+            s.id,
+            listOf(
+                "app" to BuildConfig.VERSION_NAME,
+                "station" to station.key,
+                "level" to station.talkLevel.name,
+                "aiConfigured" to settings.isConfigured,
+                "provider" to settings.provider.name,
+                "model" to settings.model(),
+                "shareLocationWithAi" to settings.shareLocationWithAi,
+                "dailyAiLimit" to settings.dailyAiLimit,
+                "thresholds" to DiagnosticFields.thresholds(settings.thresholds),
+                "plan" to WalkPlanJson.toJson(s.plan),
+            ),
+        )
     }
 
     private fun trialNotice(station: Station) = if (station.source?.trial == true) "審査前の試用のチャンネルです。" else ""
@@ -191,6 +216,12 @@ class WalkService : LifecycleService() {
         val s = session ?: return
         lastLocation = location
         s.onLocation(location)
+        app.diagnostics.event(
+            "location",
+            "lat" to location.latitude, "lon" to location.longitude,
+            "accuracyM" to location.accuracy.toDouble(), "speed" to location.speed.toDouble(),
+            "distanceM" to s.distanceM.toInt(),
+        )
         app.feed.update(s)
         lifecycleScope.launch {
             if (!greeted) {
@@ -206,6 +237,7 @@ class WalkService : LifecycleService() {
                 app.spots.onLocation(location)
             } catch (e: Exception) {
                 Log.w(TAG, "Spot search failed", e)
+                app.diagnostics.event("spot_search_failed", "error" to e.toString())
             }
             maybeTalk()
         }
@@ -220,7 +252,12 @@ class WalkService : LifecycleService() {
         val station = app.stations.current.value
         val now = System.currentTimeMillis()
 
-        when (val decision = TalkDecider.decide(situation(s, location, station, now))) {
+        val situation = situation(s, location, station, now)
+        val decision = TalkDecider.decide(situation)
+        if (decision != TalkDecision.Nothing) {
+            app.diagnostics.event("decision", DiagnosticFields.decision(decision) + DiagnosticFields.situation(situation))
+        }
+        when (decision) {
             is TalkDecision.WeatherTurn -> talk {
                 val change = decision.change
                 // A thunderstorm warning also covers the rain that comes with it.
@@ -371,6 +408,7 @@ class WalkService : LifecycleService() {
      */
     private fun show(s: WalkSession, fire: CueFire, shown: List<Shown>, spotName: String?) {
         val now = System.currentTimeMillis()
+        app.diagnostics.event("cue", "cue" to fire.key, "spot" to spotName, "items" to shown.size)
         app.cueFinder.record(fire, s.shownCues, now)
         app.cueShow.show(CueLayout.of("${fire.key}@$now", shown), app.stations.current.value.name, spotName, ::speakLine)
     }
@@ -405,6 +443,7 @@ class WalkService : LifecycleService() {
         // A line that finishes generating after the walk ended is dropped, so it can't
         // re-post the ongoing walk notification.
         val s = session ?: return
+        app.diagnostics.event("said", "text" to line.text, "spot" to line.spotName, "credit" to line.credit)
         s.remember(line.text)
         app.feed.add(line)
         app.speaker.speak(CueShow.spoken(line))
@@ -412,7 +451,11 @@ class WalkService : LifecycleService() {
     }
 
     private inline fun talk(block: () -> Unit) {
-        if (!talking.tryLock()) return
+        if (!talking.tryLock()) {
+            // The decision is dropped; it comes up again on a later tick if it still holds.
+            app.diagnostics.event("talk_busy")
+            return
+        }
         try {
             block()
         } finally {
@@ -426,8 +469,10 @@ class WalkService : LifecycleService() {
         weatherFetchedAt = now
         weather = try {
             app.weather.current(location.latitude, location.longitude)
+                .also { app.diagnostics.event("weather", DiagnosticFields.weather(it) + ("ms" to System.currentTimeMillis() - now)) }
         } catch (e: Exception) {
             Log.w(TAG, "Weather fetch failed", e)
+            app.diagnostics.event("weather_failed", "error" to e.toString(), "ms" to System.currentTimeMillis() - now)
             weather
         }
         if (session != null) app.feed.updateWeather(weather)
@@ -448,7 +493,10 @@ class WalkService : LifecycleService() {
         } catch (e: IOException) {
             Log.e(TAG, "Could not clear the active walk plan", e)
         }
-        if (record.durationMs < MIN_SAVED_WALK_MS && record.visits.isEmpty()) return
+        if (record.durationMs < MIN_SAVED_WALK_MS && record.visits.isEmpty()) {
+            app.diagnostics.finish(s.id)
+            return
+        }
         val station = app.stations.current.value
         val summarize = station.talksOn(TalkEventKind.FINISH)
         app.appScope.launch {
@@ -457,10 +505,12 @@ class WalkService : LifecycleService() {
                 val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
                 val text = CueShow.textOf(line).orEmpty()
                 app.feed.add(Utterance(System.currentTimeMillis(), text, credit = creditLine(line)))
+                app.diagnostics.event("said", "text" to text, "credit" to creditLine(line), "summary" to true)
                 app.speaker.speak(text)
             }
             // The channel's own cues for the end come after the summary (API-003 `event: finish`).
             app.showEventCues(station, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, MaterialContext(station, null, lastWeather))
+            app.diagnostics.finish(s.id)
         }
     }
 
