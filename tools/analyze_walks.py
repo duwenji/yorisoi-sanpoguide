@@ -104,6 +104,11 @@ def summarize(walk):
     search_failed = sum(1 for e in events if e["type"] == "spot_search_failed")
     if search_failed:
         print(f"   スポット検索がすべてのサーバーで失敗: {search_failed} 回")
+    for e in (e for e in events if e["type"] == "spot_search"):
+        related = [s for s in e["spots"] if s.get("channels")]
+        print(f"   {hhmm(e['t'])} スポット検索（{e['channel']['name']}）: スポット {e['spotCount']} 件・施設 {e['facilityCount']} 件"
+              + (f"（店: {e['shops']}）" if e.get("shops") else "")
+              + (f"・素材のあるスポット: " + "、".join(s["name"] for s in related) if related else ""))
     weather_failed = sum(1 for e in events if e["type"] == "weather_failed")
     if weather_failed:
         print(f"   天気の取得の失敗: {weather_failed} 回")
