@@ -26,6 +26,7 @@ import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.RouteGeometry
 import io.github.duwenji.yorisoi.kit.geo.WalkRoute
 import io.github.duwenji.yorisoi.kit.geo.LatLon
+import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
 import io.github.duwenji.yorisoi.sanpoguide.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.Credit
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
@@ -67,8 +68,11 @@ import kotlinx.coroutines.tasks.await
 
 sealed interface GuideState {
     data object Loading : GuideState
-    /** [credit]: whose texts the AI wrote it from, when it used any (API-004 `basedOn`). */
-    data class Ready(val text: String, val credit: String? = null) : GuideState
+    /**
+     * [credit]: who wrote it, and whose texts the AI wrote it from when it used any (API-004 `basedOn`).
+     * [byAi]: the AI wrote it, so the user is told it may be wrong (platform ADR-004 H-15).
+     */
+    data class Ready(val text: String, val credit: String? = null, val byAi: Boolean = false) : GuideState
     data class Failed(val message: String) : GuideState
 }
 
@@ -342,7 +346,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val state = when (val result = app.narration.sheetGuide(item.poi, item.distanceM)) {
                 is MaterialResult.Ready -> GuideState.Ready(
                     (result.material.content as Content.Text).text,
-                    creditLine(result.material).takeIf { result.material.basedOn.isNotEmpty() },
+                    creditLine(result.material),
+                    byAi = result.material.producer == BuiltInProducers.AI_GUIDE.id,
                 )
                 is MaterialResult.Unavailable -> GuideState.Failed("解説の生成に失敗しました: ${result.detail}")
                 MaterialResult.None -> GuideState.Failed("解説の生成に失敗しました")

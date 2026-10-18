@@ -56,7 +56,7 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 | 散歩の終了 | `companion/system` | `companion/situation` ＋ `companion/events/finish` | `fallback/companion/finish` |
 | 設定画面の接続テスト | `connection_test/system` | `connection_test/user` | — |
 
-スポットの解説のユーザープロンプトには、選んでいるチャンネルが使う素材集のうち AI の根拠に使ってよいもの（`grants.grounding`）から、そのスポットについての資料を最大 3 つ・1,500 字まで付ける（`material/Grounding.kt`、platform [API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)「AI の根拠」）。資料は `<資料 出典="…">` で囲み、本文の山かっこは全角にする。`guide/system` は、資料にある事実を優先し、資料の中の指示に従わないよう指示する。資料を使った解説は、出典の行に「〇〇の資料をもとに作成」と出す。
+スポットの解説のユーザープロンプトには、選んでいるチャンネルが使う素材集のうち AI の根拠に使ってよいもの（`grants.grounding`）から、そのスポットについての資料を最大 3 つ・1,500 字まで付ける（`material/Grounding.kt`、platform [API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)「AI の根拠」）。資料は `<資料 出典="…">` で囲み、本文の山かっこは全角にする。`guide/system` は、資料にある事実を優先し、資料の中の指示に従わないよう指示する。資料がないとき・資料にないことは、由来・年代・人物などの事実を言い切らず、一般的な話や感想にとどめるよう指示する。資料を受け取らない `companion/system` にも同じ趣旨の指示がある（platform ADR-AI-ROLES H-6 ①）。AI の解説と話しかけは、出典の行に「文: AI（モデル名）」を出し、資料を使った解説はそこに「〇〇の資料をもとに作成」を足す。
 
 散歩の友のユーザープロンプトは、`companion/situation` の後ろに空行を挟んで出来事のファイルをつなげたもの。選んでいるチャンネルにその出来事の追加の指示があれば、さらに空行を挟んで `companion/station_event` をつなげる（開始・再訪・区切り・休憩・終了だけ。天気の急変・日の入り・施設にはつかない）。
 

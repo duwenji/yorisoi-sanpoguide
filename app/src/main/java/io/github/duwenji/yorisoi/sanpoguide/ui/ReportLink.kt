@@ -25,3 +25,6 @@ fun ReportLink(target: ReportTarget, said: Pair<Long, String>?, label: String) {
         }
     }) { Text(label) }
 }
+
+/** Shown with the AI's narration and its settings: what it says may be wrong (platform ADR-004 H-15). */
+const val AI_MAY_BE_WRONG = "AI の発言には誤りがありえます。事実は、現地の案内板や公式の情報で確かめてください"

@@ -34,6 +34,7 @@ import io.github.duwenji.yorisoi.sanpoguide.history.SpotVisit
 import io.github.duwenji.yorisoi.sanpoguide.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
 import io.github.duwenji.yorisoi.sanpoguide.material.CueLayout
+import io.github.duwenji.yorisoi.sanpoguide.material.Material
 import io.github.duwenji.yorisoi.sanpoguide.material.MaterialContext
 import io.github.duwenji.yorisoi.sanpoguide.material.Shown
 import io.github.duwenji.yorisoi.sanpoguide.material.Subject
@@ -227,7 +228,7 @@ class WalkService : LifecycleService() {
                 val line = app.narration.line(TalkEvent.WeatherTurn(change), s, weather)
                 // Without earphones the spoken warning goes unheard; lightning is worth a sound.
                 if (change.kind == WeatherChangeKind.THUNDER) {
-                    getSystemService(NotificationManager::class.java).notify(ALERT_NOTIFICATION_ID, alertNotification(line))
+                    getSystemService(NotificationManager::class.java).notify(ALERT_NOTIFICATION_ID, alertNotification(CueShow.textOf(line).orEmpty()))
                 }
                 speakLine(line)
             }
@@ -336,12 +337,12 @@ class WalkService : LifecycleService() {
         val shown = fire?.let { present(s, it, station) }.orEmpty()
         val past = app.history.visitsTo(poi, excludingWalk = s.id)
         // The AI, else a fixed line (a short "nearby" one when the AI failed), shown with its credit.
-        val guide = if (shown.isEmpty() && past.isEmpty()) app.narration.spotGuide(poi, distanceM) else null
-        val text = when {
-            shown.isNotEmpty() -> textOf(shown) ?: poi.name
-            guide != null -> CueShow.textOf(guide) ?: poi.name
+        val said = when {
+            shown.isNotEmpty() -> null
+            past.isEmpty() -> app.narration.spotGuide(poi, distanceM)
             else -> app.narration.line(TalkEvent.Revisit(poi, past), s, weather)
         }
+        val text = (if (said == null) textOf(shown) else CueShow.textOf(said)) ?: poi.name
         s.visits += SpotVisit(
             poi.id, poi.name, poi.category, System.currentTimeMillis(), text, poi.lat, poi.lon,
             station = app.stations.current.value.key,
@@ -353,7 +354,7 @@ class WalkService : LifecycleService() {
             .notify(SPOT_NOTIFICATION_ID, spotNotification(poi, text))
         when {
             fire != null && shown.isNotEmpty() -> show(s, fire, shown, poi.name)
-            guide != null -> speakLine(Utterance(System.currentTimeMillis(), text, poi.name, credit = creditLine(guide).takeIf { guide.basedOn.isNotEmpty() }))
+            said != null -> speakLine(Utterance(System.currentTimeMillis(), text, poi.name, credit = creditLine(said)))
             else -> speakLine(text, poi.name)
         }
     }
@@ -395,6 +396,10 @@ class WalkService : LifecycleService() {
     }
 
     private fun speakLine(text: String, spotName: String? = null) = speakLine(Utterance(System.currentTimeMillis(), text, spotName))
+
+    /** A line from a producer, with its credit, so the AI's lines show they are the AI's (platform ADR-004 H-15). */
+    private fun speakLine(line: Material) =
+        speakLine(Utterance(System.currentTimeMillis(), CueShow.textOf(line).orEmpty(), credit = creditLine(line)))
 
     private fun speakLine(line: Utterance) {
         // A line that finishes generating after the walk ended is dropped, so it can't
@@ -450,8 +455,9 @@ class WalkService : LifecycleService() {
             app.history.save(record)
             if (summarize) {
                 val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
-                app.feed.add(Utterance(System.currentTimeMillis(), line))
-                app.speaker.speak(line)
+                val text = CueShow.textOf(line).orEmpty()
+                app.feed.add(Utterance(System.currentTimeMillis(), text, credit = creditLine(line)))
+                app.speaker.speak(text)
             }
             // The channel's own cues for the end come after the summary (API-003 `event: finish`).
             app.showEventCues(station, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, MaterialContext(station, null, lastWeather))
