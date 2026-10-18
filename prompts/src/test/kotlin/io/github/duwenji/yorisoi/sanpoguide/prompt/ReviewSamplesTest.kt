@@ -26,7 +26,7 @@ class ReviewSamplesTest {
     fun `a companion line is the situation, the event and the channel's instructions`() {
         val situation = mapOf(
             "now" to "10月4日（土）8:30", "time_of_day" to "朝", "season" to "秋", "weather" to null, "mood" to null,
-            "walk" to null, "last_walk" to null, "recent" to null, "location" to null,
+            "walk" to null, "last_walk" to null, "recent" to null, "location" to null, "plan" to null,
         )
         val plain = StationPrompts.companionUser(prompts, situation, Prompts.Event.START, emptyMap(), null)
         assertEquals(prompts.render(Prompts.Talk.SITUATION, situation) + "\n\n" + prompts.render(Prompts.event(Prompts.Event.START)), plain)
