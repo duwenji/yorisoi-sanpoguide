@@ -30,9 +30,12 @@ object Shorthand {
 
 /** Asks [producers] for the material the walk and the screens use, on the channel [station] returns. */
 class Narration(private val producers: Producers, private val station: () -> Station) {
-    /** The companion's line for [event]; always a line, since the fixed lines can't fail. */
-    suspend fun line(event: TalkEvent, session: WalkSession?, weather: Weather?): String =
-        text(Shorthand.COMPANION, request(Subject.Event(event), MaterialType.TEXT, session, weather))
+    /** The companion's line for [event], with its credit to show; always a line, since the fixed lines can't fail. */
+    suspend fun line(event: TalkEvent, session: WalkSession?, weather: Weather?): Material =
+        when (val result = producers.first(Shorthand.COMPANION, request(Subject.Event(event), MaterialType.TEXT, session, weather))) {
+            is MaterialResult.Ready -> result.material
+            else -> error("No text from ${Shorthand.COMPANION}: $result")
+        }
 
     /** A spot's narration when the walk reaches it, with its credit to show. */
     suspend fun spotGuide(poi: Poi, distanceM: Int?): Material =
@@ -73,10 +76,4 @@ class Narration(private val producers: Producers, private val station: () -> Sta
 
     private fun request(subject: Subject, type: MaterialType, session: WalkSession? = null, weather: Weather? = null) =
         MaterialRequest(subject, type, MaterialContext(station(), session, weather))
-
-    private suspend fun text(sources: List<String>, request: MaterialRequest): String =
-        when (val result = producers.first(sources, request)) {
-            is MaterialResult.Ready -> (result.material.content as Content.Text).text
-            else -> error("No text from $sources: $result")
-        }
 }

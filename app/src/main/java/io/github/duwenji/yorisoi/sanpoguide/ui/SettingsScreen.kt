@@ -100,6 +100,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionTitle("AIサービス")
+            Text(
+                AI_MAY_BE_WRONG, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Column(Modifier.selectableGroup()) {
                 Provider.entries.forEach { p ->
                     Row(
