@@ -19,7 +19,7 @@
 ## 図と表の読み方
 
 - **参加者の番号（P01〜P36）**: 図の上に並ぶ参加者（Node）には、下の[参加者一覧](#参加者一覧)の番号を付けている。同じ部品は、どの図でも同じ番号になる。
-- **ステップの番号（例: 3-12）**: 図の矢印に付いた丸数字が、その図の中のステップ番号。表では「図の番号-ステップ番号」で書く。3-12 は図 3 の ⑫。
+- **ステップの番号（例: 3-12）**: 図の矢印の文の先頭に「図の番号-ステップ番号」で書いている。表の番号と同じで、3-12 は図 3 の 12 番目の矢印。
 - **送り手 → 受け手**: 矢印の根元と先の参加者の番号。P12 → P12 のように同じ番号なら、自分の中の処理。
 - **コード**: パスは `app/src/main/java/io/github/duwenji/yorisoi/sanpoguide/` からの相対。`yorisoi-platform/…` は共通の部品（別のリポジトリ）。
 
@@ -72,7 +72,6 @@ DI ライブラリは使わず、`SanpoApp.onCreate()` が部品を順に作る�
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant OS as P02 Android
   participant App as P17 SanpoApp
   participant Set as P18 SettingsRepository
@@ -82,22 +81,22 @@ sequenceDiagram
   participant Repo as P19 StationRepository
   participant Hist as P24 HistoryStore
 
-  OS->>App: onCreate()
-  App->>Set: 設定を読む
-  App->>TP: 作る（端末に保存済みのチャンネルを出す）
-  App->>Repo: 組み込みのチャンネル + TP.stations + 設定
-  App->>TP: refreshIfDue()
-  TP-)Sync: refreshDue()（裏で、1 件ずつ）
+  OS->>App: 1-1 onCreate()
+  App->>Set: 1-2 設定を読む
+  App->>TP: 1-3 作る（端末に保存済みのチャンネルを出す）
+  App->>Repo: 1-4 組み込みのチャンネル + TP.stations + 設定
+  App->>TP: 1-5 refreshIfDue()
+  TP-)Sync: 1-6 refreshDue()（裏で、1 件ずつ）
   opt 24 時間たったリストだけ
-    Sync->>List: 発見の文書・リスト
-    List-->>Sync: 署名つきの文書
-    Sync->>Sync: 署名・期限・順番を確かめ、取り下げを消す
+    Sync->>List: 1-7 発見の文書・リスト
+    List-->>Sync: 1-8 署名つきの文書
+    Sync->>Sync: 1-9 署名・期限・順番を確かめ、取り下げを消す
   end
-  Sync-->>TP: 使えるチャンネル
-  TP-->>Repo: stations が変わる
-  App->>App: GuideRepository・Speaker・MoodSource・WalkCompanion<br/>Producers・Narration・CueFinder・CuePresenter・CueShow を作る
-  App-)Hist: load()
-  App->>OS: 通知チャンネルを 4 つ登録
+  Sync-->>TP: 1-10 使えるチャンネル
+  TP-->>Repo: 1-11 stations が変わる
+  App->>App: 1-12 GuideRepository・Speaker・MoodSource・WalkCompanion<br/>Producers・Narration・CueFinder・CuePresenter・CueShow を作る
+  App-)Hist: 1-13 load()
+  App->>OS: 1-14 通知チャンネルを 4 つ登録
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
@@ -126,7 +125,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor W as P01 散策者
   participant Act as P07 MainActivity
   participant VM as P08 MainViewModel
@@ -138,22 +136,22 @@ sequenceDiagram
   participant Feed as P26 CompanionFeed
   participant Loc as P03 位置情報
 
-  W->>Act: 「散策」
-  Act->>VM: プランの下書き・おすすめのスポット
-  W->>Act: プランで開始 / プランなしで開始
-  Act->>WS: WalkService.start(plan)
-  WS->>Plan: save(plan)
-  WS->>OS: startForegroundService（プランを Intent に入れる）
-  OS->>WS: onStartCommand()
-  WS->>OS: startForeground（常駐の通知「いってらっしゃい」）
-  WS->>TP: refreshIfDue()（散歩中は取りに行かない）
-  WS->>Sess: WalkSession(plan)・startStation(current)
+  W->>Act: 2-1 「散策」
+  Act->>VM: 2-2 プランの下書き・おすすめのスポット
+  W->>Act: 2-3 プランで開始 / プランなしで開始
+  Act->>WS: 2-4 WalkService.start(plan)
+  WS->>Plan: 2-5 save(plan)
+  WS->>OS: 2-6 startForegroundService（プランを Intent に入れる）
+  OS->>WS: 2-7 onStartCommand()
+  WS->>OS: 2-8 startForeground（常駐の通知「いってらっしゃい」）
+  WS->>TP: 2-9 refreshIfDue()（散歩中は取りに行かない）
+  WS->>Sess: 2-10 WalkSession(plan)・startStation(current)
   opt 試用のチャンネル
-    WS->>Sess: pendingGreeting = 試用の断り + あいさつ
+    WS->>Sess: 2-11 pendingGreeting = 試用の断り + あいさつ
   end
-  WS->>Feed: startWalk(session)
-  WS->>Loc: 10 秒・10m ごとの位置の更新
-  WS->>WS: タイマー・背景音・チャンネルの見張りを始める
+  WS->>Feed: 2-12 startWalk(session)
+  WS->>Loc: 2-13 10 秒・10m ごとの位置の更新
+  WS->>WS: 2-14 タイマー・背景音・チャンネルの見張りを始める
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
@@ -182,7 +180,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant Loc as P03 位置情報
   participant Tick as P13 タイマー
   participant WS as P12 WalkService
@@ -197,39 +194,39 @@ sequenceDiagram
   participant Hist as P24 HistoryStore
 
   alt 位置の更新
-    Loc->>WS: onLocation()
-    WS->>Sess: onLocation()（距離・経路・とどまり）
+    Loc->>WS: 3-1 onLocation()
+    WS->>Sess: 3-2 onLocation()（距離・経路・とどまり）
     opt 最初の位置
-      WS->>Wx: 天気・日の入り
-      WS->>Nar: line(Start)
-      WS->>Out: 開始の一言のあと、start のきっかけ（図 5）
+      WS->>Wx: 3-3 天気・日の入り
+      WS->>Nar: 3-4 line(Start)
+      WS->>Out: 3-5 開始の一言のあと、start のきっかけ（図 5）
     end
-    WS->>Spots: onLocation()（300m 動いたら検索し直す）
+    WS->>Spots: 3-6 onLocation()（300m 動いたら検索し直す）
   else タイマー
-    Tick->>WS: 30 秒ごと
-    WS->>Wx: 15 分たっていれば取り直す
+    Tick->>WS: 3-7 30 秒ごと
+    WS->>Wx: 3-8 15 分たっていれば取り直す
   end
-  WS->>WS: maybeTalk()
+  WS->>WS: 3-9 maybeTalk()
   alt 読み上げ中
-    WS-->>WS: 何もしない（次の判定で）
+    WS-->>WS: 3-10 何もしない（次の判定で）
   else
-    WS->>WS: situation()（60m 以内のスポット・きっかけ・経過・間隔）
-    WS->>TD: decide(situation)
-    TD-->>WS: TalkDecision
+    WS->>WS: 3-11 situation()（60m 以内のスポット・きっかけ・経過・間隔）
+    WS->>TD: 3-12 decide(situation)
+    TD-->>WS: 3-13 TalkDecision
     Note over WS,TD: スポットは図 4、地点のきっかけは図 5<br/>ここでは一言で済む決定（天気・日の入り・施設・休憩・区切り）
-    WS->>Nar: line(TalkEvent)
-    Nar->>Prod: first([AI の話しかけ, 定型文])
-    Prod->>AI: chat()（キーあり・上限内のとき）
+    WS->>Nar: 3-14 line(TalkEvent)
+    Nar->>Prod: 3-15 first([AI の話しかけ, 定型文])
+    Prod->>AI: 3-16 chat()（キーあり・上限内のとき）
     alt 返事が使える
-      AI-->>Prod: 文
+      AI-->>Prod: 3-17 文
     else キーなし・上限・失敗・連絡先を含む
-      Prod->>Prod: 定型文（fallback/）
+      Prod->>Prod: 3-18 定型文（fallback/）
     end
-    Prod-->>Nar: Ready（文と作者）
-    Nar-->>WS: Material
-    WS->>Out: speakLine()：カード・読み上げ・常駐の通知
+    Prod-->>Nar: 3-19 Ready（文と作者）
+    Nar-->>WS: 3-20 Material
+    WS->>Out: 3-21 speakLine()：カード・読み上げ・常駐の通知
     opt 区切り
-      WS->>Hist: saveProgress()
+      WS->>Hist: 3-22 saveProgress()
     end
   end
 ```
@@ -269,7 +266,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant WS as P12 WalkService
   participant Sess as P14 WalkSession
   participant Cue as P35 CuePresenter
@@ -281,35 +277,35 @@ sequenceDiagram
   participant Feed as P26 CompanionFeed
   participant Out as P36 出力
 
-  WS->>Sess: talkedAbout に足す
+  WS->>Sess: 4-1 talkedAbout に足す
   opt きっかけがある（SpotCue）
-    WS->>Cue: present(fire)（図 5）
-    Cue-->>WS: 見せるもの（空のこともある）
+    WS->>Cue: 4-2 present(fire)（図 5）
+    Cue-->>WS: 4-3 見せるもの（空のこともある）
   end
-  WS->>Hist: visitsTo(poi)（今回の散歩を除く）
+  WS->>Hist: 4-4 visitsTo(poi)（今回の散歩を除く）
   alt きっかけで見せるものがある
     Note over WS: 解説は作らない
   else 初めてのスポット
-    WS->>Nar: spotGuide(poi)
-    Nar->>Prod: first([AI の解説, 定型文])
-    Prod->>GR: guideFor(poi, channel, 根拠)
+    WS->>Nar: 4-5 spotGuide(poi)
+    Nar->>Prod: 4-6 first([AI の解説, 定型文])
+    Prod->>GR: 4-7 guideFor(poi, channel, 根拠)
     alt キャッシュにある
-      GR-->>Prod: 前に作った解説（数えない）
+      GR-->>Prod: 4-8 前に作った解説（数えない）
     else
-      GR->>AI: generate(guide/system, guide/user)
-      AI-->>GR: 解説
-      GR->>GR: OutputCheck・キャッシュ
+      GR->>AI: 4-9 generate(guide/system, guide/user)
+      AI-->>GR: 4-10 解説
+      GR->>GR: 4-11 OutputCheck・キャッシュ
     end
-    Prod-->>Nar: 解説（失敗したら短い「近くに◯◯」）
-    Nar-->>WS: Material
+    Prod-->>Nar: 4-12 解説（失敗したら短い「近くに◯◯」）
+    Nar-->>WS: 4-13 Material
   else 前の散歩で来た
-    WS->>Nar: line(Revisit)
+    WS->>Nar: 4-14 line(Revisit)
   end
-  WS->>Sess: visits に足す
-  WS->>Feed: update・guide(poi)
-  WS->>Hist: saveProgress()
-  WS->>Out: スポットの通知（1 枠を使い回す）
-  WS->>Out: きっかけを見せる / 文を読み上げる
+  WS->>Sess: 4-15 visits に足す
+  WS->>Feed: 4-16 update・guide(poi)
+  WS->>Hist: 4-17 saveProgress()
+  WS->>Out: 4-18 スポットの通知（1 枠を使い回す）
+  WS->>Out: 4-19 きっかけを見せる / 文を読み上げる
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
@@ -343,7 +339,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant WS as P12 WalkService
   participant Find as P34 CueFinder
   participant Pres as P35 CuePresenter
@@ -351,21 +346,21 @@ sequenceDiagram
   participant Show as P16 CueShow
   participant Out as P36 出力
 
-  WS->>Find: spot() / point() / events()
-  Find->>Find: repeat を見る（散歩ごと・1 日 1 回・1 回だけ）
-  Find-->>WS: CueFire
-  WS->>Pres: present(fire, channel, context)
+  WS->>Find: 5-1 spot() / point() / events()
+  Find->>Find: 5-2 repeat を見る（散歩ごと・1 日 1 回・1 回だけ）
+  Find-->>WS: 5-3 CueFire
+  WS->>Pres: 5-4 present(fire, channel, context)
   loop 見せ方ごと・項目ごと
     loop 候補の順に
-      Pres->>P: produce(request)
-      P-->>Pres: Ready / None / Unavailable
+      Pres->>P: 5-5 produce(request)
+      P-->>Pres: 5-6 Ready / None / Unavailable
     end
     Note over Pres: 見せ方に合う最初の Ready を使う<br/>第 2・3 段（音声・映像）は飛ばす
   end
-  Pres-->>WS: 見せるもの
-  WS->>Find: record(fire)（cues.json）
-  WS->>Show: show(CueLayout)
-  Show->>Out: 読み上げ・発言カード・通知
+  Pres-->>WS: 5-7 見せるもの
+  WS->>Find: 5-8 record(fire)（cues.json）
+  WS->>Show: 5-9 show(CueLayout)
+  Show->>Out: 5-10 読み上げ・発言カード・通知
   Note over Out: 解説の画面と全画面の画像はタップしたときだけ開く
 ```
 
@@ -392,7 +387,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor W as P01 散策者
   participant UI as P09 解説パネル
   participant VM as P08 MainViewModel
@@ -404,38 +398,38 @@ sequenceDiagram
   participant Wiki as P06 Wikimedia
   participant Out as P36 出力
 
-  W->>UI: スポットをタップ
-  UI->>VM: select(spot)
-  VM->>UI: 読み込み中・ルートの対象にする
-  VM->>Nar: peekSheetPhoto()（写真なし・Wi-Fi 待ちならすぐわかる）
+  W->>UI: 6-1 スポットをタップ
+  UI->>VM: 6-2 select(spot)
+  VM->>UI: 6-3 読み込み中・ルートの対象にする
+  VM->>Nar: 6-4 peekSheetPhoto()（写真なし・Wi-Fi 待ちならすぐわかる）
   par 解説
-    VM->>Nar: sheetGuide(spot)
-    Nar->>Prod: first([AI の解説])
+    VM->>Nar: 6-5 sheetGuide(spot)
+    Nar->>Prod: 6-6 first([AI の解説])
     opt AI が設定済み
-      Prod->>GR: guideFor()
-      GR->>AI: generate()（キャッシュになければ）
-      AI-->>GR: 解説
-      GR-->>Prod: 解説 / 上限・失敗
+      Prod->>GR: 6-7 guideFor()
+      GR->>AI: 6-8 generate()（キャッシュになければ）
+      AI-->>GR: 6-9 解説
+      GR-->>Prod: 6-10 解説 / 上限・失敗
     end
-    Prod-->>Nar: MaterialResult
+    Prod-->>Nar: 6-11 MaterialResult
     opt キーなし・上限
-      Nar->>Prod: first([定型文])
-      Prod-->>Nar: 地図のタグからの要約
+      Nar->>Prod: 6-12 first([定型文])
+      Prod-->>Nar: 6-13 地図のタグからの要約
     end
-    Nar-->>VM: 解説と作者 / 失敗
-    VM->>UI: 解説
+    Nar-->>VM: 6-14 解説と作者 / 失敗
+    VM->>UI: 6-15 解説
   and 写真（手がかりがあるときだけ）
-    VM->>Nar: sheetPhoto(spot)
-    Nar->>Ph: photoFor()
-    Ph->>Wiki: 写真を探す
-    Wiki-->>Ph: 画像・作者・ライセンス
-    Ph-->>Nar: 写真
-    Nar-->>VM: 写真と作者
-    VM->>UI: 写真
+    VM->>Nar: 6-16 sheetPhoto(spot)
+    Nar->>Ph: 6-17 photoFor()
+    Ph->>Wiki: 6-18 写真を探す
+    Wiki-->>Ph: 6-19 画像・作者・ライセンス
+    Ph-->>Nar: 6-20 写真
+    Nar-->>VM: 6-21 写真と作者
+    VM->>UI: 6-22 写真
   end
-  W->>UI: 読み上げボタン
-  UI->>VM: speak()
-  VM->>Out: 読み上げ
+  W->>UI: 6-23 読み上げボタン
+  UI->>VM: 6-24 speak()
+  VM->>Out: 6-25 読み上げ
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
@@ -472,7 +466,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor W as P01 散策者
   participant VM as P11 ChannelsViewModel
   participant TP as P20 ThirdPartyChannels
@@ -483,30 +476,30 @@ sequenceDiagram
   participant Repo as P19 StationRepository
   participant Set as P18 SettingsRepository
 
-  W->>VM: 使う
-  VM->>TP: install(list, channel)
-  TP->>Sync: install()（IO スレッドで 1 件ずつ）
-  Sync->>Sync: 有効なリストか・形式・アプリで出せる範囲・必要な版
-  Sync->>Prov: パッケージ（ZIP）
-  Prov-->>Sync: バイト列
-  Sync->>Sync: 大きさと SHA-256 がリストと一致するか
-  Sync->>Val: checkArchive()（チャンネル提供者の署名・形式）
-  Val-->>Sync: Ok / Rejected
-  Sync->>Store: writePackage()
-  Sync->>Prov: 素材集・外部の素材（前もって取得）
-  Sync->>Store: 確かめて保存
-  Sync-->>TP: 使えるチャンネル
-  TP-->>Repo: stations が変わる
-  VM->>Repo: 一覧に入るのを待つ
-  VM->>W: AI の費用の目安（AiCost）
+  W->>VM: 7-1 使う
+  VM->>TP: 7-2 install(list, channel)
+  TP->>Sync: 7-3 install()（IO スレッドで 1 件ずつ）
+  Sync->>Sync: 7-4 有効なリストか・形式・アプリで出せる範囲・必要な版
+  Sync->>Prov: 7-5 パッケージ（ZIP）
+  Prov-->>Sync: 7-6 バイト列
+  Sync->>Sync: 7-7 大きさと SHA-256 がリストと一致するか
+  Sync->>Val: 7-8 checkArchive()（チャンネル提供者の署名・形式）
+  Val-->>Sync: 7-9 Ok / Rejected
+  Sync->>Store: 7-10 writePackage()
+  Sync->>Prov: 7-11 素材集・外部の素材（前もって取得）
+  Sync->>Store: 7-12 確かめて保存
+  Sync-->>TP: 7-13 使えるチャンネル
+  TP-->>Repo: 7-14 stations が変わる
+  VM->>Repo: 7-15 一覧に入るのを待つ
+  VM->>W: 7-16 AI の費用の目安（AiCost）
   alt 使う
-    W->>VM: confirmUse()
-    VM->>Set: stationId を保存
-    Set-->>Repo: current が変わる
+    W->>VM: 7-17 confirmUse()
+    VM->>Set: 7-18 stationId を保存
+    Set-->>Repo: 7-19 current が変わる
     Note over Repo: 散歩の外なら select のきっかけ（SanpoApp）<br/>散歩中なら図 8
   else やめる
-    W->>VM: cancelUse()
-    VM->>TP: uninstall()（パッケージも消す）
+    W->>VM: 7-20 cancelUse()
+    VM->>TP: 7-21 uninstall()（パッケージも消す）
   end
 ```
 
@@ -543,7 +536,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor W as P01 散策者
   participant Pick as P10 StationPicker
   participant VM as P08 MainViewModel
@@ -554,20 +546,20 @@ sequenceDiagram
   participant TD as P15 TalkDecider
   participant Out as P36 出力
 
-  W->>Pick: チャンネルを選ぶ
-  Pick->>VM: chooseStation(id)
-  VM->>Set: stationId を保存
-  Set-->>Repo: settings が変わる
-  Repo-->>WS: current が変わる（watchStations）
+  W->>Pick: 8-1 チャンネルを選ぶ
+  Pick->>VM: 8-2 chooseStation(id)
+  VM->>Set: 8-3 stationId を保存
+  Set-->>Repo: 8-4 settings が変わる
+  Repo-->>WS: 8-5 current が変わる（watchStations）
   alt 同じチャンネル（key が同じ）
-    WS-->>WS: 切り替えとみなさない
+    WS-->>WS: 8-6 切り替えとみなさない
   else
-    WS->>Sess: switchStation(key, あいさつ)・pendingSelect
-    WS->>WS: maybeTalk()
-    WS->>TD: decide()
-    TD-->>WS: Greeting（天気の急変だけが先）
-    WS->>Out: あいさつ（AI なし）
-    WS->>Out: select のきっかけ（図 5）
+    WS->>Sess: 8-7 switchStation(key, あいさつ)・pendingSelect
+    WS->>WS: 8-8 maybeTalk()
+    WS->>TD: 8-9 decide()
+    TD-->>WS: 8-10 Greeting（天気の急変だけが先）
+    WS->>Out: 8-11 あいさつ（AI なし）
+    WS->>Out: 8-12 select のきっかけ（図 5）
   end
   Note over WS,TD: このあと 1 分はスポット案内と休憩・区切りを控える
 ```
@@ -597,7 +589,6 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
   actor W as P01 散策者
   participant WS as P12 WalkService
   participant Loc as P03 位置情報
@@ -608,22 +599,22 @@ sequenceDiagram
   participant Nar as P29 Narration
   participant Out as P36 出力
 
-  W->>WS: 終了（通知 / メイン画面）
+  W->>WS: 9-1 終了（通知 / メイン画面）
   Note over WS: onDestroy()
-  WS->>Loc: 位置の更新を止める（背景音も止める）
-  WS->>Feed: endWalk()
-  WS->>Plan: clear()
+  WS->>Loc: 9-2 位置の更新を止める（背景音も止める）
+  WS->>Feed: 9-3 endWalk()
+  WS->>Plan: 9-4 clear()
   alt 1 分未満でスポットもない
-    WS-->>WS: 記録しない
+    WS-->>WS: 9-5 記録しない
   else
-    WS-)App: launch
-    App->>Hist: save(record)
+    WS-)App: 9-6 launch
+    App->>Hist: 9-7 save(record)
     opt チャンネルが終了で話す
-      App->>Nar: line(Finish)
-      Nar-->>App: まとめの一言
-      App->>Out: カード・読み上げ
+      App->>Nar: 9-8 line(Finish)
+      Nar-->>App: 9-9 まとめの一言
+      App->>Out: 9-10 カード・読み上げ
     end
-    App->>Out: finish のきっかけ（図 5）
+    App->>Out: 9-11 finish のきっかけ（図 5）
   end
 ```
 
