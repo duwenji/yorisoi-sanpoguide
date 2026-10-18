@@ -86,7 +86,7 @@ object ReviewSamples {
 
     private val firstWalk = mapOf(
         "walk" to mapOf("minutes" to 0, "km" to "0.0", "spots" to null),
-        "last_walk" to null, "recent" to null, "location" to null,
+        "last_walk" to null, "recent" to null, "location" to null, "plan" to null,
     )
 
     private val morningSunny = firstWalk + mapOf(
@@ -108,6 +108,6 @@ object ReviewSamples {
             "spots" to "源氏山公園", "week_count" to 2, "today_number" to null,
         ),
         "recent" to mapOf("lines" to listOf("段葛の参道は、春は桜が見事なんですよ。")),
-        "location" to null,
+        "location" to null, "plan" to null,
     )
 }
