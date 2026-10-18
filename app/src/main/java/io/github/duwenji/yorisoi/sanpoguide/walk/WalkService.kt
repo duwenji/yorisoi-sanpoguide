@@ -62,6 +62,7 @@ import kotlinx.coroutines.sync.Mutex
 import java.io.IOException
 import org.json.JSONException
 import org.json.JSONObject
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Walk mode: tracks the walk in the foreground and lets the companion talk — a greeting,
@@ -234,7 +235,23 @@ class WalkService : LifecycleService() {
                 }
             }
             try {
+                val answersBefore = app.overpassAnswers
                 app.spots.onLocation(location)
+                // Looking up every channel's materials for each spot is for the record only.
+                if (app.overpassAnswers != answersBefore && app.diagnostics.recording) {
+                    app.diagnostics.event(
+                        "spot_search",
+                        listOf("lat" to location.latitude, "lon" to location.longitude) + DiagnosticFields.spotSearch(
+                            app.spots.spots.value.map { it to it.distanceFrom(location) },
+                            app.spots.facilities.value,
+                            app.stations.current.value,
+                            app.stations.all,
+                        ),
+                    )
+                }
+            } catch (e: CancellationException) {
+                // The walk ended while the search waited or ran; not a failed search.
+                throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Spot search failed", e)
                 app.diagnostics.event("spot_search_failed", "error" to e.toString())

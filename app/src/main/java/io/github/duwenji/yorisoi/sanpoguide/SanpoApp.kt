@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.util.Log
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.sanpoguide.companion.CompanionFeed
+import io.github.duwenji.yorisoi.sanpoguide.diagnostics.DiagnosticFields
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.TimingInterceptor
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkDiagnostics
 import io.github.duwenji.yorisoi.kit.geo.weather.WeatherClient
@@ -62,6 +63,7 @@ import okhttp3.OkHttpClient
 import org.osmdroid.config.Configuration
 import java.io.File
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class SanpoApp : Application() {
     /** For work that must outlive a screen or the walk service, such as the end-of-walk summary. */
@@ -227,17 +229,29 @@ class SanpoApp : Application() {
 
     /**
      * Overpass's own settings (kit-geo's `OverpassClient` defaults) plus a record of each server
-     * tried, so a walk's record shows how often the public servers give up.
+     * tried, so a walk's record shows how often the public servers give up, where each query
+     * searched and how much came back.
      */
     private fun overpassHttp(): OkHttpClient = OkHttpClient.Builder()
         .callTimeout(40, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(
-            TimingInterceptor({ host, status, error, ms ->
-                diagnostics.event("overpass", "host" to host, "status" to status, "error" to error, "ms" to ms)
+            TimingInterceptor({ request, status, error, ms, body ->
+                if (body != null) overpassAnswerCount.incrementAndGet()
+                diagnostics.event(
+                    "overpass",
+                    listOf("host" to request.url.host, "status" to status, "error" to error, "ms" to ms) +
+                        DiagnosticFields.overpassQuery(request) +
+                        (body?.let(DiagnosticFields::overpassAnswer) ?: emptyList()),
+                )
             }),
         )
         .build()
+
+    private val overpassAnswerCount = AtomicInteger()
+
+    /** How many answers Overpass has given; a change across `spots.onLocation` means it searched. */
+    val overpassAnswers: Int get() = overpassAnswerCount.get()
 
     companion object {
         // A chosen channel becomes the current one at once, unless its package is still being read.

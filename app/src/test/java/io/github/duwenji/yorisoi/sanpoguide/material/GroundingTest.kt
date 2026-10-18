@@ -133,4 +133,14 @@ class GroundingTest {
         assertEquals(true, GuidePrompt.spotVars(hachimangu, 30, grounds = listOf(ground))["grounded"])
         assertEquals(false, GuidePrompt.spotVars(hachimangu, 30)["grounded"])
     }
+
+    @Test
+    fun `the record lists the cues and the collection's resources about a spot, and nothing for another`() {
+        val station = station(JSONArray().put(text("intro")), mapOf("intro" to "本宮は石段の上にあります。"))
+        val found = SpotMaterials.of(station, hachimangu)!!
+        assertEquals(listOf(SpotMaterials.SpotCue("hachimangu", "spot")), found.cues)
+        val r = found.resources.single()
+        assertEquals(listOf("collection", "kamakura", "kamakura-guide", "intro"), listOf(r.source, r.alias, r.collection?.id, r.id))
+        assertEquals(null, SpotMaterials.of(station, elsewhere))
+    }
 }
