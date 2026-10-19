@@ -7,6 +7,8 @@
     inside      利用者がスポットの敷地内にいるなら true
     tags        OpenStreetMap のタグ（"key=value" のリスト。解説に役立つものだけ）
     coords      スポットの緯度経度（例: 35.32580, 139.55620）。設定で位置情報を AI に送らないときは null
+    mood        いまの雰囲気。チャンネルが話し方を雰囲気に合わせない（mood.tone）ときは null
+      summary     季節・時間帯・空模様・場所をまとめたもの（例: 秋の夕方、雨、寺社の近く）
     grounded    資料があるなら true
     grounds     このスポットについての資料（素材提供者の資料のうち、AI の根拠に使ってよいもの。yorisoi-platform/docs/material-producer-api.md「AI の根拠」）。
                 各要素は source（素材提供者名）と text（本文。山かっこは全角にしてある）。ないときは null
@@ -25,6 +27,9 @@
 利用者からの距離: 約{{distance_m}}m
 {{/distance_m}}
 {{/inside}}
+{{#mood}}
+いまの雰囲気: {{summary}}
+{{/mood}}
 OpenStreetMapのタグ:
 {{#tags}}
 - {{.}}
