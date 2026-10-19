@@ -178,10 +178,10 @@ flowchart LR
   MS --> Theme["配色・書体<br/>kit-mood/MoodTheme"]
   MS --> Scene["カード上部の絵<br/>kit-mood/MoodScene"]
   MS --> Sound["背景音の選択<br/>kit-mood/SoundscapeChoice"]
-  MS --> Tone["話しかけのトーン<br/>WalkCompanion"]
+  MS --> Tone["話しかけと解説のトーン<br/>WalkCompanion・Narration"]
 ```
 
-設定の「画面を雰囲気に合わせる」をオフにすると、配色・絵は雰囲気を使わなくなる。話しかけのトーンに使うかはチャンネルの設定（`mood.tone`）で決まる。背景音は、チャンネルの背景音が「自動」のときに雰囲気から選ぶ。
+設定の「画面を雰囲気に合わせる」をオフにすると、配色・絵は雰囲気を使わなくなる。話しかけとスポット解説のトーンに使うかはチャンネルの設定（`mood.tone`）で決まる。背景音は、チャンネルの背景音が「自動」のときに雰囲気から選ぶ。
 
 ## 図 5 · 地図: ルートと向き
 

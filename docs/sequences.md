@@ -288,7 +288,7 @@ sequenceDiagram
   else 初めてのスポット
     WS->>Nar: 4-5 spotGuide(poi)
     Nar->>Prod: 4-6 first([AI の解説, 定型文])
-    Prod->>GR: 4-7 guideFor(poi, channel, 根拠)
+    Prod->>GR: 4-7 guideFor(poi, channel, 根拠, 雰囲気)
     alt キャッシュにある
       GR-->>Prod: 4-8 前に作った解説（数えない）
     else
@@ -318,7 +318,7 @@ sequenceDiagram
 | 4-6 | P29 → P30 | 候補「AI の解説 → 定型文」の順に頼む。AI の解説（作る素材提供者）への要求にだけ、素材集の資料を根拠として添える（同じスポットについての資料、3 件・1,500 字まで。前もって取得したものだけ）。 | `Producers.first(Shorthand.SPOT_GUIDE)`・`groundedFor()`・`Grounding.collect()` |
 | 4-7 | P30 → P32 | AI が未設定なら呼ばずに「キーなし」で次の候補へ。設定済みなら解説を頼む。 | `AiGuideProducer`・`GuideRepository.guideFor()` |
 | 4-8 | P32 → P30 | キャッシュの鍵（AI サービス・モデル・チャンネルの key・解説の長さ・スポット・位置情報を送る設定・根拠）が一致すれば、前に作った解説を返す。上限に達していても返せ、回数にも数えない。 | `GuideRepository.cache` |
-| 4-9 | P32 → P05 | 上限内なら 1 回数えてから生成する。system はチャンネルの解説の役割・重点・長さ、user はスポットの名前・種類・距離・タグ、設定がオンなら緯度経度、根拠。 | `AiUsage.tryUse()`・`GuidePrompt.spotVars()`・`LlmClient.generate()` |
+| 4-9 | P32 → P05 | 上限内なら 1 回数えてから生成する。system はチャンネルの解説の役割・重点・長さ、user はスポットの名前・種類・距離・タグ、チャンネルが `mood.tone` なら雰囲気、設定がオンなら緯度経度、根拠。 | `AiUsage.tryUse()`・`GuidePrompt.spotVars()`・`LlmClient.generate()` |
 | 4-10 | P05 → P32 | 解説の文。 | — |
 | 4-11 | P32 → P32 | 連絡先を含む返事は例外にして使わない。使える解説はキャッシュに入れる。 | `OutputCheck.violation()` |
 | 4-12 | P30 → P29 | AI の解説なら作者「AI（モデル名）」と、根拠にした素材提供者を付けて返す。AI が失敗したら、定型文の短い「近くに◯◯があります」（`fallback/nearby`）。AI が未設定なら地図のタグからの要約（`fallback/guide`）。 | `AiGuideProducer`・`FallbackTextProducer` |

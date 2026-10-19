@@ -44,7 +44,8 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
         return failing(TAG) {
             // Over the limit, a narration made before still comes from the cache; a new one doesn't.
             val text = try {
-                guides.guideFor(spot.poi, spot.distanceM, request.context.station, request.grounding)
+                val station = request.context.station
+                guides.guideFor(spot.poi, spot.distanceM, station, request.grounding, request.context.mood?.takeIf { station.moodTone })
             } catch (e: IllegalStateException) {
                 if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e
             }

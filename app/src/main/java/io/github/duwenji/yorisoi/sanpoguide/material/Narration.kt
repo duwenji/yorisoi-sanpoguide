@@ -28,8 +28,11 @@ object Shorthand {
     val AMBIENT = listOf(BuiltInProducers.AMBIENT.id)
 }
 
-/** Asks [producers] for the material the walk and the screens use, on the channel [station] returns. */
-class Narration(private val producers: Producers, private val station: () -> Station) {
+/**
+ * Asks [producers] for the material the walk and the screens use, on the channel [station] returns.
+ * A spot's narration is asked for in the current [mood].
+ */
+class Narration(private val producers: Producers, private val station: () -> Station, private val mood: () -> Mood? = { null }) {
     /** The companion's line for [event], with its credit to show; always a line, since the fixed lines can't fail. */
     suspend fun line(event: TalkEvent, session: WalkSession?, weather: Weather?): Material =
         when (val result = producers.first(Shorthand.COMPANION, request(Subject.Event(event), MaterialType.TEXT, session, weather))) {
@@ -39,7 +42,7 @@ class Narration(private val producers: Producers, private val station: () -> Sta
 
     /** A spot's narration when the walk reaches it, with its credit to show. */
     suspend fun spotGuide(poi: Poi, distanceM: Int?): Material =
-        when (val result = producers.first(Shorthand.SPOT_GUIDE, request(Subject.Spot(poi, distanceM), MaterialType.TEXT))) {
+        when (val result = producers.first(Shorthand.SPOT_GUIDE, spotRequest(poi, distanceM))) {
             is MaterialResult.Ready -> result.material
             else -> error("No text from ${Shorthand.SPOT_GUIDE}: $result")
         }
@@ -49,7 +52,7 @@ class Narration(private val producers: Producers, private val station: () -> Sta
      * is looking and can try again), so the fixed line stands in only when no AI is set up.
      */
     suspend fun sheetGuide(poi: Poi, distanceM: Int?): MaterialResult {
-        val request = request(Subject.Spot(poi, distanceM), MaterialType.TEXT)
+        val request = spotRequest(poi, distanceM)
         val ai = producers.first(listOf(BuiltInProducers.AI_GUIDE.id), request)
         if (ai !is MaterialResult.Unavailable || ai.reason !in FIXED_LINE_INSTEAD) return ai
         return producers.first(listOf(BuiltInProducers.FALLBACK_TEXT.id), request.copy(context = request.context.copy(after = ai)))
@@ -76,4 +79,7 @@ class Narration(private val producers: Producers, private val station: () -> Sta
 
     private fun request(subject: Subject, type: MaterialType, session: WalkSession? = null, weather: Weather? = null) =
         MaterialRequest(subject, type, MaterialContext(station(), session, weather))
+
+    private fun spotRequest(poi: Poi, distanceM: Int?) =
+        MaterialRequest(Subject.Spot(poi, distanceM), MaterialType.TEXT, MaterialContext(station(), mood = mood()))
 }

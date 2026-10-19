@@ -178,7 +178,7 @@ class SanpoApp : Application() {
                 diagnostics.event("producer", "message" to message, "error" to e?.toString())
             },
         )
-        narration = Narration(producers, station = { stations.current.value })
+        narration = Narration(producers, station = { stations.current.value }, mood = { mood.mood.value })
         cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
         cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE)
         cueShow = CueShow(this, feed, speaker)

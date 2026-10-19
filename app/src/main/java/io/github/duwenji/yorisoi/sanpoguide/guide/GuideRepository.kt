@@ -5,6 +5,7 @@ import io.github.duwenji.yorisoi.kit.llm.LlmClient
 import io.github.duwenji.yorisoi.kit.llm.ClaudeClient
 import io.github.duwenji.yorisoi.kit.llm.OpenAiCompatibleClient
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.material.Ground
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
@@ -50,14 +51,16 @@ class GuideRepository(
 
     /**
      * The AI's narration of [poi] on [channel], whose slots and guide length shape it, written from
-     * [grounds] when there are any (API-004「AI の根拠」). Needs an AI set up.
+     * [grounds] when there are any (API-004「AI の根拠」), in the tone of [mood] when given. Needs
+     * an AI set up.
      */
-    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station, grounds: List<Ground> = emptyList()): String {
+    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station, grounds: List<Ground> = emptyList(), mood: Mood? = null): String {
         val settings = settingsRepo.settings.value
         check(settings.isConfigured) { "No AI service is set up" }
         val share = settings.shareLocationWithAi
         // Each channel narrates in its own way, so a narration made for one isn't reused by another;
-        // nor is one written before a collection's new version gave other grounds.
+        // nor is one written before a collection's new version gave other grounds. The mood only
+        // sets the tone, so a narration isn't made (and billed) again when it changes.
         val from = grounds.joinToString(",") { "${it.collection}@${it.version}#${it.resource}" }
         val cacheKey = "${settings.provider}/${settings.model()}/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from"
         cache[cacheKey]?.let { return it }
@@ -65,7 +68,7 @@ class GuideRepository(
         val text = generate(
             "guide", settings,
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
-            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds)),
+            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds, mood)),
         )
         OutputCheck.violation(text)?.let { error("The narration has $it") }
         cache[cacheKey] = text

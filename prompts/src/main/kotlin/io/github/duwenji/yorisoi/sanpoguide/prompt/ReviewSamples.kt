@@ -29,7 +29,7 @@ object ReviewSamples {
         val companionSystem = prompts.render(Prompts.Talk.SYSTEM, StationPrompts.companionSystemVars(slots))
 
         fun guide(id: String, label: String, spot: Map<String, Any?>) =
-            ReviewSample(id, label, guideSystem, prompts.render(Prompts.Guide.USER, spot))
+            ReviewSample(id, label, guideSystem, prompts.render(Prompts.Guide.USER, spot + ("mood" to midWalk["mood"].takeIf { manifest.moodTone })))
 
         fun talk(id: String, label: String, event: Prompts.Event, situation: Map<String, Any?>, eventVars: Map<String, Any?> = emptyMap()) =
             ReviewSample(
