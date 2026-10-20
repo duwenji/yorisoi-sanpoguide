@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.2.1"
 
         // The operator's AI (platform API-AI-RELAY): no relay until production's is deployed, so
         // release builds offer only the user's own key for now.
