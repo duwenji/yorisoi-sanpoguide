@@ -371,7 +371,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             TestResult(test)
 
             Text(
-                "運営の AI では、解説と話しかけに使う情報が運営の中継を通って AI サービスに送られます。中継は内容を保存しません。\n" +
+                (if (viewModel.operatorAiAvailable) "運営の AI では、解説と話しかけに使う情報が運営の中継を通って AI サービスに送られます。中継は内容を保存しません。\n" else "") +
                     "APIキーはこの端末内に暗号化して保存され、選択したAIサービスへの通信にのみ使われます。" +
                     "利用料金は、そのAPIキーのアカウントに請求されます。\n" +
                     "散歩の記録はこの端末内にだけ保存されます。\n" +
@@ -493,23 +493,22 @@ private fun ThresholdField(t: Threshold, value: Int, valid: Boolean, onChange: (
     )
 }
 
-/** How the AI is reached (platform ADR-AI-RELAY R-1, R-11): the operator's AI or the user's own key. */
+/**
+ * How the AI is reached (platform ADR-AI-RELAY R-1, R-11): the operator's AI or the user's own key.
+ * A build without a relay shows nothing: only the own key, as before.
+ */
 @Composable
 private fun AiRouteChoice(route: AiRoute, viewModel: SettingsViewModel) {
+    if (!viewModel.operatorAiAvailable) return
     val quota by viewModel.relayQuota.collectAsStateWithLifecycle()
-    val available = viewModel.operatorAiAvailable
     Column(Modifier.selectableGroup()) {
         RouteOption(
             selected = route == AiRoute.OPERATOR,
-            enabled = available,
-            title = GuideSettings.OPERATOR_AI_NAME + if (available) "（設定不要）" else "（この版ではまだ使えません）",
-            detail = if (!available) {
-                "自分の APIキーを使ってください"
-            } else {
-                "運営が費用を持ち、1 日に使える回数が決まっています。" +
-                    (quota?.let { "今日の残りは ${it.remaining} 回（1 日 ${it.limit} 回まで）。" }.orEmpty()) +
-                    "使い切った日は、決まった文で案内します（天気の急変・日の入りなどの案内は続けます）"
-            },
+            enabled = true,
+            title = GuideSettings.OPERATOR_AI_NAME + "（設定不要）",
+            detail = "運営が費用を持ち、1 日に使える回数が決まっています。" +
+                (quota?.let { "今日の残りは ${it.remaining} 回（1 日 ${it.limit} 回まで）。" }.orEmpty()) +
+                "使い切った日は、決まった文で案内します（天気の急変・日の入りなどの案内は続けます）",
             onClick = { viewModel.selectRoute(AiRoute.OPERATOR) },
         )
         RouteOption(
