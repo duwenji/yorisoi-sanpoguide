@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
+import io.github.duwenji.yorisoi.kit.llm.RelayQuota
 import io.github.duwenji.yorisoi.kit.geo.map.FacilityItem
 import io.github.duwenji.yorisoi.kit.geo.map.MapTiles
 import io.github.duwenji.yorisoi.kit.geo.map.RouteToSpot
@@ -97,6 +98,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val location: StateFlow<Location?> = app.spots.location
     val walking: StateFlow<Boolean> = WalkService.walking
     val settings: StateFlow<GuideSettings> = app.settings.settings
+    /** The operator's AI: today's calls as the relay last reported them (ADR-AI-RELAY R-11). */
+    val relayQuota: StateFlow<RelayQuota?> = app.relay?.quota ?: MutableStateFlow(null)
 
     val mood: StateFlow<Mood> = app.mood.mood
 

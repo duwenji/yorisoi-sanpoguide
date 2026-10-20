@@ -62,7 +62,7 @@ flowchart LR
     station["station<br/>StationRepository・Station<br/>← sanpoguide/channels/（yorisoi-platform/core-format で確認）<br/>station/remote: ThirdPartyChannels・ChannelSync"]
     material["material<br/>Producers・Narration・Grounding<br/>CueFinder・CuePresenter・ChannelMaterials"]
     data["kit-geo<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・WeatherClient・GoogleMapTiles"]
-    guide["guide・kit-llm・kit-voice<br/>GuideRepository・OutputCheck・Speaker<br/>LlmClient・Provider"]
+    guide["guide・kit-llm・kit-voice<br/>GuideRepository・OperatorAi・OutputCheck・Speaker<br/>LlmClient・Provider・RelayClient"]
     companion["companion<br/>TalkDecider・WalkCompanion・CompanionFeed<br/>WeatherChange ほか"]
     sound["kit-voice<br/>AmbientPlayer・Voices<br/>※ WalkService が生成"]
   end
@@ -71,7 +71,7 @@ flowchart LR
     Overpass["Overpass API<br/>スポット・施設"]
     OSRM["FOSSGIS OSRM<br/>徒歩ルート"]
     Wikimedia["Wikimedia<br/>写真"]
-    AI["AI サービス<br/>Claude / OpenAI 互換 API"]
+    AI["AI サービス<br/>運営の AI の中継 / Claude / OpenAI 互換 API"]
     OpenMeteo["Open-Meteo<br/>天気・予報・日の入り"]
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
     GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
@@ -126,9 +126,10 @@ flowchart LR
 - チャンネルを切り替えると、次に話すのは新しいチャンネルの一言（`WalkSession.pendingGreeting`）。その後 1 分はスポット案内と休憩・区切りを控える（`WalkSession.justSwitched()`）。
 - チャンネルのきっかけ（スポット・地点）は、チャンネルが「話題」や「話す場面」で除いているスポットでも出す（チャンネルが意図して置いたため）。どちらも、とどまっている間と切り替えの直後は出さない。スポットのきっかけは、スポット案内の間隔（`TalkLevel.spotGapMs`）も守る。散歩の開始・終了のきっかけは開始・終了の一言のあとに出す。
 - 読み上げ中は判定しない（`Speaker.isSpeaking` と `Mutex` で 1 件ずつ）。
-- AI を呼ぶのは 1 日に設定の上限まで（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる。`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。上限に達したら定型文にする。
+- AI へのつなぎ方は 2 つ（`GuideSettings.aiRoute`。platform ADR-AI-RELAY）。**運営の AI**（`OPERATOR`）は運営の中継（platform API-AI-RELAY）を `RelayClient` で呼び、キーは要らない。**自分の APIキー**（`OWN_KEY`）は選んだ AI サービスを端末から直接呼ぶ。保存された値がないときは、キーを入れていれば自分の APIキー、なければ運営の AI（`GuideSettings.defaultRoute`）。中継の URL はビルドの種類で決まり（`BuildConfig.AI_RELAY_URL`。デバッグ版は開発用、リリース版は本番の中継ができるまで空）、空なら運営の AI は選べない。インストール ID とセッションは `ai_relay` の設定に置く（`guide/OperatorAi`）。Play Integrity の判定は `BuildConfig.PLAY_CLOUD_PROJECT_NUMBER` が 0 でないときだけ付ける
+- AI を呼ぶのは 1 日に設定の上限まで（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる。`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。運営の AI では、中継が数える 1 日の上限（`RelayClient.quota`）にも従う。どちらかの上限に達したら定型文にする。
 - AI の返事に URL・メールアドレス・電話番号があれば使わず、定型文にする（`guide/OutputCheck`。全角の数字・記号は半角にそろえてから見る）。
-- AI の解説と話しかけには、根拠の有無にかかわらず作者「文: AI（モデル名）」を添える（`material/creditLine`）。定型文には付けない。
+- AI の解説と話しかけには、根拠の有無にかかわらず作者を添える。運営の AI は「文: 運営の AI」、自分の APIキーは「文: AI（モデル名）」（`material/creditLine`）。定型文には付けない。
 - 記録の保存は、スポット案内・距離の区切り・散歩の終了のときに行う。区切りで話さないチャンネルでも、区切りの時点で保存だけはする。
 
 ### スポットが近くに複数あるとき
@@ -147,7 +148,7 @@ flowchart LR
 
 ## 図 3 · スポット解説: 地図でスポットをタップしたとき
 
-解説と写真は別々に取りに行く。解説は「AI サービス・モデル・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
+解説と写真は別々に取りに行く。解説は「つなぎ方（運営の AI か、AI サービスとモデル）・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
 
 チャンネルが使う素材集のうち、素材提供者が AI の根拠にすることを認めたもの（`grants.grounding`）に同じスポットについての資料があれば、それを根拠として AI に渡す（`material/Grounding`。3 件・1,500 字まで。前もって取得した分だけを読み、そのために取得はしない）。根拠を使った解説には、もとにした素材提供者を添える。解説パネルには、AI の発言には誤りがありうることも出す（`ui/ReportLink.kt` の `AI_MAY_BE_WRONG`）。
 
@@ -295,7 +296,7 @@ flowchart LR
 | `ui`        | Compose の 4 画面、発言カード、チャンネルの選択、配信されているチャンネルとリスト・試用チケット・AI の費用の目安、きっかけの解説の画面と全画面の画像、問題を知らせる入口、ViewModel                                                                                                                                       | MainScreen, SettingsScreen, ChannelsScreen, StationPicker, CueViews, CompanionCard, ReportLink, MainViewModel                                                            | 2,626 |
 | `companion` | 散歩の友の発話、散歩中の状態（チャンネルの切り替えを含む）、画面向けの発言、天気の急変判定、施設案内の判定、話題にするスポットの選択                                                                                                                                                                                      | TalkDecider, WalkCompanion, WalkSession, CompanionFeed, SpotChooser, FacilityAdvisor, WeatherChange                                                                      |   838 |
 | `walk`      | 散策モードのフォアグラウンドサービス。いつ何を話すかを決める。きっかけの読み上げ・カード・通知                                                                                                                                                                                                                            | WalkService, CueShow                                                                                                                                                     |   591 |
-| `guide`     | スポット解説とキャッシュ、AI サービスへの接続の生成、使わない返事（連絡先を含む）の判定                                                                                                                                                                                                                                   | GuideRepository, GuidePrompt, OutputCheck                                                                                                                                |   159 |
+| `guide`     | スポット解説とキャッシュ、AI サービス・運営の AI への接続の生成、使わない返事（連絡先を含む）の判定                                                                                                                                                                                                                                   | GuideRepository, GuidePrompt, OutputCheck                                                                                                                                |   159 |
 | `settings`  | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値、今日 AI を呼んだ回数                                                                                                                                                                                                                | SettingsRepository, OverrideCodec, TalkLevel, Threshold, AiUsage                                                                                                         |   362 |
 | `history`   | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定                                                                                                                                                                                                                                                | HistoryStore（WalkJson）                                                                                                                                                 |   190 |
 | `station`   | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名、AI の費用の目安、アプリが出せる範囲。`station/remote` は第三者のチャンネル: リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット | Station, BuiltInStations, StationRepository, StationLabels, AiCost, SanpoProfile, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519 | 1,268 |
@@ -311,7 +312,7 @@ flowchart LR
 | `yorisoi-platform/core-format`（JVM）   | `io.github.duwenji.yorisoi.core.format`・`.material` | チャンネル・素材集の形式と確認、署名、リストの文書、語彙（スポットの種類・出来事など）                                                                               | StationValidator, StationManifest, Cues, ProviderDocuments, CollectionReferences, Collections, Resources, Regions            | 2,330 |
 | `yorisoi-platform/core-prompt`（JVM）   | `…core.prompt`                                        | プロンプトのテンプレート                                                                                                                                             | PromptTemplates                                                                                                              |    90 |
 | `yorisoi-platform/kit-voice`            | `io.github.duwenji.yorisoi.kit.voice`                  | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生                                                                                                            | Speaker, AmbientPlayer, Voices, Soundscape                                                                                   |   500 |
-| `yorisoi-platform/kit-llm`              | `…kit.llm`                                            | AI サービスの抽象と実装、API キーの暗号化                                                                                                                            | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, KeyCipher                                                       |   221 |
+| `yorisoi-platform/kit-llm`              | `…kit.llm`                                            | AI サービスの抽象と実装、運営の AI の中継のクライアント、API キーの暗号化                                                                                              | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, RelayClient, KeyCipher                                          |   221 |
 | `yorisoi-platform/kit-geo`              | `…kit.geo`・`.weather`・`.map`                    | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
 | `yorisoi-platform/kit-companion`（JVM） | `…kit.companion`                                      | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する                                                    | TalkEngine, TalkRule, TalkGates                                                                                              |    42 |
 | `yorisoi-platform/kit-mood`             | `…kit.mood`                                           | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方                                                                                             | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice                                                         |   622 |

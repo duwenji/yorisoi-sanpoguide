@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
 import io.github.duwenji.yorisoi.kit.geo.map.FacilityItem
 import io.github.duwenji.yorisoi.kit.geo.map.MapTiles
 import io.github.duwenji.yorisoi.kit.geo.map.RouteToSpot
@@ -167,8 +168,12 @@ fun MainScreen(
                 // The scene is part of walk mode, not something to look at while walking.
                 CompanionCard(liveWalk, lines, scene = mood.takeIf { settings.moodEnabled && walking }, onOpen = viewModel::openCue)
             }
+            val relayQuota by viewModel.relayQuota.collectAsStateWithLifecycle()
             if (!settings.isConfigured) {
-                Banner("AIのAPIキーが未設定のため、簡易解説で動作しています。タップして設定", onOpenSettings)
+                val why = if (settings.aiRoute == AiRoute.OPERATOR) "この版では運営の AI を使えない" else "AIのAPIキーが未設定の"
+                Banner("${why}ため、簡易解説で動作しています。タップして設定", onOpenSettings)
+            } else if (settings.aiRoute == AiRoute.OPERATOR && relayQuota?.exhausted() == true) {
+                Banner("今日の運営の AI の回数を使い切りました。日付が変わるまで、決まった文で案内します。タップして設定", onOpenSettings)
             }
             if (locationOff) {
                 Banner("端末の位置情報がオフのため、現在地を取得できません。タップして設定を開く", onOpenLocationSettings)

@@ -7,6 +7,8 @@ import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.kit.llm.GuideException
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
 import io.github.duwenji.yorisoi.kit.llm.Provider
+import io.github.duwenji.yorisoi.kit.llm.RelayQuota
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
@@ -45,6 +47,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     /** Today's AI calls, shown beside the limit. */
     val aiCallsToday: StateFlow<Int> = (application as SanpoApp).aiUsage.count
 
+    private val relay = (application as SanpoApp).relay
+    /** Whether this build can use the operator's AI (ADR-AI-RELAY). */
+    val operatorAiAvailable: Boolean = relay != null
+    /** The operator's AI: today's calls as the relay last reported them. */
+    val relayQuota: StateFlow<RelayQuota?> = relay?.quota ?: MutableStateFlow(null)
+
+    /** Asks the relay for today's calls, without using one; quietly keeps the last answer on failure. */
+    fun refreshQuota() {
+        val r = relay ?: return
+        viewModelScope.launch {
+            try {
+                r.refreshQuota()
+            } catch (e: GuideException) {
+                // Shown by the connection test when the user asks.
+            }
+        }
+    }
+
     /** Saved at once (not part of the draft). */
     val developerMode: StateFlow<Boolean> = repo.settings.map { it.developerMode }
         .stateIn(viewModelScope, SharingStarted.Eagerly, repo.settings.value.developerMode)
@@ -65,6 +85,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         clearTest()
     }
 
+    fun selectRoute(route: AiRoute) = edit { it.copy(aiRoute = route) }
     fun selectProvider(p: Provider) = edit { it.copy(provider = p) }
     fun setApiKey(key: String) = edit { it.copy(apiKeys = it.apiKeys + (it.provider to key)) }
     fun setModel(model: String) = edit { it.copy(models = it.models + (it.provider to model)) }
@@ -112,6 +133,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun runTest() {
         val settings = _draft.value
+        if (settings.aiRoute == AiRoute.OPERATOR) {
+            testRelay()
+            return
+        }
         if (!settings.isConfigured) {
             _test.value = TestState.Failed("APIキーとモデル名（カスタムの場合は接続先URLも）を入力してください")
             return
@@ -130,6 +155,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 TestState.Failed(e.message.orEmpty())
             } catch (e: Exception) {
                 TestState.Failed("接続に失敗しました: ${e.message}")
+            }
+        }
+    }
+
+    /** The operator's AI: asks for today's calls, which opens a session without using a call. */
+    private fun testRelay() {
+        val r = relay ?: run {
+            _test.value = TestState.Failed("この版では運営の AI を使えません。自分の APIキーを使ってください")
+            return
+        }
+        testJob?.cancel()
+        testJob = viewModelScope.launch {
+            _test.value = TestState.Running
+            _test.value = try {
+                val q = r.refreshQuota()
+                TestState.Success("今日の残り ${q.remaining} 回")
+            } catch (e: GuideException) {
+                TestState.Failed(e.message.orEmpty())
             }
         }
     }

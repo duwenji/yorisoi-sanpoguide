@@ -18,6 +18,8 @@ import org.junit.Test
 class StoredNamesTest {
     @Test
     fun `settings store these enum names`() {
+        // `ai_route`
+        assertEquals(listOf("OPERATOR", "OWN_KEY"), AiRoute.entries.map { it.name })
         // `provider`, `api_key_{name}`, `model_{name}`
         assertEquals(listOf("CLAUDE", "DEEPSEEK", "OPENAI", "GEMINI", "CUSTOM"), Provider.entries.map { it.name })
         // `map_style`

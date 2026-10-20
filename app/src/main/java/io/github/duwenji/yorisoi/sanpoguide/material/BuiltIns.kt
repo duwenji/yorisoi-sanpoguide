@@ -10,6 +10,8 @@ import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
+import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.yorisoi.kit.mood.SoundscapeChoice
 import kotlin.coroutines.cancellation.CancellationException
@@ -21,7 +23,9 @@ private fun ready(type: MaterialType, content: Content, producer: String, credit
     MaterialResult.Ready(Material(type, content, producer, credit, basedOn = basedOn))
 
 /** The AI names itself as the author of what it writes (API-004 P-3). */
-private fun aiCredit(model: String) = Credit(author = "AI（$model）", license = "generated")
+/** Who wrote it: the operator's AI, or the AI service and model of the user's own key. */
+private fun aiCredit(s: GuideSettings) =
+    Credit(author = if (s.aiRoute == AiRoute.OPERATOR) GuideSettings.OPERATOR_AI_NAME else "AI（${s.model()}）", license = "generated")
 
 /** Runs [block], turning a failure into [Reason.FAILED] (cancellation still propagates). */
 private inline fun failing(tag: String, block: () -> MaterialResult): MaterialResult = try {
@@ -50,7 +54,7 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
                 if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e
             }
             val basedOn = request.grounding.map { it.producerName }.distinct()
-            ready(MaterialType.TEXT, Content.Text(text), descriptor.id, aiCredit(s.model()), basedOn)
+            ready(MaterialType.TEXT, Content.Text(text), descriptor.id, aiCredit(s), basedOn)
         }
     }
 
@@ -71,7 +75,7 @@ class AiCompanionProducer(private val companion: WalkCompanion, private val sett
             when {
                 line == null -> MaterialResult.Unavailable(if (settings.settings.value.isConfigured) Reason.LIMIT else Reason.NO_KEY)
                 line.isBlank() -> MaterialResult.Unavailable(Reason.FAILED, "empty reply")
-                else -> ready(MaterialType.TEXT, Content.Text(line), descriptor.id, aiCredit(settings.settings.value.model()))
+                else -> ready(MaterialType.TEXT, Content.Text(line), descriptor.id, aiCredit(settings.settings.value))
             }
         }
     }

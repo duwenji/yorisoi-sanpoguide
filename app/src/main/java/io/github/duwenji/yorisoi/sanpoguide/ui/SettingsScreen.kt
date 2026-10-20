@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
@@ -80,6 +81,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
     val test by viewModel.test.collectAsStateWithLifecycle()
     val developerMode by viewModel.developerMode.collectAsStateWithLifecycle()
     val provider = draft.provider
+    LaunchedEffect(draft.aiRoute) { if (draft.aiRoute == AiRoute.OPERATOR) viewModel.refreshQuota() }
 
     Scaffold(
         topBar = {
@@ -104,71 +106,74 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                 AI_MAY_BE_WRONG, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Column(Modifier.selectableGroup()) {
-                Provider.entries.forEach { p ->
-                    Row(
-                        Modifier.fillMaxWidth()
-                            .selectable(p == provider, role = Role.RadioButton) { viewModel.selectProvider(p) }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(selected = p == provider, onClick = null)
-                        Spacer(Modifier.width(12.dp))
-                        Text(p.label, modifier = Modifier.weight(1f))
-                        if (draft.apiKey(p).isNotBlank()) {
-                            Text(
-                                "キー設定済み", style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
+            AiRouteChoice(draft.aiRoute, viewModel)
+            if (draft.aiRoute == AiRoute.OWN_KEY) {
+                Column(Modifier.selectableGroup()) {
+                    Provider.entries.forEach { p ->
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .selectable(p == provider, role = Role.RadioButton) { viewModel.selectProvider(p) }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = p == provider, onClick = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(p.label, modifier = Modifier.weight(1f))
+                            if (draft.apiKey(p).isNotBlank()) {
+                                Text(
+                                    "キー設定済み", style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            SectionTitle("APIキー")
-            ApiKeyField(value = draft.apiKey(), onValueChange = viewModel::setApiKey)
-            if (provider.keyPageUrl.isNotEmpty()) {
-                val uriHandler = LocalUriHandler.current
-                TextButton(onClick = { uriHandler.openUri(provider.keyPageUrl) }) {
-                    Text("${provider.label} のAPIキーを取得する")
-                }
-            }
-
-            if (provider == Provider.CUSTOM) {
-                SectionTitle("接続先URL")
-                OutlinedTextField(
-                    value = draft.customBaseUrl,
-                    onValueChange = viewModel::setCustomBaseUrl,
-                    placeholder = { Text("https://example.com/v1") },
-                    supportingText = { Text("/chat/completions の手前までを入力します") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            SectionTitle("モデル")
-            if (provider == Provider.CLAUDE) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Provider.CLAUDE_MODELS.forEach { m ->
-                        FilterChip(
-                            selected = draft.model() == m,
-                            onClick = { viewModel.setModel(m) },
-                            label = { Text(m) },
-                        )
+                SectionTitle("APIキー")
+                ApiKeyField(value = draft.apiKey(), onValueChange = viewModel::setApiKey)
+                if (provider.keyPageUrl.isNotEmpty()) {
+                    val uriHandler = LocalUriHandler.current
+                    TextButton(onClick = { uriHandler.openUri(provider.keyPageUrl) }) {
+                        Text("${provider.label} のAPIキーを取得する")
                     }
                 }
-            } else {
-                OutlinedTextField(
-                    value = draft.models[provider].orEmpty(),
-                    onValueChange = viewModel::setModel,
-                    placeholder = { Text(provider.defaultModel.ifEmpty { "モデル名" }) },
-                    supportingText = if (provider.defaultModel.isNotEmpty()) {
-                        { Text("空欄の場合は ${provider.defaultModel} を使います") }
-                    } else null,
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+
+                if (provider == Provider.CUSTOM) {
+                    SectionTitle("接続先URL")
+                    OutlinedTextField(
+                        value = draft.customBaseUrl,
+                        onValueChange = viewModel::setCustomBaseUrl,
+                        placeholder = { Text("https://example.com/v1") },
+                        supportingText = { Text("/chat/completions の手前までを入力します") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                SectionTitle("モデル")
+                if (provider == Provider.CLAUDE) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Provider.CLAUDE_MODELS.forEach { m ->
+                            FilterChip(
+                                selected = draft.model() == m,
+                                onClick = { viewModel.setModel(m) },
+                                label = { Text(m) },
+                            )
+                        }
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = draft.models[provider].orEmpty(),
+                        onValueChange = viewModel::setModel,
+                        placeholder = { Text(provider.defaultModel.ifEmpty { "モデル名" }) },
+                        supportingText = if (provider.defaultModel.isNotEmpty()) {
+                            { Text("空欄の場合は ${provider.defaultModel} を使います") }
+                        } else null,
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             SectionTitle("AI の利用の上限")
@@ -366,7 +371,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             TestResult(test)
 
             Text(
-                "APIキーはこの端末内に暗号化して保存され、選択したAIサービスへの通信にのみ使われます。" +
+                "運営の AI では、解説と話しかけに使う情報が運営の中継を通って AI サービスに送られます。中継は内容を保存しません。\n" +
+                    "APIキーはこの端末内に暗号化して保存され、選択したAIサービスへの通信にのみ使われます。" +
                     "利用料金は、そのAPIキーのアカウントに請求されます。\n" +
                     "散歩の記録はこの端末内にだけ保存されます。\n" +
                     "地図: 国土地理院　スポット: © OpenStreetMap contributors　天気: Open-Meteo.com　" +
@@ -485,6 +491,52 @@ private fun ThresholdField(t: Threshold, value: Int, valid: Boolean, onChange: (
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.width(120.dp),
     )
+}
+
+/** How the AI is reached (platform ADR-AI-RELAY R-1, R-11): the operator's AI or the user's own key. */
+@Composable
+private fun AiRouteChoice(route: AiRoute, viewModel: SettingsViewModel) {
+    val quota by viewModel.relayQuota.collectAsStateWithLifecycle()
+    val available = viewModel.operatorAiAvailable
+    Column(Modifier.selectableGroup()) {
+        RouteOption(
+            selected = route == AiRoute.OPERATOR,
+            enabled = available,
+            title = GuideSettings.OPERATOR_AI_NAME + if (available) "（設定不要）" else "（この版ではまだ使えません）",
+            detail = if (!available) {
+                "自分の APIキーを使ってください"
+            } else {
+                "運営が費用を持ち、1 日に使える回数が決まっています。" +
+                    (quota?.let { "今日の残りは ${it.remaining} 回（1 日 ${it.limit} 回まで）。" }.orEmpty()) +
+                    "使い切った日は、決まった文で案内します（天気の急変・日の入りなどの案内は続けます）"
+            },
+            onClick = { viewModel.selectRoute(AiRoute.OPERATOR) },
+        )
+        RouteOption(
+            selected = route == AiRoute.OWN_KEY,
+            enabled = true,
+            title = "自分の APIキー",
+            detail = "選んだ AI サービスに端末から直接つなぎます。運営の中継を通らず、利用料はそのキーのアカウントに請求されます",
+            onClick = { viewModel.selectRoute(AiRoute.OWN_KEY) },
+        )
+    }
+}
+
+@Composable
+private fun RouteOption(selected: Boolean, enabled: Boolean, title: String, detail: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth()
+            .selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        RadioButton(selected = selected, onClick = null, enabled = enabled)
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(title, color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }
 
 @Composable
