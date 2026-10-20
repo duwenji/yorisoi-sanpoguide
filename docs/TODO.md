@@ -34,9 +34,9 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] ストアの設定で決めること: 外部マーケティング（Google が Play の外で宣伝してよいか）
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト。有料なのでクローズドテストのテスターも購入が要る。プロモーション コードを配るか決める（有料のアプリに使えるか、作れる数を Play Console の「プロモーション」で確かめる）
 
-運営の AI（platform ADR-AI-RELAY）をリリース版で使えるようにするときは、次をそろえる。今はデバッグ版だけが開発用の中継を使い、リリース版は自分の APIキーだけ
+運営の AI（platform ADR-AI-RELAY）を本番の中継に切り替えるときは、次をそろえる。今はリリース版も開発用の中継（1 日 30 回・月 5 USD、Play Integrity の確認なし）を使う
 
-- [ ] 本番の中継の配備（yorisoi-console の運営の AI の手順）と、`app/build.gradle.kts` の `AI_RELAY_URL`（release）
+- [ ] 本番の中継の配備（yorisoi-console の運営の AI の手順）と、`app/build.gradle.kts` の `AI_RELAY_URL`
 - [ ] Play Integrity: Play Console のアプリに Google Cloud のプロジェクトをつなぎ、その番号を `PLAY_CLOUD_PROJECT_NUMBER` に入れる。サービス アカウントの鍵を本番の中継に入れる
 - [ ] プライバシーポリシー・データ セーフティ・ストアの説明・散策者とチャンネル提供者の手引きを、運営の中継を通ることに合わせる（platform ADR-AI-RELAY T-5）
 

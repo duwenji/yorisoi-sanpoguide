@@ -126,7 +126,7 @@ flowchart LR
 - チャンネルを切り替えると、次に話すのは新しいチャンネルの一言（`WalkSession.pendingGreeting`）。その後 1 分はスポット案内と休憩・区切りを控える（`WalkSession.justSwitched()`）。
 - チャンネルのきっかけ（スポット・地点）は、チャンネルが「話題」や「話す場面」で除いているスポットでも出す（チャンネルが意図して置いたため）。どちらも、とどまっている間と切り替えの直後は出さない。スポットのきっかけは、スポット案内の間隔（`TalkLevel.spotGapMs`）も守る。散歩の開始・終了のきっかけは開始・終了の一言のあとに出す。
 - 読み上げ中は判定しない（`Speaker.isSpeaking` と `Mutex` で 1 件ずつ）。
-- AI へのつなぎ方は 2 つ（`GuideSettings.aiRoute`。platform ADR-AI-RELAY）。**運営の AI**（`OPERATOR`）は運営の中継（platform API-AI-RELAY）を `RelayClient` で呼び、キーは要らない。**自分の APIキー**（`OWN_KEY`）は選んだ AI サービスを端末から直接呼ぶ。保存された値がないときは、キーを入れていれば自分の APIキー、なければ運営の AI（`GuideSettings.defaultRoute`）。中継の URL はビルドの種類で決まり（`BuildConfig.AI_RELAY_URL`。デバッグ版は開発用、リリース版は本番の中継ができるまで空）、空なら運営の AI は選べない。インストール ID とセッションは `ai_relay` の設定に置く（`guide/OperatorAi`）。Play Integrity の判定は `BuildConfig.PLAY_CLOUD_PROJECT_NUMBER` が 0 でないときだけ付ける
+- AI へのつなぎ方は 2 つ（`GuideSettings.aiRoute`。platform ADR-AI-RELAY）。**運営の AI**（`OPERATOR`）は運営の中継（platform API-AI-RELAY）を `RelayClient` で呼び、キーは要らない。**自分の APIキー**（`OWN_KEY`）は選んだ AI サービスを端末から直接呼ぶ。保存された値がないときは、キーを入れていれば自分の APIキー、なければ運営の AI（`GuideSettings.defaultRoute`）。中継の URL は `BuildConfig.AI_RELAY_URL`（本番の中継ができるまでは、デバッグ版もリリース版も開発用の中継）。空なら運営の AI は選べない。インストール ID とセッションは `ai_relay` の設定に置く（`guide/OperatorAi`）。Play Integrity の判定は `BuildConfig.PLAY_CLOUD_PROJECT_NUMBER` が 0 でないときだけ付ける
 - AI を呼ぶのは 1 日に設定の上限まで（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる。`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。運営の AI では、中継が数える 1 日の上限（`RelayClient.quota`）にも従う。どちらかの上限に達したら定型文にする。
 - AI の返事に URL・メールアドレス・電話番号があれば使わず、定型文にする（`guide/OutputCheck`。全角の数字・記号は半角にそろえてから見る）。
 - AI の解説と話しかけには、根拠の有無にかかわらず作者を添える。運営の AI は「文: 運営の AI」、自分の APIキーは「文: AI（モデル名）」（`material/creditLine`）。定型文には付けない。

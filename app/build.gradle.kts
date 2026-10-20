@@ -20,12 +20,12 @@ android {
         applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.3.0"
 
-        // The operator's AI (platform API-AI-RELAY): no relay until production's is deployed, so
-        // release builds offer only the user's own key for now.
-        buildConfigField("String", "AI_RELAY_URL", "\"\"")
+        // The operator's AI (platform API-AI-RELAY): every build uses the development relay until
+        // production's is deployed.
+        buildConfigField("String", "AI_RELAY_URL", "\"https://teevxbmiaj.execute-api.ap-northeast-1.amazonaws.com/api/\"")
         // The Google Cloud project linked in Play Console for Play Integrity; 0 sends no token (the
         // development relay doesn't ask for one).
         buildConfigField("long", "PLAY_CLOUD_PROJECT_NUMBER", "0L")
@@ -43,9 +43,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            buildConfigField("String", "AI_RELAY_URL", "\"https://teevxbmiaj.execute-api.ap-northeast-1.amazonaws.com/api/\"")
-        }
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.findByName("release")
