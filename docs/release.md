@@ -41,14 +41,9 @@ node tools/play.mjs data-safety docs/play-data-safety.csv
 5. Play Console の **[ユーザーと権限] > [新しいユーザーを招待]** で、サービス アカウントのメールアドレスを招待する。[アプリの権限] で散策ガイドを足し、「テストトラックへのアプリのリリース」「本番環境へのアプリのリリース、端末の除外、Play App Signing の使用」「ストアでの表示の管理」「アプリ情報の閲覧」と、データ セーフティを書き換えるための「ポリシー申告の管理」を付ける（Play Console の表示名が違うときは、近い名前のものを選ぶ）
 6. `node tools/play.mjs status` で一覧が出れば使える。招待の直後は権限が届くまで時間がかかることがある
 
-## Play Console の初回の登録
+## Play Console の登録
 
-| 項目 | 手順 |
-|---|---|
-| アプリのコンテンツ（データセーフティ・フォアグラウンドサービス・レーティング） | [play-console.md](play-console.md) の答えを入れる。フォアグラウンドサービスの申告の動画を撮る |
-| プライバシーポリシー | https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy（GitHub Pages、main の `/docs`。公開するのは privacy-policy.md だけ） |
-| ストアの素材 | 512×512 のアイコン、1024×500 のフィーチャー画像、スクリーンショット、説明文 |
-| クローズドテスト | 個人のデベロッパーアカウントは、本番の前に 12 人以上・14 日以上 |
+初回の登録、送る情報を変えたときの申告、Play Console のどこに何を入れるか、審査への出し方は [play-console.md](play-console.md) にある。
 
 残っている作業は [TODO「Google Play での公開」](TODO.md#google-play-での公開)にある。
 
