@@ -1,6 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.settings
 
 import io.github.duwenji.yorisoi.kit.llm.Provider
+import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -18,9 +19,9 @@ class AiRouteTest {
 
     @Test
     fun `the operator's AI needs no key, the own key does`() {
-        // Debug builds have the development relay.
-        assertTrue(GuideSettings.operatorAiAvailable)
-        assertTrue(GuideSettings(aiRoute = AiRoute.OPERATOR).isConfigured)
+        // Debug builds have the development relay; release builds none until production's is up.
+        assertEquals(BuildConfig.AI_RELAY_URL.isNotEmpty(), GuideSettings.operatorAiAvailable)
+        assertEquals(GuideSettings.operatorAiAvailable, GuideSettings(aiRoute = AiRoute.OPERATOR).isConfigured)
         assertFalse(GuideSettings(aiRoute = AiRoute.OWN_KEY).isConfigured)
         assertTrue(GuideSettings(aiRoute = AiRoute.OWN_KEY, apiKeys = mapOf(Provider.CLAUDE to "sk-test")).isConfigured)
     }
