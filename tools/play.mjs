@@ -70,8 +70,8 @@ async function call(method, url, body, contentType = 'application/json') {
 function listing() {
   const doc = readFileSync(new URL('../docs/play-console.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const block = (heading) => {
-    const m = doc.match(new RegExp(`### ${heading}\\n\\n\`\`\`text\\n([\\s\\S]*?)\\n\`\`\``));
-    if (!m) throw new Error(`play-console.md has no text block under "### ${heading}"`);
+    const m = doc.match(new RegExp(`^#+ ${heading}\\n\\n\`\`\`text\\n([\\s\\S]*?)\\n\`\`\``, 'm'));
+    if (!m) throw new Error(`play-console.md has no text block under the heading "${heading}"`);
     return m[1];
   };
   return { shortDescription: block('簡単な説明'), fullDescription: block('詳しい説明') };
