@@ -16,6 +16,8 @@ import io.github.duwenji.yorisoi.kit.geo.RouteClient
 import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.kit.geo.SpotRepository
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
+import io.github.duwenji.yorisoi.sanpoguide.guide.OperatorAi
+import io.github.duwenji.yorisoi.kit.llm.RelayClient
 import io.github.duwenji.yorisoi.kit.voice.Speaker
 import io.github.duwenji.yorisoi.sanpoguide.history.HistoryStore
 import io.github.duwenji.yorisoi.sanpoguide.walk.ActiveWalkPlanStore
@@ -83,6 +85,9 @@ class SanpoApp : Application() {
     /** Today's AI calls against the user's limit (platform ADR-004 H-9). */
     lateinit var aiUsage: AiUsage
         private set
+    /** The operator's AI (platform ADR-AI-RELAY); null in a build without a relay. */
+    var relay: RelayClient? = null
+        private set
     lateinit var guides: GuideRepository
         private set
     lateinit var speaker: Speaker
@@ -146,7 +151,8 @@ class SanpoApp : Application() {
             }
         }
         aiUsage = AiUsage.of(this)
-        guides = GuideRepository(settings, prompts, aiUsage)
+        relay = OperatorAi.create(this)
+        guides = GuideRepository(settings, prompts, aiUsage, relay)
         guides.onCall = { call ->
             diagnostics.event(
                 "ai", "kind" to call.kind, "model" to call.model, "ms" to call.ms,

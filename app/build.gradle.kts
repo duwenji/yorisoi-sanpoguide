@@ -22,6 +22,13 @@ android {
         targetSdk = 36
         versionCode = 3
         versionName = "1.2.0"
+
+        // The operator's AI (platform API-AI-RELAY): no relay until production's is deployed, so
+        // release builds offer only the user's own key for now.
+        buildConfigField("String", "AI_RELAY_URL", "\"\"")
+        // The Google Cloud project linked in Play Console for Play Integrity; 0 sends no token (the
+        // development relay doesn't ask for one).
+        buildConfigField("long", "PLAY_CLOUD_PROJECT_NUMBER", "0L")
     }
 
     signingConfigs {
@@ -36,6 +43,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "AI_RELAY_URL", "\"https://teevxbmiaj.execute-api.ap-northeast-1.amazonaws.com/api/\"")
+        }
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.findByName("release")
@@ -96,6 +106,8 @@ dependencies {
     implementation(libs.tink.android)
     // Test tickets' QR codes (API-002): Google's scanner UI, so the app needs no camera permission.
     implementation(libs.play.services.code.scanner)
+    // The operator's AI: proves to the relay that this is the app from Play (API-AI-RELAY AR-3).
+    implementation(libs.play.integrity)
 
     testImplementation(libs.junit)
     // The real org.json; Android's is a stub in local unit tests.

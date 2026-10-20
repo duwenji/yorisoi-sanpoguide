@@ -1,6 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.settings
 
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
+import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.kit.llm.KeyCipher
 import android.content.Context
 import androidx.core.content.edit
@@ -15,10 +16,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Which AI service to use, with per-provider keys and models so switching back keeps them,
+ * How the AI is reached (platform ADR-AI-RELAY R-1): the operator's AI through its relay, paid by
+ * the operator up to its daily limit, or the user's own key straight to the service they chose.
+ */
+enum class AiRoute { OPERATOR, OWN_KEY }
+
+/**
+ * How the AI is reached and, for the user's own key, which AI service to use, with per-provider
+ * keys and models so switching back keeps them,
  * plus how often the walking companion speaks up and the limits for its safety and amenity remarks.
  */
 data class GuideSettings(
+    val aiRoute: AiRoute = AiRoute.OPERATOR,
     val provider: Provider = Provider.CLAUDE,
     val apiKeys: Map<Provider, String> = emptyMap(),
     val models: Map<Provider, String> = emptyMap(),
@@ -61,12 +70,31 @@ data class GuideSettings(
     fun baseUrl(p: Provider = provider): String = if (p == Provider.CUSTOM) customBaseUrl else p.defaultBaseUrl
 
     val isConfigured: Boolean
-        get() = apiKey().isNotBlank() && model().isNotBlank() &&
-            (provider == Provider.CLAUDE || baseUrl().isNotBlank())
+        get() = when (aiRoute) {
+            AiRoute.OPERATOR -> operatorAiAvailable
+            AiRoute.OWN_KEY -> apiKey().isNotBlank() && model().isNotBlank() &&
+                (provider == Provider.CLAUDE || baseUrl().isNotBlank())
+        }
+
+    /** The model named beside what the AI said: the service's own for a user's key. */
+    val aiName: String
+        get() = if (aiRoute == AiRoute.OPERATOR) OPERATOR_AI_NAME else model()
 
     companion object {
         /** The daily limits offered on the settings screen; null is「上限なし」. */
         val DAILY_AI_LIMITS: List<Int?> = listOf(30, 60, 100, 200, null)
+
+        /** Whether this build has a relay to talk to (release builds don't until production's is up). */
+        val operatorAiAvailable: Boolean get() = BuildConfig.AI_RELAY_URL.isNotEmpty()
+
+        const val OPERATOR_AI_NAME = "運営の AI"
+
+        /**
+         * The route when none is saved (ADR-AI-RELAY R-4): someone who already put in a key keeps it
+         * after the update; everyone else starts on the operator's AI where this build has one.
+         */
+        fun defaultRoute(hasOwnKey: Boolean, operatorAvailable: Boolean = operatorAiAvailable): AiRoute =
+            if (hasOwnKey || !operatorAvailable) AiRoute.OWN_KEY else AiRoute.OPERATOR
     }
 }
 
@@ -85,6 +113,7 @@ class SettingsRepository(context: Context) {
 
     fun save(settings: GuideSettings) {
         prefs.edit {
+            putString(KEY_AI_ROUTE, settings.aiRoute.name)
             putString(KEY_PROVIDER, settings.provider.name)
             putString(KEY_CUSTOM_BASE_URL, settings.customBaseUrl.trim())
             putString(KEY_STATION, settings.stationId)
@@ -128,11 +157,15 @@ class SettingsRepository(context: Context) {
         val provider = prefs.getString(KEY_PROVIDER, null)
             ?.let { name -> Provider.entries.firstOrNull { it.name == name } }
             ?: Provider.CLAUDE
+        val apiKeys = Provider.entries.mapNotNull { p ->
+            prefs.getString(apiKeyPref(p), null)?.let(KeyCipher::decrypt)?.let { p to it }
+        }.toMap()
         return GuideSettings(
+            aiRoute = prefs.getString(KEY_AI_ROUTE, null)
+                ?.let { name -> AiRoute.entries.firstOrNull { it.name == name } }
+                ?: GuideSettings.defaultRoute(hasOwnKey = apiKeys.values.any { it.isNotBlank() }),
             provider = provider,
-            apiKeys = Provider.entries.mapNotNull { p ->
-                prefs.getString(apiKeyPref(p), null)?.let(KeyCipher::decrypt)?.let { p to it }
-            }.toMap(),
+            apiKeys = apiKeys,
             models = Provider.entries.mapNotNull { p ->
                 prefs.getString(modelPref(p), null)?.let { p to it }
             }.toMap(),
@@ -183,6 +216,7 @@ class SettingsRepository(context: Context) {
     private fun modelPref(p: Provider) = "model_${p.name}"
 
     private companion object {
+        const val KEY_AI_ROUTE = "ai_route"
         const val KEY_PROVIDER = "provider"
         const val KEY_CUSTOM_BASE_URL = "custom_base_url"
         const val KEY_STATION = "selected_station"
