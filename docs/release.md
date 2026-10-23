@@ -2,6 +2,16 @@
 
 散策ガイドを Google Play に公開し、版を上げて出すときの手順。運営がアプリの側で受け持つほかの運用（通報の受け方、組み込みのチャンネルの確認、障害のときの判断など）は、[SanpoGuide 運営の手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/operator.md)を参照する。
 
+## Google Play の文書
+
+| 文書 | 受け持つこと |
+|---|---|
+| 本書 | 版を上げて AAB を作り、トラックに出す流れ。テスターへの案内と、不具合の版を出したとき |
+| [play-console.md](play-console.md) | Play Console のどこに何を入れるか、入れる答え、審査への出し方 |
+| [play-api.md](play-api.md) | `tools/play.mjs` で API から出すしくみ・準備・使い方 |
+| [privacy-policy.md](privacy-policy.md) | プライバシーポリシー。送る情報を変えたら、データ セーフティと合わせて直す |
+| [TODO「Google Play での公開」](TODO.md#google-play-での公開) | 公開に残っている作業 |
+
 ## 版を出すとき
 
 1. `app/build.gradle.kts` の `versionCode` を 1 つ上げ、`versionName` を決める
@@ -13,39 +23,8 @@
 
    署名には `keystore.properties` と `release.jks`（Play App Signing のアップロード鍵）を使う。どちらも Git に入れず、**別の場所にも写しを置く**（なくすと同じアプリとして更新できない）
 3. エミュレータか実機で、少なくとも次を確かめる: 起動、位置の許可、散策の開始と終了（通知・画面を閉じたときの案内）、チャンネルの切り替え、設定の保存、記録
-4. Play Console のトラック（内部テスト → クローズドテスト → 本番）に AAB を上げ、リリースノートを書く
+4. トラック（内部テスト → クローズドテスト → 本番）に AAB を上げ、リリースノートを書いて審査に出す。Play Console の画面で出すときは [play-console.md の「審査に出す」](play-console.md#審査に出す)、API で出すときは [play-api.md](play-api.md#使い方)
 5. 段階的な公開で出し、クラッシュが増えないかを見て広げる
-
-## API で出す
-
-手順 4 の AAB のアップロードと、ストアの説明・データ セーフティの書き換えは、Google Play Developer API を使う `tools/play.mjs` でもできる（Node.js の標準のモジュールだけ）。アプリのアクセス権など、ほかのアプリのコンテンツは API がないので Play Console で入れる。
-
-```sh
-node tools/play.mjs status                        # トラックとリリースの一覧（鍵の確認にも使う）
-node tools/play.mjs listing                       # --listing で送る説明文（play-console.md から）
-node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing
-node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing --commit
-node tools/play.mjs data-safety docs/play-data-safety.csv
-```
-
-- `edit` は `--commit` がなければ Play に確かめさせるだけで、何も変えない。`--commit` で審査に出る。Play Console で入れて審査に出していない変更も一緒に出る
-- トラックは既定で内部テスト。`--track alpha`（クローズドテスト）・`production` も選べる
-- `data-safety` は、Play Console のデータ セーフティの画面で書き出す CSV と同じ形式のファイルで、答えをすぐにまとめて置き換える（審査はアプリの変更と別に走る）
-
-### サービス アカウントの準備（最初の 1 回）
-
-1. Google Cloud で、プロジェクトを選ぶか作る（Play Integrity にも同じプロジェクトを使う）
-2. [API とサービス] > [ライブラリ] で **Google Play Android Developer API** を有効にする
-3. [IAM と管理] > [サービス アカウント] でサービス アカウントを作る（Google Cloud の役割は要らない）。[鍵] > [鍵を追加] > [新しい鍵を作成] で JSON の鍵を作る
-4. 鍵を `~/.yorisoi-sanpoguide/play-service-account.json` に置く（別の場所なら `PLAY_SERVICE_ACCOUNT` で渡す）。Git には入れない
-5. Play Console の **[ユーザーと権限] > [新しいユーザーを招待]** で、サービス アカウントのメールアドレスを招待する。[アプリの権限] で散策ガイドを足し、「テストトラックへのアプリのリリース」「本番環境へのアプリのリリース、端末の除外、Play App Signing の使用」「ストアでの表示の管理」「アプリ情報の閲覧」と、データ セーフティを書き換えるための「ポリシー申告の管理」を付ける（Play Console の表示名が違うときは、近い名前のものを選ぶ）
-6. `node tools/play.mjs status` で一覧が出れば使える。招待の直後は権限が届くまで時間がかかることがある
-
-## Play Console の登録
-
-初回の登録、送る情報を変えたときの申告、Play Console のどこに何を入れるか、審査への出し方は [play-console.md](play-console.md) にある。
-
-残っている作業は [TODO「Google Play での公開」](TODO.md#google-play-での公開)にある。
 
 ## テスターへの案内
 
