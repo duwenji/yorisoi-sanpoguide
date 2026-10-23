@@ -93,7 +93,10 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
     fun clearAll() {
         viewModelScope.launch {
             history.clear()
-            withContext(Dispatchers.IO) { app.diagnostics.clear() }
+            withContext(Dispatchers.IO) {
+                app.diagnostics.clear()
+                app.spotCache.clear()
+            }
         }
     }
 }

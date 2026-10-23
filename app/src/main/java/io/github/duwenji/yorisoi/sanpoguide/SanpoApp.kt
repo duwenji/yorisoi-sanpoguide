@@ -13,6 +13,7 @@ import io.github.duwenji.yorisoi.kit.geo.weather.WeatherClient
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapTiles
 import io.github.duwenji.yorisoi.kit.geo.OverpassClient
 import io.github.duwenji.yorisoi.kit.geo.RouteClient
+import io.github.duwenji.yorisoi.kit.geo.SpotCache
 import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.kit.geo.SpotRepository
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
@@ -65,7 +66,6 @@ import okhttp3.OkHttpClient
 import org.osmdroid.config.Configuration
 import java.io.File
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 class SanpoApp : Application() {
     /** For work that must outlive a screen or the walk service, such as the end-of-walk summary. */
@@ -76,6 +76,9 @@ class SanpoApp : Application() {
     lateinit var settings: SettingsRepository
         private set
     lateinit var spots: SpotRepository
+
+    /** Spot searches kept on the device; they tell where the user walked, so cleared with the history. */
+    lateinit var spotCache: SpotCache
         private set
     lateinit var stations: StationRepository
         private set
@@ -129,7 +132,8 @@ class SanpoApp : Application() {
         settings = SettingsRepository(this)
         diagnostics = WalkDiagnostics(File(filesDir, "diagnostics"))
         // The channel decides which shops to search for; read when searching, after start-up.
-        spots = SpotRepository(OverpassClient(overpassHttp()), shops = { stations.current.value.searchedKinds })
+        spotCache = SpotCache(File(cacheDir, "spots"))
+        spots = SpotRepository(OverpassClient(overpassHttp()), shops = { stations.current.value.searchedKinds }, cache = spotCache)
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
         // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
@@ -243,7 +247,6 @@ class SanpoApp : Application() {
         .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(
             TimingInterceptor({ request, status, error, ms, body ->
-                if (body != null) overpassAnswerCount.incrementAndGet()
                 diagnostics.event(
                     "overpass",
                     listOf("host" to request.url.host, "status" to status, "error" to error, "ms" to ms) +
@@ -253,11 +256,6 @@ class SanpoApp : Application() {
             }),
         )
         .build()
-
-    private val overpassAnswerCount = AtomicInteger()
-
-    /** How many answers Overpass has given; a change across `spots.onLocation` means it searched. */
-    val overpassAnswers: Int get() = overpassAnswerCount.get()
 
     companion object {
         // A chosen channel becomes the current one at once, unless its package is still being read.
