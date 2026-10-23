@@ -16,6 +16,9 @@ import sys
 from collections import Counter, defaultdict
 from datetime import datetime
 
+# Where a spot search got its spots (SpotSource in kit-geo).
+SOURCE_NAMES = {"network": "Overpass", "cache": "端末（7 日以内）", "stale": "端末（古い）", "fallback": "端末（失敗の代わり）"}
+
 
 def hhmm(ms):
     return datetime.fromtimestamp(ms / 1000).strftime("%H:%M:%S")
@@ -104,9 +107,14 @@ def summarize(walk):
     search_failed = sum(1 for e in events if e["type"] == "spot_search_failed")
     if search_failed:
         print(f"   スポット検索がすべてのサーバーで失敗: {search_failed} 回")
+    sources = Counter(e.get("source") for e in events if e["type"] == "spot_search" and e.get("source"))
+    if sources:
+        print("   スポットの取得元: " + "、".join(f"{SOURCE_NAMES.get(k, k)} {n}" for k, n in sources.items()))
     for e in (e for e in events if e["type"] == "spot_search"):
         related = [s for s in e["spots"] if s.get("channels")]
-        print(f"   {hhmm(e['t'])} スポット検索（{e['channel']['name']}）: スポット {e['spotCount']} 件・施設 {e['facilityCount']} 件"
+        print(f"   {hhmm(e['t'])} スポット検索（{e['channel']['name']}"
+              + (f"・{SOURCE_NAMES.get(e['source'], e['source'])}" if e.get("source") else "")
+              + f"）: スポット {e['spotCount']} 件・施設 {e['facilityCount']} 件"
               + (f"（店: {e['shops']}）" if e.get("shops") else "")
               + (f"・素材のあるスポット: " + "、".join(s["name"] for s in related) if related else ""))
     weather_failed = sum(1 for e in events if e["type"] == "weather_failed")

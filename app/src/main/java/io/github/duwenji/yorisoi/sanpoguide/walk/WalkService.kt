@@ -235,13 +235,16 @@ class WalkService : LifecycleService() {
                 }
             }
             try {
-                val answersBefore = app.overpassAnswers
+                val updatesBefore = app.spots.updates
                 app.spots.onLocation(location)
                 // Looking up every channel's materials for each spot is for the record only.
-                if (app.overpassAnswers != answersBefore && app.diagnostics.recording) {
+                if (app.spots.updates != updatesBefore && app.diagnostics.recording) {
                     app.diagnostics.event(
                         "spot_search",
-                        listOf("lat" to location.latitude, "lon" to location.longitude) + DiagnosticFields.spotSearch(
+                        listOf(
+                            "lat" to location.latitude, "lon" to location.longitude,
+                            "source" to app.spots.source?.name?.lowercase(),
+                        ) + DiagnosticFields.spotSearch(
                             app.spots.spots.value.map { it to it.distanceFrom(location) },
                             app.spots.facilities.value,
                             app.stations.current.value,
@@ -254,7 +257,8 @@ class WalkService : LifecycleService() {
                 throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Spot search failed", e)
-                app.diagnostics.event("spot_search_failed", "error" to e.toString())
+                // `fallback` when kept spots from nearby are shown instead.
+                app.diagnostics.event("spot_search_failed", "error" to e.toString(), "source" to app.spots.source?.name?.lowercase())
             }
             maybeTalk()
         }

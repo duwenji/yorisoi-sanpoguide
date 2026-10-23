@@ -62,8 +62,8 @@ python tools/analyze_walks.py sanpoguide-walks-20261018-1530.json --walk <id>
 | `ai` | AI を呼んだとき（散策中の画面からの解説も含む） | `kind`（`guide`: スポットの解説、`chat`: 話しかけ）・`model`・`ms`・`system`・`user`（送ったプロンプト）・`reply`・`error`・`violation`（出力の確認で見つかったもの） |
 | `producer` | 素材提供者が作れず、次の候補（定型文など）に回ったとき | `message`（素材提供者と理由）・`error` |
 | `overpass` | Overpass のサーバーへの 1 回の問い合わせ | `host`・`status`（HTTP の状態。応答がなければ null）・`error`（例外の名前）・`ms`（応答が始まるまで）。問い合わせの条件: `lat`・`lon`・`radiusM`（スポットを探した中心と半径。ベンチと自動販売機はもっと近くだけ）・`shopRadiusM`（店も探したときの半径。探さなければ null）・`queryChars`（問い合わせの長さ）。成功したときは `bytes`（応答の大きさ）・`elements`（応答の要素の数。JSON でなければ null） |
-| `spot_search` | スポット検索が終わったとき（300m 動くか、チャンネルの店の種類が変わったとき） | `lat`・`lon`（検索した位置）・`channel`（使っていたチャンネルの `key`・`id`・`name`・`trial`）・`shops`（そのチャンネルが探させた店の種類）・`spotCount`・`spots`（見つかったスポットを近い順に。`poiId`・`name`・`category`・`distanceM`。端末にあるチャンネルがそのスポットについて持っているものがあれば `channels`）・`facilityCount`・`facilities`（施設の種類ごとの数） |
-| `spot_search_failed` | スポット検索がすべてのサーバーで失敗したとき | `error` |
+| `spot_search` | 表示するスポットが入れ替わったとき（300m 動くか、チャンネルの店の種類が変わったとき） | `lat`・`lon`（検索した位置）・`source`（スポットをどこから得たか。`network` はいま Overpass から、`cache` は端末に残した 7 日以内の答え、`stale` は 7 日より古い答え（問い合わせが終わるまで）、`fallback` は問い合わせの失敗か、失敗のあとの待ち時間の間に使った答え。詳しくは [kit-geo の README](https://github.com/duwenji/yorisoi-platform/blob/main/kit-geo/README.md#スポット検索のキャッシュ)）・`channel`（使っていたチャンネルの `key`・`id`・`name`・`trial`）・`shops`（そのチャンネルが探させた店の種類）・`spotCount`・`spots`（見つかったスポットを近い順に。`poiId`・`name`・`category`・`distanceM`。端末にあるチャンネルがそのスポットについて持っているものがあれば `channels`）・`facilityCount`・`facilities`（施設の種類ごとの数） |
+| `spot_search_failed` | スポット検索がすべてのサーバーで失敗したとき | `error`・`source`（端末に残した近くの答えを代わりに出したときは `fallback`） |
 | `weather` / `weather_failed` | 天気の取得（開始時と 15 分ごと） | `description`・`temperatureC`・`precipitationMm`・`code`・`sunsetAt`・`forecast`・`ms` / `error`・`ms` |
 | `station` | 散歩の途中でチャンネルを切り替えたとき | `station`・`level` |
 | `walk_end` | 散歩の終わり（終わりのまとめのあと） | なし |
