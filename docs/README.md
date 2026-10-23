@@ -13,6 +13,7 @@
 | Google Play Console への申告内容 | [Play Console の申告](play-console.md) |
 | 情報の収集・送信と端末内保存 | [プライバシーポリシー](privacy-policy.md) |
 | アプリの公開・更新手順 | [アプリの公開と更新](release.md) |
+| API で Google Play に出すしくみと準備 | [Google Play Developer API で出す](play-api.md) |
 | アプリ固有の残作業と検討事項 | [TODO](TODO.md) |
 
 利用者別の詳しい操作・運用手順は [SanpoGuide 手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/README.md) を参照してください。

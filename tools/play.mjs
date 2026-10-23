@@ -1,5 +1,5 @@
 /**
- * Publishes to Google Play through the Google Play Developer API (docs/release.md).
+ * Publishes to Google Play through the Google Play Developer API (docs/play-api.md).
  *
  *   node tools/play.mjs status                                   # the tracks and their releases
  *   node tools/play.mjs listing                                  # the descriptions `--listing` sends
