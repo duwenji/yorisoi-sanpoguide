@@ -4,6 +4,7 @@ import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.llm.LlmClient
 import io.github.duwenji.yorisoi.kit.llm.ClaudeClient
 import io.github.duwenji.yorisoi.kit.llm.OpenAiCompatibleClient
+import io.github.duwenji.yorisoi.kit.llm.OutputCheck
 import io.github.duwenji.yorisoi.kit.llm.Purpose
 import io.github.duwenji.yorisoi.kit.llm.RelayClient
 import io.github.duwenji.yorisoi.kit.llm.RelayException
@@ -13,7 +14,7 @@ import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.material.Ground
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiUsage
+import io.github.duwenji.yorisoi.kit.llm.AiUsage
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.yorisoi.sanpoguide.station.Station

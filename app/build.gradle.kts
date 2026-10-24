@@ -104,7 +104,6 @@ dependencies {
     // Test tickets' QR codes (API-002): Google's scanner UI, so the app needs no camera permission.
     implementation(libs.play.services.code.scanner)
     // The operator's AI: proves to the relay that this is the app from Play (API-AI-RELAY AR-3).
-    implementation(libs.play.integrity)
 
     testImplementation(libs.junit)
     // The real org.json; Android's is a stub in local unit tests.
