@@ -17,10 +17,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,7 +54,7 @@ import java.util.Locale
 
 /**
  * The companion's latest words, plus live walk figures, floating over the map. [onReplay] reads
- * the latest line again; earlier lines open below it.
+ * the latest line again; earlier lines open below it. After a walk, [onDismiss] closes the look back.
  * With a [scene], the figures sit on a small picture of the current mood. A channel's line may
  * carry an image and its credit, and a detail the user opens with [onOpen].
  */
@@ -63,6 +65,7 @@ fun CompanionCard(
     scene: Mood? = null,
     onOpen: (CueDetail) -> Unit = {},
     onReplay: (Utterance) -> Unit = {},
+    onDismiss: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -95,7 +98,14 @@ fun CompanionCard(
                     .padding(16.dp, if (scene != null) 4.dp else 12.dp, 16.dp, 0.dp),
             ) {
                 if (scene == null) {
-                    Text(status, style = MaterialTheme.typography.labelLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(status, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                        if (live == null && onDismiss != null) {
+                            IconButton(onClick = onDismiss, modifier = Modifier.size(40.dp)) {
+                                Icon(Icons.Filled.Close, contentDescription = "振り返りを閉じる", tint = faint)
+                            }
+                        }
+                    }
                 }
                 val shown = if (expanded) lines.take(6) else lines.take(1)
                 if (shown.isEmpty()) {

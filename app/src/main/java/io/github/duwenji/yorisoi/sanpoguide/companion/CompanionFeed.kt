@@ -87,6 +87,11 @@ class CompanionFeed {
     /** The channel in use now, stamped on each line as it is added. */
     var channel: () -> ReportTarget? = { null }
 
+    /** Forgets the last walk's lines, once the user has looked back on them. */
+    fun clearLines() {
+        _lines.value = emptyList()
+    }
+
     fun add(line: Utterance) = _lines.update { (listOf(line.copy(channel = line.channel ?: channel())) + it).take(MAX_LINES) }
 
     private val _opened = MutableStateFlow<CueDetail?>(null)

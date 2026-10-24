@@ -283,6 +283,7 @@ fun MainScreen(
                         scene = mood.takeIf { settings.moodEnabled && walking },
                         onOpen = viewModel::openCue,
                         onReplay = viewModel::replay,
+                        onDismiss = viewModel::dismissReview.takeIf { !walking },
                         modifier = Modifier.padding(horizontal = 12.dp),
                     )
                 }
