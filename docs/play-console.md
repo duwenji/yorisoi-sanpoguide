@@ -201,4 +201,4 @@ Google の定義では、端末から外に送るものは、送り先が運営�
 | バックグラウンドの位置情報の権限 | 求めない（`ACCESS_BACKGROUND_LOCATION` なし。散策者が画面で「散策をはじめる」を押したときに始める） |
 | 説明 | 散策者が「散策をはじめる」を押してから「散策を終える」を押すまで、画面を閉じても現在地を追い、近づいたスポットの解説と、歩いた距離・経路の記録をする。散策中は通知を出し続け、通知の「終了」からも終えられる |
 | 散策者への影響 | 位置を追うのをやめると、画面を閉じている間のスポットの案内と、散歩の記録が途切れる |
-| 動画 | [`store/videos/foreground-service-demo.mp4`](../store/videos/foreground-service-demo.mp4)。「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れ。URL は GitHub のファイルのページ https://github.com/duwenji/yorisoi-sanpoguide/blob/main/store/videos/foreground-service-demo.mp4 （その場で再生できる）を入れる。撮り直したら同じファイル名で置き換える（URL は変わらない） |
+| 動画 | [`store/videos/foreground-service-demo.mp4`](../store/videos/foreground-service-demo.mp4)。「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れ。URL は jsDelivr から配信したもの https://cdn.jsdelivr.net/gh/duwenji/yorisoi-sanpoguide@fa274fd/store/videos/foreground-service-demo.mp4 を入れる（`video/mp4` で返るので、ブラウザでそのまま再生できる。GitHub のファイルのページは再生せず、ダウンロードになる）。`@` の後ろは動画を入れたコミット。`@main` にすると CDN に最大 7 日古い版が残るので、コミットで固定する。撮り直したら同じファイル名で置き換え、その後のコミットに URL を直して Play Console で入れ直す |
