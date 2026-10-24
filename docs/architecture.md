@@ -146,25 +146,26 @@ flowchart LR
 - 今回の散歩で案内したスポット（同じ ID、または同じ名前で近い位置）は候補から外れる。過去の散歩で訪れたスポットは、再訪の一言の候補になる。
 - スポットの通知は 1 枠（`SPOT_NOTIFICATION_ID`）を使い回すため、新しい案内が前の通知を置き換える。
 
-## 図 3 · スポット解説: 地図でスポットをタップしたとき
+## 図 3 · スポット解説: 地図か一覧でスポットを選んだとき
 
-解説と写真は別々に取りに行く。解説は「つなぎ方（運営の AI か、AI サービスとモデル）・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
+選ぶと、一覧のシートがそのスポットのカードに替わる。解説はカードの「解説を聞く」か「解説を読む」を押したときに初めて作り、写真は「解説を読む」で開く解説パネルにだけ出す（ライセンスが写真の横に作者を出すことを求めるため）。解説と写真は別々に取りに行く。解説は「つなぎ方（運営の AI か、AI サービスとモデル）・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュするため、同じ条件で料金がかかるのは 1 回だけ。解説の役割・重点・長さは、選んでいるチャンネルから入る。
 
 チャンネルが使う素材集のうち、素材提供者が AI の根拠にすることを認めたもの（`grants.grounding`）に同じスポットについての資料があれば、それを根拠として AI に渡す（`material/Grounding`。3 件・1,500 字まで。前もって取得した分だけを読み、そのために取得はしない）。根拠を使った解説には、もとにした素材提供者を添える。解説パネルには、AI の発言には誤りがありうることも出す（`ui/ReportLink.kt` の `AI_MAY_BE_WRONG`）。
 
 ```mermaid
 flowchart LR
-  Tap["タップ<br/>MainScreen"] --> Select["MainViewModel<br/>select()"]
-  Select --> Guide["GuideRepository<br/>キャッシュになければ生成"]
-  Select --> Photos["SpotPhotos<br/>写真の手がかりがあるときだけ"]
+  Tap["選ぶ<br/>MainScreen"] --> Card["スポットのカード<br/>MainViewModel.select()"]
+  Card -- "聞く・読む" --> Guide["GuideRepository<br/>キャッシュになければ生成"]
+  Card -- "読む" --> Photos["SpotPhotos<br/>写真の手がかりがあるときだけ"]
   Grounds["根拠<br/>素材集の資料（Grounding）"] -.-> Guide
   Guide --> AI["AI サービス<br/>キー無し・上限・連絡先を含む返事は定型文"]
   Photos --> Wiki["Wikimedia<br/>既定は Wi-Fi 時のみ"]
   AI --> Panel["解説パネル<br/>文・写真・読み上げボタン"]
+  AI --> Speak["読み上げ<br/>「解説を聞く」"]
   Wiki --> Panel
 ```
 
-読み上げは自動では始まらず、パネルのボタンで `Speaker` に渡す。散策モードで初訪問のスポットに近づいたときも同じ `GuideRepository.guideFor()` を使うので、キャッシュは両方で共有される。
+読み上げは自動では始まらず、カードの「解説を聞く」かパネルのボタンで `Speaker` に渡す。散策モードで初訪問のスポットに近づいたときも同じ `GuideRepository.guideFor()` を使うので、キャッシュは両方で共有される。
 
 ## 図 4 · 雰囲気: 1 つの「雰囲気」を画面・音・話し方で共有する
 
@@ -191,7 +192,7 @@ flowchart LR
 ```mermaid
 flowchart LR
   Guided["散策中に案内したスポット<br/>CompanionFeed.guiding"] --> Target
-  Tapped["タップしたスポット<br/>MainViewModel.select()"] --> Target
+  Tapped["選んだスポット<br/>MainViewModel.select()"] --> Target
   Target["ルートの対象<br/>（新しい方。✕ で消す）"] --> Update
   Loc["位置の更新"] --> Update
   Update["<b>updateRoute()</b><br/>対象が変わった・30m 外れたときだけ問い合わせ"] --> RouteClient["RouteClient"]

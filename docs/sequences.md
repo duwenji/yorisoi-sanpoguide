@@ -9,7 +9,7 @@
 | 散策中、位置が変わるたび・30 秒ごと | [図 3 · 話しかけ](#図-3--話しかけ-位置の更新とタイマーから話すまで) |
 | 散策中、スポットに近づいたとき | [図 4 · スポットの案内](#図-4--スポットの案内-きっかけか解説か再訪の一言) |
 | チャンネルのきっかけが当たったとき | [図 5 · きっかけ](#図-5--きっかけ-チャンネルの素材を取り出して見せる) |
-| 地図でスポットをタップしたとき | [図 6 · スポット解説](#図-6--スポット解説-解説と写真を別々に取る) |
+| 地図か一覧でスポットを選んだとき | [図 6 · スポット解説](#図-6--スポット解説-解説と写真を別々に取る) |
 | 第三者のチャンネルを使うとき | [図 7 · チャンネルの取り込み](#図-7--チャンネルの取り込み-確かめてから使う) |
 | 散策中にチャンネルを切り替えたとき | [図 8 · 散策中の切り替え](#図-8--散策中の切り替え-一言を予約する) |
 | 散策を終えたとき | [図 9 · 散策の終了](#図-9--散策の終了-記録してからまとめの一言) |
@@ -35,7 +35,7 @@
 | P06 | Wikimedia | Wikimedia Commons・Wikidata | 6 |
 | P07 | MainActivity | `ui/MainActivity.kt`（画面の切り替え・散策の開始と終了） | 2 |
 | P08 | MainViewModel | `ui/MainViewModel.kt` | 2, 6, 8 |
-| P09 | 解説パネル | `ui/MainScreen.kt` のスポット解説 | 6 |
+| P09 | スポットのカード・解説パネル | `ui/MainScreen.kt` の `SpotCard`・`GuideSheet` | 6 |
 | P10 | StationPicker | `ui/StationPicker.kt`（メイン画面のチャンネルの選択） | 8 |
 | P11 | ChannelsViewModel | `ui/ChannelsViewModel.kt`（配信されているチャンネルの画面） | 7 |
 | P12 | WalkService | `walk/WalkService.kt`（散策モードのフォアグラウンドサービス） | 2, 3, 4, 5, 8, 9 |
@@ -383,12 +383,12 @@ sequenceDiagram
 
 ## 図 6 · スポット解説: 解説と写真を別々に取る
 
-地図でスポットをタップしたとき。散策中でなくても動く。
+地図か一覧でスポットを選んだとき。散策中でなくても動く。選んだだけでは解説を作らず、カードの「解説を聞く」か「解説を読む」を押したときに作る（AI の料金がかかりうるため）。
 
 ```mermaid
 sequenceDiagram
   actor W as P01 散策者
-  participant UI as P09 解説パネル
+  participant UI as P09 スポットのカード・解説パネル
   participant VM as P08 MainViewModel
   participant Nar as P29 Narration
   participant Prod as P30 Producers
@@ -398,67 +398,67 @@ sequenceDiagram
   participant Wiki as P06 Wikimedia
   participant Out as P36 出力
 
-  W->>UI: 6-1 スポットをタップ
+  W->>UI: 6-1 スポットを選ぶ
   UI->>VM: 6-2 select(spot)
-  VM->>UI: 6-3 読み込み中・ルートの対象にする
-  VM->>Nar: 6-4 peekSheetPhoto()（写真なし・Wi-Fi 待ちならすぐわかる）
-  par 解説
-    VM->>Nar: 6-5 sheetGuide(spot)
-    Nar->>Prod: 6-6 first([AI の解説])
+  VM->>UI: 6-3 カードを出す・ルートの対象にする
+  W->>UI: 6-4 「解説を聞く」か「解説を読む」
+  UI->>VM: 6-5 listen() / readGuide()
+  par 解説（選んでから 1 回だけ）
+    VM->>Nar: 6-6 sheetGuide(spot)
+    Nar->>Prod: 6-7 first([AI の解説])
     opt AI が設定済み
-      Prod->>GR: 6-7 guideFor()
-      GR->>AI: 6-8 generate()（キャッシュになければ）
-      AI-->>GR: 6-9 解説
-      GR-->>Prod: 6-10 解説 / 上限・失敗
+      Prod->>GR: 6-8 guideFor()
+      GR->>AI: 6-9 generate()（キャッシュになければ）
+      AI-->>GR: 6-10 解説
+      GR-->>Prod: 6-11 解説 / 上限・失敗
     end
-    Prod-->>Nar: 6-11 MaterialResult
+    Prod-->>Nar: 6-12 MaterialResult
     opt キーなし・上限
-      Nar->>Prod: 6-12 first([定型文])
-      Prod-->>Nar: 6-13 地図のタグからの要約
+      Nar->>Prod: 6-13 first([定型文])
+      Prod-->>Nar: 6-14 地図のタグからの要約
     end
-    Nar-->>VM: 6-14 解説と作者 / 失敗
-    VM->>UI: 6-15 解説
-  and 写真（手がかりがあるときだけ）
-    VM->>Nar: 6-16 sheetPhoto(spot)
-    Nar->>Ph: 6-17 photoFor()
-    Ph->>Wiki: 6-18 写真を探す
-    Wiki-->>Ph: 6-19 画像・作者・ライセンス
-    Ph-->>Nar: 6-20 写真
-    Nar-->>VM: 6-21 写真と作者
-    VM->>UI: 6-22 写真
+    Nar-->>VM: 6-15 解説と作者 / 失敗
+    VM->>UI: 6-16 解説
+  and 写真（「解説を読む」で、手がかりがあるときだけ）
+    VM->>Nar: 6-17 peekSheetPhoto()（写真なし・Wi-Fi 待ちならすぐわかる）
+    VM->>Nar: 6-18 sheetPhoto(spot)
+    Nar->>Ph: 6-19 photoFor()
+    Ph->>Wiki: 6-20 写真を探す
+    Wiki-->>Ph: 6-21 画像・作者・ライセンス
+    Ph-->>Nar: 6-22 写真
+    Nar-->>VM: 6-23 写真と作者
+    VM->>UI: 6-24 写真
   end
-  W->>UI: 6-23 読み上げボタン
-  UI->>VM: 6-24 speak()
-  VM->>Out: 6-25 読み上げ
+  VM->>Out: 6-25 読み上げ（「解説を聞く」か、パネルの読み上げボタン）
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
 |---|---|---|---|
-| 6-1 | P01 → P09 | 地図かリストでスポットをタップする。 | `MainScreen` |
-| 6-2 | P09 → P08 | 選んだスポットを渡す。 | `MainViewModel.select()` |
-| 6-3 | P08 → P09 | このスポットを地図のルートの対象にし、解説を「読み込み中」にしたパネルを開く。 | `routeTarget`・`_selected` |
-| 6-4 | P08 → P29 | 取りに行かずにわかる写真の状態を先に見る: 写真の設定がオフ・手がかり（OSM の `wikimedia_commons`・`wikidata` タグ）がない → 写真なし、従量制の回線でモバイルデータの写真がオフ → Wi-Fi 待ち。どちらでもなければ「読み込み中」にして 6-17 へ。 | `Narration.peekSheetPhoto()`・`CommonsPhotoProducer.peek()` |
-| 6-5 | P08 → P29 | 解説を頼む（`viewModelScope`）。 | `Narration.sheetGuide()` |
-| 6-6 | P29 → P30 | まず AI の解説だけを候補にして頼む。根拠の添え方は 4-6 と同じ。 | `Producers.first([AI_GUIDE])` |
-| 6-7 | P30 → P32 | AI が設定済みなら解説を頼む。未設定なら呼ばずに「キーなし」。 | `AiGuideProducer`・`GuideRepository.guideFor()` |
-| 6-8 | P32 → P05 | キャッシュになく上限内なら生成する（4-8〜4-11 と同じ。キャッシュは散策中の案内と共有）。 | `LlmClient.generate()` |
-| 6-9 | P05 → P32 | 解説の文。 | — |
-| 6-10 | P32 → P30 | 使える解説、または上限・失敗（連絡先を含む返事を含む）。 | `MaterialResult` |
-| 6-11 | P30 → P29 | AI の結果を返す。 | `MaterialResult` |
-| 6-12 | P29 → P30 | 理由が「キーなし」か「上限」のときだけ、定型文を頼む。それ以外の失敗は 6-14 でそのまま失敗として出す（散策者は画面を見ていて、やり直せるため）。 | `Narration.sheetGuide()` の `FIXED_LINE_INSTEAD` |
-| 6-13 | P30 → P29 | 地図のタグからの要約（`fallback/guide`）。 | `FallbackTextProducer` |
-| 6-14 | P29 → P08 | 解説（作者つき）か、失敗の理由。 | `MaterialResult` |
-| 6-15 | P08 → P09 | 解説の文・作者・AI が書いたか（AI なら誤りがありうる旨も出す）、または「解説の生成に失敗しました」。結果が届いたときに別のスポットを選んでいたら捨てる。 | `GuideState`・`updateSelected()` |
-| 6-16 | P08 → P29 | 6-4 で「読み込み中」になったときだけ写真を頼む。 | `Narration.sheetPhoto()` |
-| 6-17 | P29 → P33 | Wikimedia の写真の素材提供者を通して、スポットの写真を頼む。 | `CommonsPhotoProducer`・`SpotPhotos.photoFor()` |
-| 6-18 | P33 → P06 | タグの Commons のファイル、なければ Wikidata の項目の画像（P18）を探して取る。 | `SpotPhotos.find()`（kit-geo） |
-| 6-19 | P06 → P33 | 画像・作者・ライセンス・ページの URL。 | — |
-| 6-20 | P33 → P29 | 写真。見つからなければ「なし」。 | `MaterialResult.Ready`・`None` |
-| 6-21 | P29 → P08 | 写真と作者（「Wikimedia Commons 経由」）。 | `Credit` |
-| 6-22 | P08 → P09 | 写真を出す。解説と同じく、別のスポットに移っていたら捨てる。 | `PhotoState`・`updateSelected()` |
-| 6-23 | P01 → P09 | パネルの読み上げボタン。読み上げは自動では始まらない。 | `MainScreen` |
-| 6-24 | P09 → P08 | スポットと解説を渡す。 | `MainViewModel.speak()` |
-| 6-25 | P08 → P36 | いまの読み上げを止めてから、「スポットの名前。解説」を読み上げる。 | `Speaker.stop()`・`speak()` |
+| 6-1 | P01 → P09 | 地図の点か一覧の行でスポットを選ぶ。 | `MainScreen` |
+| 6-2 | P09 → P08 | 選んだスポットを渡す。同じスポットをもう一度選んだときは、作った解説をそのまま使う。 | `MainViewModel.select()` |
+| 6-3 | P08 → P09 | このスポットを地図のルートの対象にし、一覧のシートをスポットのカード（名前・種類・距離・立ち寄った回数）に替える。地図はこのスポットへ動いて大きく描き、ほかのスポットを薄くする。 | `routeTarget`・`_selected`・`SpotMap` の `selected` |
+| 6-4 | P01 → P09 | カードの「解説を聞く」か「解説を読む」を押す。 | `MainScreen` の `SpotCard` |
+| 6-5 | P09 → P08 | 「解説を聞く」は解説ができたら読み上げ、「解説を読む」は解説パネルを開く。どちらも、まだなら解説を頼む（6-6）。 | `listen()`・`readGuide()`・`guideFor()` |
+| 6-6 | P08 → P29 | 解説を頼む（`viewModelScope`）。選んでいる間は 1 回だけで、失敗したときだけ頼み直す。 | `Narration.sheetGuide()` |
+| 6-7 | P29 → P30 | まず AI の解説だけを候補にして頼む。根拠の添え方は 4-6 と同じ。 | `Producers.first([AI_GUIDE])` |
+| 6-8 | P30 → P32 | AI が設定済みなら解説を頼む。未設定なら呼ばずに「キーなし」。 | `AiGuideProducer`・`GuideRepository.guideFor()` |
+| 6-9 | P32 → P05 | キャッシュになく上限内なら生成する（4-8〜4-11 と同じ。キャッシュは散策中の案内と共有）。 | `LlmClient.generate()` |
+| 6-10 | P05 → P32 | 解説の文。 | — |
+| 6-11 | P32 → P30 | 使える解説、または上限・失敗（連絡先を含む返事を含む）。 | `MaterialResult` |
+| 6-12 | P30 → P29 | AI の結果を返す。 | `MaterialResult` |
+| 6-13 | P29 → P30 | 理由が「キーなし」か「上限」のときだけ、定型文を頼む。それ以外の失敗は 6-15 でそのまま失敗として出す（散策者は画面を見ていて、やり直せるため）。 | `Narration.sheetGuide()` の `FIXED_LINE_INSTEAD` |
+| 6-14 | P30 → P29 | 地図のタグからの要約（`fallback/guide`）。 | `FallbackTextProducer` |
+| 6-15 | P29 → P08 | 解説（作者つき）か、失敗の理由。 | `MaterialResult` |
+| 6-16 | P08 → P09 | 解説の文・作者・AI が書いたか（AI なら誤りがありうる旨も出す）、または「解説の生成に失敗しました」。作っている間、カードの「解説を聞く」は「準備しています」になる。結果が届いたときに別のスポットを選んでいたら捨てる。 | `GuideState`・`updateSelected()` |
+| 6-17 | P08 → P29 | 「解説を読む」で初めて、取りに行かずにわかる写真の状態を見る: 写真の設定がオフ・手がかり（OSM の `wikimedia_commons`・`wikidata` タグ）がない → 写真なし、従量制の回線でモバイルデータの写真がオフ → Wi-Fi 待ち。どちらでもなければ「読み込み中」にして 6-18 へ。カードに写真を出さないのは、ライセンスが写真の横に作者を出すことを求めるため。 | `Narration.peekSheetPhoto()`・`CommonsPhotoProducer.peek()` |
+| 6-18 | P08 → P29 | 6-17 で「読み込み中」になったときだけ写真を頼む。 | `Narration.sheetPhoto()` |
+| 6-19 | P29 → P33 | Wikimedia の写真の素材提供者を通して、スポットの写真を頼む。 | `CommonsPhotoProducer`・`SpotPhotos.photoFor()` |
+| 6-20 | P33 → P06 | タグの Commons のファイル、なければ Wikidata の項目の画像（P18）を探して取る。 | `SpotPhotos.find()`（kit-geo） |
+| 6-21 | P06 → P33 | 画像・作者・ライセンス・ページの URL。 | — |
+| 6-22 | P33 → P29 | 写真。見つからなければ「なし」。 | `MaterialResult.Ready`・`None` |
+| 6-23 | P29 → P08 | 写真と作者（「Wikimedia Commons 経由」）。 | `Credit` |
+| 6-24 | P08 → P09 | 写真を出す。解説と同じく、別のスポットに移っていたら捨てる。 | `PhotoState`・`updateSelected()` |
+| 6-25 | P08 → P36 | 「解説を聞く」なら解説ができたとき、パネルなら読み上げボタンで、いまの読み上げを止めてから「スポットの名前。解説」を読み上げる。読み上げている間、カードのボタンは「止める」になる。 | `MainViewModel.speak()`・`Speaker.stop()`・`speak()` |
 
 ## 図 7 · チャンネルの取り込み: 確かめてから使う
 

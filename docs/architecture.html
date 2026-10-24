@@ -337,33 +337,33 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
   <section>
     <div class="sec-head">
       <div class="eyebrow">図 3 · スポット解説</div>
-      <h2>地図でスポットをタップしたとき</h2>
-      <p>解説と写真は別々に取りに行きます。解説は「AI サービス・モデル・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュされるため、同じ条件で料金がかかるのは 1 回だけです。解説の役割・重点・長さは、選んでいるチャンネルから入ります。</p>
+      <h2>地図か一覧でスポットを選んだとき</h2>
+      <p>選ぶと、一覧のシートがそのスポットのカードに替わります。解説はカードの「解説を聞く」か「解説を読む」を押したときに初めて作り、写真は「解説を読む」で開く解説パネルにだけ出します（ライセンスが写真の横に作者を出すことを求めるため）。解説と写真は別々に取りに行きます。解説は「AI サービス・モデル・チャンネル（版を含む）・解説の長さ・スポット・位置情報を送る設定・根拠（素材集の版と資料）」の組み合わせでキャッシュされるため、同じ条件で料金がかかるのは 1 回だけです。解説の役割・重点・長さは、選んでいるチャンネルから入ります。</p>
       <p>チャンネルが使う素材集のうち、素材提供者が AI の根拠にすることを認めたもの（<code>grants.grounding</code>）に同じスポットについての資料があれば、それを根拠として AI に渡します（<code>material/Grounding</code>。3 件・1,500 字まで。前もって取得した分だけを読み、そのために取得はしません）。根拠を使った解説には、もとにした素材提供者を添えます。</p>
     </div>
     <figure>
       <div class="scroll">
-      <svg viewBox="0 0 1000 214" role="img" aria-label="スポットをタップすると MainViewModel.select が、解説を GuideRepository 経由で AI サービスから、写真を SpotPhotos 経由で Wikimedia から取得し、解説パネルに表示する。">
+      <svg viewBox="0 0 1000 214" role="img" aria-label="スポットを選ぶと MainViewModel.select がカードを出す。「解説を聞く」「解説を読む」で解説を GuideRepository 経由で AI サービスから、「解説を読む」で写真を SpotPhotos 経由で Wikimedia から取得し、解説パネルに表示するか読み上げる。">
         <defs>
           <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
         </defs>
-        <rect class="bx" x="20" y="80" width="140" height="54" rx="8"/><text class="t" x="90" y="103">タップ</text><text class="sm" x="90" y="121">MainScreen</text>
+        <rect class="bx" x="20" y="80" width="140" height="54" rx="8"/><text class="t" x="90" y="103">選ぶ</text><text class="sm" x="90" y="121">MainScreen</text>
         <line class="ar" x1="160" y1="107" x2="198" y2="107" marker-end="url(#a3)"/>
-        <rect class="bx" x="200" y="80" width="190" height="54" rx="8"/><text class="tm" x="295" y="103">MainViewModel</text><text class="sm" x="295" y="121">select()</text>
+        <rect class="bx" x="200" y="80" width="190" height="54" rx="8"/><text class="tm" x="295" y="103">MainViewModel</text><text class="sm" x="295" y="121">select() → カード</text>
         <polyline class="ar" points="390,98 415,98 415,50 438,50" marker-end="url(#a3)"/>
         <polyline class="ar" points="390,116 415,116 415,164 438,164" marker-end="url(#a3)"/>
-        <rect class="bx" x="440" y="22" width="210" height="56" rx="8"/><text class="tm" x="545" y="45">GuideRepository</text><text class="s" x="545" y="64">キャッシュになければ根拠とともに生成</text>
-        <rect class="bx" x="440" y="136" width="210" height="56" rx="8"/><text class="tm" x="545" y="159">SpotPhotos</text><text class="s" x="545" y="178">写真の手がかりがあるときだけ</text>
+        <rect class="bx" x="440" y="22" width="210" height="56" rx="8"/><text class="tm" x="545" y="45">GuideRepository</text><text class="s" x="545" y="64">「聞く」「読む」で、なければ生成</text>
+        <rect class="bx" x="440" y="136" width="210" height="56" rx="8"/><text class="tm" x="545" y="159">SpotPhotos</text><text class="s" x="545" y="178">「読む」で、手がかりがあるときだけ</text>
         <line class="ar" x1="650" y1="50" x2="688" y2="50" marker-end="url(#a3)"/>
         <line class="ar" x1="650" y1="164" x2="688" y2="164" marker-end="url(#a3)"/>
         <rect class="bx-ext" x="690" y="22" width="130" height="56" rx="8"/><text class="te" x="755" y="45">AI サービス</text><text class="s" x="755" y="64">キー無し・上限は定型文</text>
         <rect class="bx-ext" x="690" y="136" width="130" height="56" rx="8"/><text class="te" x="755" y="159">Wikimedia</text><text class="s" x="755" y="178">既定は Wi-Fi 時のみ</text>
         <polyline class="ar" points="820,50 845,50 845,98 858,98" marker-end="url(#a3)"/>
         <polyline class="ar" points="820,164 845,164 845,116 858,116" marker-end="url(#a3)"/>
-        <rect class="bx-acc" x="860" y="80" width="120" height="54" rx="8"/><text class="t" x="920" y="103">解説パネル</text><text class="s" x="920" y="121">文・写真・読み上げ</text>
+        <rect class="bx-acc" x="860" y="80" width="120" height="54" rx="8"/><text class="t" x="920" y="103">解説パネル</text><text class="s" x="920" y="121">文・写真／読み上げ</text>
       </svg>
       </div>
-      <figcaption>読み上げは自動では始まらず、パネルのボタンで <code>Speaker</code> に渡します。散策モードで初訪問のスポットに近づいたときも同じ <code>GuideRepository.guideFor()</code> を使うので、キャッシュは両方で共有されます。</figcaption>
+      <figcaption>読み上げは自動では始まらず、カードの「解説を聞く」かパネルのボタンで <code>Speaker</code> に渡します。散策モードで初訪問のスポットに近づいたときも同じ <code>GuideRepository.guideFor()</code> を使うので、キャッシュは両方で共有されます。</figcaption>
     </figure>
   </section>
 
@@ -410,13 +410,13 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     </div>
     <figure>
       <div class="scroll">
-      <svg viewBox="0 0 1000 306" role="img" aria-label="散策中に案内したスポットかタップしたスポットがルートの対象になり、updateRoute が位置の更新に合わせて RouteClient 経由で OSRM に問い合わせ、失敗時は点線の直線にする。方位センサーの値は rememberHeading が真北に補正する。どちらも SpotMap が描く。">
+      <svg viewBox="0 0 1000 306" role="img" aria-label="散策中に案内したスポットか選んだスポットがルートの対象になり、updateRoute が位置の更新に合わせて RouteClient 経由で OSRM に問い合わせ、失敗時は点線の直線にする。方位センサーの値は rememberHeading が真北に補正する。どちらも SpotMap が描く。">
         <defs>
           <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
         </defs>
         <!-- inputs -->
         <rect class="bx" x="20" y="20" width="190" height="52" rx="8"/><text class="t" x="115" y="42">案内したスポット</text><text class="sm" x="115" y="60">CompanionFeed.guiding</text>
-        <rect class="bx" x="20" y="86" width="190" height="52" rx="8"/><text class="t" x="115" y="108">タップしたスポット</text><text class="sm" x="115" y="126">MainViewModel.select()</text>
+        <rect class="bx" x="20" y="86" width="190" height="52" rx="8"/><text class="t" x="115" y="108">選んだスポット</text><text class="sm" x="115" y="126">MainViewModel.select()</text>
         <rect class="bx" x="20" y="152" width="190" height="40" rx="8"/><text class="t" x="115" y="177">位置の更新</text>
         <line class="ar" x1="210" y1="46" x2="248" y2="70" marker-end="url(#a5)"/>
         <line class="ar" x1="210" y1="112" x2="248" y2="104" marker-end="url(#a5)"/>
