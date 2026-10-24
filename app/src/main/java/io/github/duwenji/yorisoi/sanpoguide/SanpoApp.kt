@@ -133,7 +133,13 @@ class SanpoApp : Application() {
         diagnostics = WalkDiagnostics(File(filesDir, "diagnostics"))
         // The channel decides which shops to search for; read when searching, after start-up.
         spotCache = SpotCache(File(cacheDir, "spots"))
-        spots = SpotRepository(OverpassClient(overpassHttp()), shops = { stations.current.value.searchedKinds }, cache = spotCache)
+        spots = SpotRepository(
+            OverpassClient(overpassHttp()),
+            shops = { stations.current.value.searchedKinds },
+            cache = spotCache,
+            useCache = { settings.settings.value.spotCacheEnabled },
+            freshMs = { TimeUnit.DAYS.toMillis(settings.settings.value.spotCacheFreshDays.toLong()) },
+        )
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
         // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
