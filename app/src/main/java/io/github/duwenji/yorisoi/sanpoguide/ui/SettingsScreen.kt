@@ -341,6 +341,41 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
+            SectionTitle("スポット検索")
+            SwitchRow(
+                "検索の結果を端末に残す",
+                "近くで検索した結果があれば、OpenStreetMap に問い合わせずに使います。" +
+                    "問い合わせは混んでいて時間がかかることが多いため、オンのほうが早く表示できます。" +
+                    "検索に失敗したときも、残っている結果を表示します",
+                draft.spotCacheEnabled, viewModel::setSpotCacheEnabled,
+            )
+            if (draft.spotCacheEnabled) {
+                Text("問い合わせずに使う期間", style = MaterialTheme.typography.labelLarge)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GuideSettings.SPOT_CACHE_FRESH_DAYS.forEach { days ->
+                        FilterChip(
+                            selected = draft.spotCacheFreshDays == days,
+                            onClick = { viewModel.setSpotCacheFreshDays(days) },
+                            label = { Text("$days 日") },
+                        )
+                    }
+                }
+                Text(
+                    "これより古い結果は、問い合わせのあいだだけ表示します。結果は最長 90 日残します。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            val spotCacheCleared by viewModel.spotCacheCleared.collectAsStateWithLifecycle()
+            TextButton(onClick = viewModel::clearSpotCache, enabled = !spotCacheCleared) {
+                Text(if (spotCacheCleared) "スポット検索のキャッシュを消しました" else "スポット検索のキャッシュを消す")
+            }
+            Text(
+                "残した結果から、おおよそ歩いた場所が分かります。散歩の記録をすべて削除したときも一緒に消えます。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
             SectionTitle("案内のしきい値")
             Text(
                 "天気の急変・日の入り・近くの施設を、どんなときに知らせるかです。" +

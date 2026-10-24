@@ -21,6 +21,7 @@ import io.github.duwenji.yorisoi.core.format.GuideLength
 import io.github.duwenji.yorisoi.core.format.SoundChoice
 import io.github.duwenji.yorisoi.core.format.SpotKind
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface TestState {
     data object Idle : TestState
@@ -43,6 +45,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val repo = (application as SanpoApp).settings
     private val prompts = (application as SanpoApp).prompts
     private val stationRepo = (application as SanpoApp).stations
+    private val spotCache = (application as SanpoApp).spotCache
 
     /** Today's AI calls, shown beside the limit. */
     val aiCallsToday: StateFlow<Int> = (application as SanpoApp).aiUsage.count
@@ -122,6 +125,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setDailyAiLimit(limit: Int?) = edit { it.copy(dailyAiLimit = limit) }
 
     fun setShareLocationWithAi(on: Boolean) = edit { it.copy(shareLocationWithAi = on) }
+    fun setSpotCacheEnabled(on: Boolean) = edit { it.copy(spotCacheEnabled = on) }
+    fun setSpotCacheFreshDays(days: Int) = edit { it.copy(spotCacheFreshDays = days) }
+
+    private val _spotCacheCleared = MutableStateFlow(false)
+    /** Whether the kept spot searches were cleared while on this screen. */
+    val spotCacheCleared: StateFlow<Boolean> = _spotCacheCleared.asStateFlow()
+
+    /** Clears the kept spot searches at once (not part of the draft). */
+    fun clearSpotCache() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { spotCache.clear() }
+            _spotCacheCleared.value = true
+        }
+    }
     fun setMapStyle(style: MapStyle) = edit { it.copy(mapStyle = style) }
     fun setGoogleMapsApiKey(key: String) = edit { it.copy(googleMapsApiKey = key) }
 

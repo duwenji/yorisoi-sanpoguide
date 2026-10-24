@@ -54,6 +54,10 @@ data class GuideSettings(
      * Off by default: without it the AI gets names, distances and figures only.
      */
     val shareLocationWithAi: Boolean = false,
+    /** Keep spot searches on the device and use one from nearby instead of asking OpenStreetMap again (kit-geo SpotCache). */
+    val spotCacheEnabled: Boolean = true,
+    /** How new a kept search must be to use it without asking again; one of [SPOT_CACHE_FRESH_DAYS]. */
+    val spotCacheFreshDays: Int = 7,
     /** How many times a day the AI may be called; null for no limit (platform ADR-004 H-9). Channels talk within it. */
     val dailyAiLimit: Int? = 100,
     val mapStyle: MapStyle = MapStyle.GSI_STANDARD,
@@ -83,6 +87,9 @@ data class GuideSettings(
     companion object {
         /** The daily limits offered on the settings screen; null is「上限なし」. */
         val DAILY_AI_LIMITS: List<Int?> = listOf(30, 60, 100, 200, null)
+
+        /** The freshness offered for kept spot searches, in days; none past kit-geo's 90 days. */
+        val SPOT_CACHE_FRESH_DAYS: List<Int> = listOf(1, 3, 7, 30)
 
         /** Whether this build has a relay to talk to (release builds don't until production's is up). */
         val operatorAiAvailable: Boolean get() = BuildConfig.AI_RELAY_URL.isNotEmpty()
@@ -133,6 +140,8 @@ class SettingsRepository(context: Context) {
             putBoolean(KEY_SPOT_PHOTOS, settings.spotPhotos)
             putBoolean(KEY_PHOTOS_ON_MOBILE, settings.photosOnMobileData)
             putBoolean(KEY_SHARE_LOCATION_WITH_AI, settings.shareLocationWithAi)
+            putBoolean(KEY_SPOT_CACHE, settings.spotCacheEnabled)
+            putInt(KEY_SPOT_CACHE_FRESH_DAYS, settings.spotCacheFreshDays)
             putInt(KEY_DAILY_AI_LIMIT, settings.dailyAiLimit ?: NO_LIMIT)
             putString(KEY_MAP_STYLE, settings.mapStyle.name)
             val mapsKey = settings.googleMapsApiKey.trim()
@@ -183,6 +192,9 @@ class SettingsRepository(context: Context) {
             spotPhotos = prefs.getBoolean(KEY_SPOT_PHOTOS, DEFAULTS.spotPhotos),
             photosOnMobileData = prefs.getBoolean(KEY_PHOTOS_ON_MOBILE, DEFAULTS.photosOnMobileData),
             shareLocationWithAi = prefs.getBoolean(KEY_SHARE_LOCATION_WITH_AI, DEFAULTS.shareLocationWithAi),
+            spotCacheEnabled = prefs.getBoolean(KEY_SPOT_CACHE, DEFAULTS.spotCacheEnabled),
+            spotCacheFreshDays = prefs.getInt(KEY_SPOT_CACHE_FRESH_DAYS, DEFAULTS.spotCacheFreshDays)
+                .takeIf { it in GuideSettings.SPOT_CACHE_FRESH_DAYS } ?: DEFAULTS.spotCacheFreshDays,
             dailyAiLimit = if (prefs.contains(KEY_DAILY_AI_LIMIT)) prefs.getInt(KEY_DAILY_AI_LIMIT, NO_LIMIT).takeIf { it != NO_LIMIT } else DEFAULTS.dailyAiLimit,
             mapStyle = prefs.getString(KEY_MAP_STYLE, null)
                 ?.let { name -> MapStyle.entries.firstOrNull { it.name == name } }
@@ -237,6 +249,8 @@ class SettingsRepository(context: Context) {
         const val KEY_SPOT_PHOTOS = "spot_photos"
         const val KEY_PHOTOS_ON_MOBILE = "photos_on_mobile"
         const val KEY_SHARE_LOCATION_WITH_AI = "share_location_with_ai"
+        const val KEY_SPOT_CACHE = "spot_cache"
+        const val KEY_SPOT_CACHE_FRESH_DAYS = "spot_cache_fresh_days"
         const val KEY_MAP_STYLE = "map_style"
         const val KEY_GOOGLE_MAPS_KEY = "google_maps_api_key"
         const val KEY_DEVELOPER_MODE = "developer_mode"
