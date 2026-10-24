@@ -24,7 +24,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.TalkDecider
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkDecision
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkSituation
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkEvent
-import io.github.duwenji.yorisoi.sanpoguide.companion.WeatherChangeKind
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
 import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlanJson

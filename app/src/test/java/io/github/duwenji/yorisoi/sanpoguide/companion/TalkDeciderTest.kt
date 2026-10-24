@@ -15,6 +15,7 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
 
 /**
  * Scenes of a walk and what the companion says in each: every check of the decision

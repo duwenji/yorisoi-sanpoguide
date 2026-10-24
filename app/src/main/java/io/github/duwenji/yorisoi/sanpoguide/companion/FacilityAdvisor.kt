@@ -5,6 +5,7 @@ import io.github.duwenji.yorisoi.kit.geo.Facility
 import io.github.duwenji.yorisoi.kit.geo.FacilityKind
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeDetector
 
 /**
  * Why a facility is worth mentioning, most urgent first. Amenities are only brought up when

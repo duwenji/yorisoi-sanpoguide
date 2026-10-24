@@ -19,6 +19,8 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import io.github.duwenji.yorisoi.sanpoguide.station.eventInstructions
 import io.github.duwenji.yorisoi.sanpoguide.station.companionSystemVars
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChange
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
 
 /** Something that happened on the walk that the companion may talk about. */
 sealed interface TalkEvent {

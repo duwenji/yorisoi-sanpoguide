@@ -6,6 +6,7 @@ import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.yorisoi.sanpoguide.history.SpotVisit
 import io.github.duwenji.yorisoi.sanpoguide.history.StationSegment
 import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
 
 /** Mutable state of the walk in progress. Owned and mutated by the walk service only. */
 class WalkSession(
