@@ -11,6 +11,9 @@ import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChange
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
+import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeDetector
 
 /**
  * A spot within reach of the user, as the walk service sees it.
