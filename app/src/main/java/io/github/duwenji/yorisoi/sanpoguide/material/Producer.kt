@@ -85,7 +85,7 @@ sealed interface MaterialResult {
     /** The producer can't produce now; [detail] is for the log or an error message. */
     data class Unavailable(val reason: Reason, val detail: String? = null) : MaterialResult
 
-    /** [LIMIT]: today's AI calls reached the user's limit (platform ADR-004 H-9). */
+    /** [LIMIT]: today's AI calls reached the limit: the user's on their own key (platform ADR-004 H-9), the relay's on the operator's AI (ADR-AI-RELAY R-2). */
     enum class Reason { OFFLINE, METERED, NO_KEY, LIMIT, REVOKED, NOT_PREPARED, FAILED }
 }
 
