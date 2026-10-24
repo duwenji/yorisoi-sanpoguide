@@ -7,6 +7,7 @@
  *   node tools/play.mjs edit --aab release/x.aab --notes "…" --listing --commit
  *   node tools/play.mjs edit --version-code 5 --track alpha           # a bundle already on Play
  *   node tools/play.mjs edit --track my-track --discard-drafts
+ *   node tools/play.mjs edit --track alpha --halt                    # stops handing out the release
  *   node tools/play.mjs edit --listing --contact --screenshots       # the whole store listing
  *   node tools/play.mjs data-safety docs/play-data-safety.csv
  *
@@ -15,7 +16,8 @@
  * website from docs/play-console.md and clears the phone number; `--screenshots` replaces the phone
  * screenshots with store/screenshots/*.png in file name order. `--version-code` puts a bundle already
  * on Play on the track instead, with the release notes it has on another track unless `--notes` is
- * given. `--discard-drafts` removes the track's draft releases. Without `--commit` it only asks
+ * given. `--discard-drafts` removes the track's draft releases; `--halt` halts its rolled-out ones (Play then hands out the
+ * previous release again, which can't be halted; `--version-code` puts a release back). Without `--commit` it only asks
  * Play to validate the edit. Committing sends the changes for review, together with any changes
  * made in Play Console that weren't sent yet. `data-safety` replaces the data safety answers with a
  * CSV in Play Console's export format, at once and without an edit.
@@ -153,6 +155,12 @@ async function edit(opts) {
       await call('PUT', `${API}/edits/${id}/tracks/${opts.track}`, { track: opts.track, releases: kept });
       console.log(`track: ${opts.track} (${releases.length - kept.length} drafts discarded)`);
     }
+    if (opts.halt) {
+      const track = await call('GET', `${API}/edits/${id}/tracks/${opts.track}`);
+      const releases = (track.releases ?? []).map((r) => (['completed', 'inProgress'].includes(r.status) ? { ...r, status: 'halted' } : r));
+      await call('PUT', `${API}/edits/${id}/tracks/${opts.track}`, { track: opts.track, releases });
+      for (const r of releases) console.log(`track: ${opts.track}\t${r.name ?? ''}\t${(r.versionCodes ?? []).join(',')}\t${r.status}`);
+    }
     if (opts.listing) {
       const l = listing();
       await call('PATCH', `${API}/edits/${id}/listings/${LANGUAGE}`, l);
@@ -197,6 +205,7 @@ const { positionals, values } = parseArgs({
     track: { type: 'string', default: 'internal' },
     listing: { type: 'boolean', default: false },
     'discard-drafts': { type: 'boolean', default: false },
+    halt: { type: 'boolean', default: false },
     contact: { type: 'boolean', default: false },
     screenshots: { type: 'boolean', default: false },
     commit: { type: 'boolean', default: false },
@@ -210,7 +219,7 @@ try {
   else if (command === 'edit') await edit(values);
   else if (command === 'data-safety' && arg) await dataSafety(arg);
   else {
-    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text | --version-code n [--notes text]] [--track t] [--discard-drafts] [--listing] [--contact] [--screenshots] [--commit] | data-safety file.csv');
+    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text | --version-code n [--notes text]] [--track t] [--discard-drafts] [--halt] [--listing] [--contact] [--screenshots] [--commit] | data-safety file.csv');
     process.exitCode = 2;
   }
 } catch (e) {
