@@ -67,7 +67,7 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.sanpoguide.station.StationLabels
 import io.github.duwenji.yorisoi.core.format.GuideLength
 import io.github.duwenji.yorisoi.core.format.SoundChoice
@@ -344,7 +344,7 @@ private fun StationSettings(station: Station, viewModel: SettingsViewModel) {
     Label("話しかけの頻度（${station.name}）")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         TalkLevel.entries.forEach { level ->
-            FilterChip(selected = station.talkLevel == level, onClick = { viewModel.setTalkLevel(level) }, label = { Text(level.label) })
+            FilterChip(selected = station.talkLevel == level.level, onClick = { viewModel.setTalkLevel(level) }, label = { Text(level.label) })
         }
     }
     Note("スポットの案内のほかに、歩いた距離や時間、休憩のときに話しかける頻度です。ここから下はチャンネルごとに保存します。")

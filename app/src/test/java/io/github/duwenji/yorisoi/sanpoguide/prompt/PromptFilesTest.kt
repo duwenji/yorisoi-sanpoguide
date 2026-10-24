@@ -8,6 +8,8 @@ import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
 import io.github.duwenji.yorisoi.core.format.DirectoryStationFiles
 import org.junit.Test
 import java.io.File
+import io.github.duwenji.yorisoi.sanpoguide.station.guideSystemVars
+import io.github.duwenji.yorisoi.sanpoguide.station.companionSystemVars
 
 /**
  * Renders every prompt file under `prompts/src/main/resources/sanpoguide/prompts/` with realistic values, so a typo in

@@ -42,7 +42,7 @@ import io.github.duwenji.yorisoi.sanpoguide.material.Shown
 import io.github.duwenji.yorisoi.sanpoguide.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import io.github.duwenji.yorisoi.sanpoguide.ui.MainActivity
@@ -52,6 +52,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.delay
+import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -360,7 +361,7 @@ class WalkService : LifecycleService() {
             now = now,
             weather = weather,
             limits = app.settings.settings.value.thresholds,
-            level = station.talkLevel,
+            level = TalkLevel.of(station.talkLevel),
             events = station.events,
             preferredCategories = station.preferredCategories,
             skippedCategories = station.skippedCategories,

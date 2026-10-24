@@ -1,7 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.report
 
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.StationSource
+import io.github.duwenji.yorisoi.kit.channel.StationSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -16,14 +16,14 @@ class ReportTest {
         assertEquals(Report.APP_CONTACT, Report.target(standard).contact)
         val listed = BuiltInStations.load().first { it.id == "history" }
         // Built-in packages stand in for a listed channel; only its source matters here.
-        val fromList = io.github.duwenji.yorisoi.sanpoguide.station.Station(
+        val fromList = io.github.duwenji.yorisoi.kit.channel.Station(
             BuiltInStations.standardPackage(), BuiltInStations.standardPackage(), "p/x@1", id = "p/x",
             source = StationSource("p", "鎌倉のチャンネル", "鎌倉歴史散歩の会", contact = "channels@example.com"),
         )
         assertEquals("channels@example.com", Report.target(fromList).contact)
         assertEquals("鎌倉のチャンネル", Report.target(fromList).listName)
         // A list without a contact falls back to the app's.
-        val noContact = io.github.duwenji.yorisoi.sanpoguide.station.Station(
+        val noContact = io.github.duwenji.yorisoi.kit.channel.Station(
             BuiltInStations.standardPackage(), BuiltInStations.standardPackage(), "p/x@1", id = "p/x",
             source = StationSource("p", "リスト", "提供者"),
         )

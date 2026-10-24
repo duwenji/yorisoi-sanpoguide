@@ -17,9 +17,10 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
 import io.github.duwenji.yorisoi.kit.llm.AiUsage
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.cancellation.CancellationException
+import io.github.duwenji.yorisoi.sanpoguide.station.guideSystemVars
 
 /**
  * One call to the AI service, for the developer's record of a walk: what was asked, what came

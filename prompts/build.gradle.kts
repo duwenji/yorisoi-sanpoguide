@@ -26,6 +26,7 @@ kotlin {
 dependencies {
     api(libs.yorisoi.core.format)
     api(libs.yorisoi.core.prompt)
+    api(libs.yorisoi.kit.channel)
 
     testImplementation(libs.junit)
     // core-format reads JSON with org.json, which it leaves to its users.
@@ -33,7 +34,7 @@ dependencies {
 }
 
 // A jar (or the APK) can't list a resource folder, so the built-in channels come with a list of
-// their files (BuiltInChannels.INDEX).
+// their files (kit-channel's ResourceChannels.index).
 val channelsDir = layout.projectDirectory.dir("src/main/resources/sanpoguide/channels")
 val channelIndexDir = layout.buildDirectory.dir("generated/channel-index")
 val channelIndex by tasks.registering {

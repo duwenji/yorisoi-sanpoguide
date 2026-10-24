@@ -4,7 +4,7 @@ import io.github.duwenji.yorisoi.core.format.ListedCollection
 import io.github.duwenji.yorisoi.core.format.material.CollectionPackage
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.format.material.Resource
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * A text from a reviewed collection that the AI may take as fact (API-004「AI の根拠」, platform

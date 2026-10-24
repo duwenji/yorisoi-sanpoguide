@@ -13,10 +13,12 @@ import io.github.duwenji.yorisoi.kit.mood.TimeOfDay
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.prompt.StationPrompts
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import io.github.duwenji.yorisoi.sanpoguide.station.eventInstructions
+import io.github.duwenji.yorisoi.sanpoguide.station.companionSystemVars
 
 /** Something that happened on the walk that the companion may talk about. */
 sealed interface TalkEvent {

@@ -88,7 +88,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun stationsOf(walk: WalkRecord): String = stations.namesOf(walk)
+    fun stationsOf(walk: WalkRecord): String = stations.namesOf(walk.stations.map { it.station })
 
     fun clearAll() {
         viewModelScope.launch {

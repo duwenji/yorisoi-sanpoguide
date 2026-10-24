@@ -6,7 +6,8 @@ import io.github.duwenji.yorisoi.kit.llm.KeyCipher
 import android.content.Context
 import androidx.core.content.edit
 import io.github.duwenji.yorisoi.kit.llm.Provider
-import io.github.duwenji.yorisoi.sanpoguide.station.StationOverrides
+import io.github.duwenji.yorisoi.kit.channel.ChannelChoice
+import io.github.duwenji.yorisoi.kit.channel.StationOverrides
 import io.github.duwenji.yorisoi.core.format.GuideLength
 import io.github.duwenji.yorisoi.core.format.SoundChoice
 import io.github.duwenji.yorisoi.core.format.SpotKind
@@ -72,6 +73,9 @@ data class GuideSettings(
      */
     val developerMode: Boolean = false,
 ) {
+    /** The channel in use and the changes to built-in channels, as kit-channel takes them. */
+    val channelChoice: ChannelChoice get() = ChannelChoice(stationId, stationOverrides)
+
     fun apiKey(p: Provider = provider): String = apiKeys[p].orEmpty()
     fun model(p: Provider = provider): String = models[p]?.takeIf { it.isNotBlank() } ?: p.defaultModel
     fun baseUrl(p: Provider = provider): String = if (p == Provider.CUSTOM) customBaseUrl else p.defaultBaseUrl
@@ -215,7 +219,7 @@ class SettingsRepository(context: Context) {
         return ids.associateWith { id ->
             StationOverrides(
                 talkLevel = (all[stationPref(id, FIELD_TALK_LEVEL)] as? String)
-                    ?.let { name -> TalkLevel.entries.firstOrNull { it.name == name } },
+                    ?.let { name -> TalkLevel.entries.firstOrNull { it.name == name }?.level },
                 moodTone = all[stationPref(id, FIELD_MOOD_TONE)] as? Boolean,
                 events = OverrideCodec.decodeSet<TalkEventKind>(all[stationPref(id, FIELD_EVENTS)] as? String),
                 guideLength = OverrideCodec.decode<GuideLength>(all[stationPref(id, FIELD_GUIDE_LENGTH)] as? String),

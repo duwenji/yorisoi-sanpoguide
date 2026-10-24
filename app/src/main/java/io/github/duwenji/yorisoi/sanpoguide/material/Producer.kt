@@ -11,7 +11,7 @@ import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
 import io.github.duwenji.yorisoi.core.format.material.ProducerPolicy
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.kit.voice.Soundscape
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import kotlin.coroutines.cancellation.CancellationException
 
 /** What material is about (API-004「題材」). */

@@ -2,7 +2,7 @@ package io.github.duwenji.yorisoi.sanpoguide.report
 
 import android.content.Intent
 import android.net.Uri
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

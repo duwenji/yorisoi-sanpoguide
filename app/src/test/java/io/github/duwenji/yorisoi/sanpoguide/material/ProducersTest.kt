@@ -9,7 +9,7 @@ import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
 import io.github.duwenji.yorisoi.core.format.material.SubjectKind
 import io.github.duwenji.yorisoi.core.format.material.Trust
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

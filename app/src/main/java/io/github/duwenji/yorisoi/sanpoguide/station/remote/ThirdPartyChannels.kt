@@ -3,7 +3,7 @@ package io.github.duwenji.yorisoi.sanpoguide.station.remote
 import android.content.Context
 import android.net.ConnectivityManager
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.StationPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

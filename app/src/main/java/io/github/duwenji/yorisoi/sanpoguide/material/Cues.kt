@@ -4,7 +4,7 @@ import android.util.Log
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.Cue
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.core.format.NarrationMode
@@ -19,6 +19,7 @@ import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.coroutines.cancellation.CancellationException
+import io.github.duwenji.yorisoi.kit.channel.ChannelMaterials
 
 /** When each cue was last shown on this device, for `oncePerDay` and `once` (API-003 `repeat`). */
 interface CueMemory {

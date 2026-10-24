@@ -14,9 +14,7 @@ import io.github.duwenji.yorisoi.core.format.ListedCollection
 import io.github.duwenji.yorisoi.core.format.Selector
 import io.github.duwenji.yorisoi.core.format.StationFiles
 import io.github.duwenji.yorisoi.core.format.StationMedia
-
-/** A collection on the device that a selector may draw from, as its provider's list names it. */
-class SelectedCollection(val listed: ListedCollection, val pkg: CollectionPackage, val files: StationFiles)
+import io.github.duwenji.yorisoi.kit.channel.SelectedCollection
 
 /**
  * Which collections a channel's selectors draw from (API-004「基準で選ぶ素材提供者」): listed by the
