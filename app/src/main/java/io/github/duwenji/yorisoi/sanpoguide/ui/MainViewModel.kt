@@ -47,6 +47,8 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -68,6 +70,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 sealed interface GuideState {
+    /** Not written yet: only when the user asks to hear or read it, since it may cost an AI call. */
+    data object NotAsked : GuideState
     data object Loading : GuideState
     /**
      * [credit]: who wrote it, and whose texts the AI wrote it from when it used any (API-004 `basedOn`).
@@ -212,7 +216,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             MapState(fallback, "${e.message}。地理院の地図で表示しています")
         } catch (e: Exception) {
             Log.w(TAG, "Map Tiles API session failed", e)
-            MapState(fallback, "Google マップに接続できなかったため、地理院の地図で表示しています（再検索で再接続します）")
+            MapState(fallback, "Google マップに接続できなかったため、地理院の地図で表示しています（メニューの「周辺を再検索」で再接続します）")
         }
     }
 
@@ -296,8 +300,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    /** The spot the user picked on the map or in the list: shown on a card, highlighted on the map. */
     private val _selected = MutableStateFlow<SelectedSpot?>(null)
     val selected: StateFlow<SelectedSpot?> = _selected.asStateFlow()
+
+    /** Whether the selected spot's guide is open in full. */
+    private val _guideOpen = MutableStateFlow(false)
+    val guideOpen: StateFlow<Boolean> = _guideOpen.asStateFlow()
+
+    /** The guide being written for the selected spot, by its id; kept so asking twice asks once. */
+    private var guide: Pair<String, Deferred<GuideState>>? = null
 
     /** The device's location setting is off, so no position can be had even with the permission. */
     private val _locationOff = MutableStateFlow(false)
@@ -343,9 +355,52 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun select(item: SpotItem) {
         routeTarget.value = item.poi
-        val photo = initialPhotoState(item.poi)
-        _selected.value = SelectedSpot(item, GuideState.Loading, photo)
+        // The same spot again keeps the guide already written for it.
+        if (_selected.value?.item?.poi?.id == item.poi.id) return
+        _guideOpen.value = false
+        guide = null
+        _selected.value = SelectedSpot(item, GuideState.NotAsked)
+    }
+
+    /** Reads the selected spot's guide aloud, writing it first if need be. */
+    fun listen() {
+        val item = _selected.value?.item ?: return
         viewModelScope.launch {
+            val state = guideFor(item).await()
+            if (state is GuideState.Ready && _selected.value?.item?.poi?.id == item.poi.id) speak(item.poi, state.text)
+        }
+    }
+
+    /**
+     * Opens the selected spot's guide in full, writing it first if need be. The photo is looked
+     * up here, not on the card: its license asks for the credit beside it, which the sheet has room for.
+     */
+    fun readGuide() {
+        val spot = _selected.value ?: return
+        val item = spot.item
+        guideFor(item)
+        _guideOpen.value = true
+        if (spot.photo != PhotoState.None) return
+        val photo = initialPhotoState(item.poi)
+        updateSelected(item) { it.copy(photo = photo) }
+        if (photo == PhotoState.Loading) {
+            viewModelScope.launch {
+                val found = app.narration.sheetPhoto(item.poi)
+                updateSelected(item) { it.copy(photo = photoState(found) ?: PhotoState.None) }
+            }
+        }
+    }
+
+    fun closeGuide() {
+        _guideOpen.value = false
+        app.speaker.stop()
+    }
+
+    /** Written once per selection; asked again after it failed. */
+    private fun guideFor(item: SpotItem): Deferred<GuideState> {
+        guide?.takeIf { it.first == item.poi.id && _selected.value?.guide !is GuideState.Failed }?.let { return it.second }
+        updateSelected(item) { it.copy(guide = GuideState.Loading) }
+        val job = viewModelScope.async {
             val state = when (val result = app.narration.sheetGuide(item.poi, item.distanceM)) {
                 is MaterialResult.Ready -> GuideState.Ready(
                     (result.material.content as Content.Text).text,
@@ -356,13 +411,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 MaterialResult.None -> GuideState.Failed("解説の生成に失敗しました")
             }
             updateSelected(item) { it.copy(guide = state) }
+            state
         }
-        if (photo == PhotoState.Loading) {
-            viewModelScope.launch {
-                val found = app.narration.sheetPhoto(item.poi)
-                updateSelected(item) { it.copy(photo = photoState(found) ?: PhotoState.None) }
-            }
-        }
+        guide = item.poi.id to job
+        return job
     }
 
     /** Known without fetching: no photo, or waiting for Wi-Fi; otherwise it's worth loading. */
@@ -381,7 +433,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismiss() {
         _selected.value = null
+        _guideOpen.value = false
+        guide = null
         app.speaker.stop()
+    }
+
+    /** Whether something is being read aloud: the companion, a guide or a replay. */
+    val speaking: StateFlow<Boolean> = app.speaker.speaking
+
+    /** Reads one of the companion's lines again. */
+    fun replay(line: Utterance) {
+        app.speaker.stop()
+        app.speaker.speak(line.text)
     }
 
     fun speak(poi: Poi, text: String) {
