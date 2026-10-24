@@ -17,7 +17,8 @@ import io.github.duwenji.yorisoi.kit.geo.SpotCache
 import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.kit.geo.SpotRepository
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
-import io.github.duwenji.yorisoi.sanpoguide.guide.OperatorAi
+import io.github.duwenji.yorisoi.kit.llm.AiUsage
+import io.github.duwenji.yorisoi.kit.llm.OperatorAi
 import io.github.duwenji.yorisoi.kit.llm.RelayClient
 import io.github.duwenji.yorisoi.kit.voice.Speaker
 import io.github.duwenji.yorisoi.sanpoguide.history.HistoryStore
@@ -49,7 +50,6 @@ import io.github.duwenji.yorisoi.sanpoguide.station.remote.ThirdPartyChannels
 import io.github.duwenji.yorisoi.sanpoguide.walk.CueShow
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
 import io.github.duwenji.yorisoi.sanpoguide.report.Report
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiUsage
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -161,7 +161,7 @@ class SanpoApp : Application() {
             }
         }
         aiUsage = AiUsage.of(this)
-        relay = OperatorAi.create(this)
+        relay = OperatorAi.create(this, BuildConfig.AI_RELAY_URL, BuildConfig.PLAY_CLOUD_PROJECT_NUMBER)
         guides = GuideRepository(settings, prompts, aiUsage, relay)
         guides.onCall = { call ->
             diagnostics.event(
