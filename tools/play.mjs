@@ -5,10 +5,14 @@
  *   node tools/play.mjs listing                                  # the descriptions `--listing` sends
  *   node tools/play.mjs edit --aab release/x.aab --notes "…"     # checks an edit, then throws it away
  *   node tools/play.mjs edit --aab release/x.aab --notes "…" --listing --commit
+ *   node tools/play.mjs edit --version-code 5 --track alpha           # a bundle already on Play
+ *   node tools/play.mjs edit --track my-track --discard-drafts
  *   node tools/play.mjs data-safety docs/play-data-safety.csv
  *
  * `edit` puts an AAB on a track (`--track`, internal by default) and, with `--listing`, the store
- * listing's descriptions from docs/play-console.md, in one edit. Without `--commit` it only asks
+ * listing's descriptions from docs/play-console.md, in one edit. `--version-code` puts a bundle already
+ * on Play on the track instead, with the release notes it has on another track unless `--notes` is
+ * given. `--discard-drafts` removes the track's draft releases. Without `--commit` it only asks
  * Play to validate the edit. Committing sends the changes for review, together with any changes
  * made in Play Console that weren't sent yet. `data-safety` replaces the data safety answers with a
  * CSV in Play Console's export format, at once and without an edit.
@@ -89,23 +93,42 @@ async function status() {
   }
 }
 
+/** The release notes of the release that has `versionCode` on any track. */
+async function notesOf(id, versionCode) {
+  const { tracks = [] } = await call('GET', `${API}/edits/${id}/tracks`);
+  for (const t of tracks) {
+    for (const r of t.releases ?? []) if ((r.versionCodes ?? []).includes(versionCode) && r.releaseNotes) return r.releaseNotes;
+  }
+  throw new Error(`no release notes for versionCode ${versionCode}; pass --notes`);
+}
+
 async function edit(opts) {
   const { id } = await call('POST', `${API}/edits`, {});
   let committed = false;
   try {
-    if (opts.aab) {
-      if (!opts.notes) throw new Error('--notes is needed with --aab');
-      const bundle = await call('POST', `${UPLOAD}/edits/${id}/bundles?uploadType=media`, readFileSync(opts.aab), 'application/octet-stream');
-      console.log(`bundle: versionCode ${bundle.versionCode}`);
+    if (opts.aab && opts['version-code']) throw new Error('pass --aab or --version-code, not both');
+    if (opts.aab || opts['version-code']) {
+      let versionCode = opts['version-code'];
+      if (opts.aab) {
+        if (!opts.notes) throw new Error('--notes is needed with --aab');
+        const bundle = await call('POST', `${UPLOAD}/edits/${id}/bundles?uploadType=media`, readFileSync(opts.aab), 'application/octet-stream');
+        versionCode = String(bundle.versionCode);
+        console.log(`bundle: versionCode ${versionCode}`);
+      }
+      const releaseNotes = opts.notes ? [{ language: LANGUAGE, text: opts.notes }] : await notesOf(id, versionCode);
       await call('PUT', `${API}/edits/${id}/tracks/${opts.track}`, {
         track: opts.track,
-        releases: [{
-          versionCodes: [String(bundle.versionCode)],
-          status: 'completed',
-          releaseNotes: [{ language: LANGUAGE, text: opts.notes }],
-        }],
+        releases: [{ versionCodes: [versionCode], status: 'completed', releaseNotes }],
       });
-      console.log(`track: ${opts.track}`);
+      console.log(`track: ${opts.track} <- versionCode ${versionCode}`);
+      for (const n of releaseNotes) console.log(`notes (${n.language}): ${n.text}`);
+    }
+    if (opts['discard-drafts']) {
+      const track = await call('GET', `${API}/edits/${id}/tracks/${opts.track}`);
+      const releases = track.releases ?? [];
+      const kept = releases.filter((r) => r.status !== 'draft');
+      await call('PUT', `${API}/edits/${id}/tracks/${opts.track}`, { track: opts.track, releases: kept });
+      console.log(`track: ${opts.track} (${releases.length - kept.length} drafts discarded)`);
     }
     if (opts.listing) {
       const l = listing();
@@ -134,9 +157,11 @@ const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
     aab: { type: 'string' },
+    'version-code': { type: 'string' },
     notes: { type: 'string' },
     track: { type: 'string', default: 'internal' },
     listing: { type: 'boolean', default: false },
+    'discard-drafts': { type: 'boolean', default: false },
     commit: { type: 'boolean', default: false },
   },
 });
@@ -148,7 +173,7 @@ try {
   else if (command === 'edit') await edit(values);
   else if (command === 'data-safety' && arg) await dataSafety(arg);
   else {
-    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text] [--track t] [--listing] [--commit] | data-safety file.csv');
+    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text | --version-code n [--notes text]] [--track t] [--discard-drafts] [--listing] [--commit] | data-safety file.csv');
     process.exitCode = 2;
   }
 } catch (e) {
