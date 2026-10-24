@@ -23,4 +23,25 @@ class OutputCheckTest {
         assertNull(OutputCheck.violation("ここから約450m、徒歩で6分ほどです。コーヒーの香りがします。"))
         assertNull(OutputCheck.violation("10月16日、気温は18℃です。"))
     }
+
+    @Test
+    fun `stage directions about the delivery are taken out`() {
+        assertEquals(
+            "そろそろ雨にぬれた路地の先に、日輪寺が見えてくる頃ですね。",
+            OutputCheck.withoutStageDirections("（しっとりと、落ち着いた口調で）そろそろ雨にぬれた路地の先に、日輪寺が見えてくる頃ですね。"),
+        )
+        assertEquals(
+            "門が見えてきました。ここは江戸のころからの古いお寺です。",
+            OutputCheck.withoutStageDirections("門が見えてきました。(少し間を置いて) ここは江戸のころからの古いお寺です。"),
+        )
+        assertEquals("いい風ですね。", OutputCheck.withoutStageDirections("（明るい声で）いい風ですね。"))
+    }
+
+    @Test
+    fun `readings and other brackets stay`() {
+        val reading = "すぐ近くにある「吽形（うんぎょう）」というアート作品ですね。"
+        assertEquals(reading, OutputCheck.withoutStageDirections(reading))
+        val aside = "浅草寺（せんそうじ）の本堂です。（本堂は戦後に再建されました）"
+        assertEquals(aside, OutputCheck.withoutStageDirections(aside))
+    }
 }
