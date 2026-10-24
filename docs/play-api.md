@@ -97,8 +97,13 @@ node tools/play.mjs status                        # トラックとリリース�
 node tools/play.mjs listing                       # --listing で送る説明文（play-console.md から）
 node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing
 node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing --commit
+node tools/play.mjs edit --version-code 5 --track alpha                  # 上げ済みの版をほかのトラックに出す
+node tools/play.mjs edit --track SanpoGuide-CT --discard-drafts          # トラックの下書きを捨てる
 node tools/play.mjs data-safety docs/play-data-safety.csv
 ```
+
+- `--version-code` は、Play に上げ済みの版（同じ versionCode の AAB は二度上げられない）を別のトラックに出す。内部テストで確かめた版をクローズドテスト・本番に出すときに使う。`--notes` がなければ、その版がほかのトラックで持つリリースノートを写す
+- `--discard-drafts` は、トラックの下書きのリリースを捨てる。公開済みのリリースは残る
 
 - `edit` は `--commit` がなければ Play に確かめさせるだけで、何も変えない。まず `--commit` なしで通し、問題がなければ `--commit` を付けて審査に出す
 - `--commit` で出ると、Play Console で保存して審査に出していない変更も一緒に出る
