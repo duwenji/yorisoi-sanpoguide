@@ -112,7 +112,7 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
     pendingUse?.let { CostDialog(it.cost, onUse = viewModel::confirmUse, onCancel = viewModel::cancelUse) }
 }
 
-/** What the channel asks of the user's AI service, before it is used (platform ADR-004 H-9). */
+/** What the channel asks of the AI, before it is used (platform ADR-004 H-9). */
 @Composable
 private fun CostDialog(cost: AiCost, onUse: () -> Unit, onCancel: () -> Unit) {
     AlertDialog(
@@ -120,11 +120,20 @@ private fun CostDialog(cost: AiCost, onUse: () -> Unit, onCancel: () -> Unit) {
         title = { Text("「${cost.name}」を使いますか") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("話す量: ${cost.talk.label}、解説の長さ: ${cost.guideLabel}。散策者の API キーで AI を呼び、1 時間の散歩で多くて約 ${cost.maxCallsPerHour} 回になります。")
-                if (cost.moreThanStandard) Text("標準のチャンネルより AI を多く呼ぶため、費用が増えることがあります。", color = MaterialTheme.colorScheme.error)
+                Text("話す量: ${cost.talk.label}、解説の長さ: ${cost.guideLabel}。AI を呼ぶのは、1 時間の散歩で多くて約 ${cost.maxCallsPerHour} 回です。")
+                if (cost.moreThanStandard) {
+                    Text(
+                        if (cost.operatorAi) "標準のチャンネルより AI を多く呼ぶため、1 日に使える回数を早く使い切ることがあります。"
+                        else "標準のチャンネルより AI を多く呼ぶため、費用が増えることがあります。",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
                 Text(
-                    cost.dailyLimit?.let { "1 日の上限は $it 回です（設定で変えられます）。上限に達すると、その日は決まった文で案内します。" }
-                        ?: "1 日の上限はありません（設定で決められます）。",
+                    when {
+                        cost.operatorAi -> cost.dailyLimit?.let { "運営の AI は 1 日 $it 回まで使えます。" } ?: "運営の AI は、1 日に使える回数が決まっています。"
+                        cost.dailyLimit != null -> "自分の API キーの 1 日の上限は ${cost.dailyLimit} 回です（設定で変えられます）。"
+                        else -> "自分の API キーの 1 日の上限はありません（設定で決められます）。"
+                    } + if (cost.operatorAi || cost.dailyLimit != null) "上限に達すると、その日は決まった文で案内します。" else "",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }

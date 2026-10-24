@@ -47,15 +47,20 @@ class GuideRepository(
     private val relay: RelayClient?,
 ) {
     /**
-     * Whether today's calls reached the user's limit (platform ADR-004 H-9) or, on the operator's AI,
-     * the relay's (ADR-AI-RELAY R-2); cached narrations still come.
+     * Whether today's calls reached the limit: the user's on their own key (platform ADR-004 H-9), the
+     * relay's on the operator's AI (ADR-AI-RELAY R-2); cached narrations still come.
      */
     fun limitReached(): Boolean {
         val settings = settingsRepo.settings.value
-        return usage.reached(settings.dailyAiLimit) || (settings.aiRoute == AiRoute.OPERATOR && relayUsedUp())
+        return when (settings.aiRoute) {
+            AiRoute.OPERATOR -> relay?.quota?.value?.exhausted() == true
+            AiRoute.OWN_KEY -> usage.reached(settings.dailyAiLimit)
+        }
     }
 
-    private fun relayUsedUp(): Boolean = relay?.quota?.value?.exhausted() == true
+    /** Counts a call on the user's own key against their limit; the relay counts the operator's AI. */
+    private fun takeCall(settings: GuideSettings): Boolean =
+        settings.aiRoute == AiRoute.OPERATOR || usage.tryUse(settings.dailyAiLimit)
 
     private val cache = ConcurrentHashMap<String, String>()
     private var client: Pair<GuideSettings, LlmClient>? = null
@@ -79,7 +84,7 @@ class GuideRepository(
         val ai = if (settings.aiRoute == AiRoute.OPERATOR) "operator" else "${settings.provider}/${settings.model()}"
         val cacheKey = "$ai/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from"
         cache[cacheKey]?.let { return it }
-        check(!limitReached() && usage.tryUse(settings.dailyAiLimit)) { "The daily limit of AI calls is reached" }
+        check(!limitReached() && takeCall(settings)) { "The daily limit of AI calls is reached" }
         val text = generate(
             Purpose.GUIDE, settings,
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
@@ -96,7 +101,7 @@ class GuideRepository(
      */
     suspend fun chat(system: String, user: String): String? {
         val settings = settingsRepo.settings.value
-        if (!settings.isConfigured || limitReached() || !usage.tryUse(settings.dailyAiLimit)) return null
+        if (!settings.isConfigured || limitReached() || !takeCall(settings)) return null
         val text = try {
             generate(Purpose.CHAT, settings, system, user)
         } catch (e: IllegalStateException) {

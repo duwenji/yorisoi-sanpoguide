@@ -58,7 +58,10 @@ data class GuideSettings(
     val spotCacheEnabled: Boolean = true,
     /** How new a kept search must be to use it without asking again; one of [SPOT_CACHE_FRESH_DAYS]. */
     val spotCacheFreshDays: Int = 7,
-    /** How many times a day the AI may be called; null for no limit (platform ADR-004 H-9). Channels talk within it. */
+    /**
+     * How many times a day the user's own key may be called; null for no limit (platform ADR-004 H-9).
+     * Channels talk within it. The operator's AI keeps the relay's limit instead (ADR-AI-RELAY R-2).
+     */
     val dailyAiLimit: Int? = 100,
     val mapStyle: MapStyle = MapStyle.GSI_STANDARD,
     /** The user's own Google Maps Platform key (Map Tiles API), for the Google map styles. */

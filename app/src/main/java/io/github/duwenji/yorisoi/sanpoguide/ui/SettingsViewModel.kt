@@ -40,7 +40,7 @@ sealed interface TestState {
     data class Failed(val message: String) : TestState
 }
 
-/** Edits a draft of the AI settings; nothing is persisted until [save]. */
+/** Edits a draft of the settings; nothing is persisted until [save], apart from developer mode and clearing the spot cache. */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = (application as SanpoApp).settings
     private val prompts = (application as SanpoApp).prompts
@@ -148,6 +148,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun save() = repo.save(_draft.value)
 
+    /** Whether the draft differs from what is saved; developer mode is saved at once, so it isn't a change. */
+    fun hasChanges(): Boolean {
+        val saved = repo.settings.value
+        return _draft.value.copy(developerMode = saved.developerMode) != saved
+    }
+
     fun runTest() {
         val settings = _draft.value
         if (settings.aiRoute == AiRoute.OPERATOR) {
@@ -155,7 +161,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             return
         }
         if (!settings.isConfigured) {
-            _test.value = TestState.Failed("APIキーとモデル名（カスタムの場合は接続先URLも）を入力してください")
+            _test.value = TestState.Failed("API キーとモデル名（カスタムの場合は接続先 URL も）を入力してください")
             return
         }
         testJob?.cancel()
@@ -179,7 +185,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     /** The operator's AI: asks for today's calls, which opens a session without using a call. */
     private fun testRelay() {
         val r = relay ?: run {
-            _test.value = TestState.Failed("この版では運営の AI を使えません。自分の APIキーを使ってください")
+            _test.value = TestState.Failed("この版では運営の AI を使えません。自分の API キーを使ってください")
             return
         }
         testJob?.cancel()
