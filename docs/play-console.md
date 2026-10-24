@@ -152,8 +152,8 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 [`store/screenshots/`](../store/screenshots/) の 5 枚を、番号の順に入れる。どれも散策中で、エラーの出ていない画面。
 
 1. `01-walking.png`: 歴史探訪のチャンネルで、近づいたスポットを案内し、そこまでのルートを地図に描いたところ
-2. `02-spot-detail.png`: スポットの AI 解説と Wikimedia Commons の写真
-3. `03-facilities.png`: 休憩の話しかけと、施設が地図・距離の欄に出ているところ
+2. `02-spot-detail.png`: 「解説を読む」で開いた、スポットの AI 解説と Wikimedia Commons の写真
+3. `03-spot-card.png`: 一覧で選んだスポットを地図で強調し、カードの「解説を聞く」「解説を読む」とルートを出したところ
 4. `04-channels.png`: チャンネルを選ぶところ
 5. `05-greeting.png`: 散策を始めたときのあいさつ
 
