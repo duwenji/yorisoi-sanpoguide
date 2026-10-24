@@ -16,7 +16,7 @@ PSL_DATA_DELETION_URL,,,MAYBE_REQUIRED,データ削除用 URL
 PSL_DATA_COLLECTION_COMPLIES_FAMILY_POLICY,,,OPTIONAL,この質問には、アプリの対象年齢層に子どもが含まれていることを指定した場合、またはファミリー向けプログラムにオプトインした場合のみ回答してください。上記のいずれかに該当する場合は、Google Play ファミリー ポリシー（https://support.google.com/googleplay/android-developer/answer/9893335）を遵守する必要があります。ストアの掲載情報のデータ セーフティ セクションでユーザーにこの取り組みを伝えますか？
 PSL_INDEPENDENTLY_VALIDATED,,,OPTIONAL,お客様のアプリは、Mobile Application Security Assessment（MASA）フレームワークに準拠した、独立機関によるセキュリティ審査を完了していますか？審査結果が良好な状態の場合のみ、「はい」と回答してください。
 PSL_UPI_BADGE_OPT_IN,,,OPTIONAL,このバッジをストアの掲載情報に表示しますか？
-PSL_HAS_OUTSIDE_APP_ACCOUNTS,,,OPTIONAL,ユーザーはアプリ外で作成したアカウントでアプリにログインできますか？
+PSL_HAS_OUTSIDE_APP_ACCOUNTS,,false,OPTIONAL,ユーザーはアプリ外で作成したアカウントでアプリにログインできますか？
 PSL_OUTSIDE_APP_ACCOUNT_TYPES,PSL_LOGIN_WITH_OUTSIDE_APP_ID,,MULTIPLE_CHOICE,そのアカウントはどのように作成されますか？ / アプリ外での認証（SIM の関連付け、サービスのサブスクリプションなど）
 PSL_OUTSIDE_APP_ACCOUNT_TYPES,PSL_LOGIN_THROUGH_EMPLOYMENT_OR_ENTERPRISE_ACCOUNT,,MULTIPLE_CHOICE,そのアカウントはどのように作成されますか？ / 従業員アカウントまたは企業アカウントから作成
 PSL_OUTSIDE_APP_ACCOUNT_TYPES,PSL_OUTSIDE_APP_ACCOUNT_TYPE_OTHER,,MULTIPLE_CHOICE,そのアカウントはどのように作成されますか？ / その他
