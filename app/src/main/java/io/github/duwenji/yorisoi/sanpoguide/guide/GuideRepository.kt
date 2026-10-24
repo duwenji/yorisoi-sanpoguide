@@ -126,8 +126,9 @@ class GuideRepository(
             if (e is RelayException && e.code == "daily_limit_reached") throw IllegalStateException("The daily limit of AI calls is reached", e)
             throw e
         }
+        // Recorded as the AI wrote it, so stage directions it slipped in can still be counted.
         report(text, null)
-        return text
+        return OutputCheck.withoutStageDirections(text)
     }
 
     @Synchronized
