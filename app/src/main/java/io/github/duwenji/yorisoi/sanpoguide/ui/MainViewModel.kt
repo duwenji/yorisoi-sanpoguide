@@ -441,6 +441,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** Whether something is being read aloud: the companion, a guide or a replay. */
     val speaking: StateFlow<Boolean> = app.speaker.speaking
 
+    /** Closes the look back on the last walk; the next walk starts its own lines anyway. */
+    fun dismissReview() = app.feed.clearLines()
+
     /** Reads one of the companion's lines again. */
     fun replay(line: Utterance) {
         app.speaker.stop()
