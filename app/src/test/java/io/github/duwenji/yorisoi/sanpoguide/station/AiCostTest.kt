@@ -21,15 +21,15 @@ class AiCostTest {
 
     @Test
     fun `a channel that talks more or narrates longer than the standard one says so`() {
-        val same = AiCost.of(standard, standard, 100)
+        val same = AiCost.of(standard, standard, operatorAi = false, dailyLimit = 100)
         assertFalse(same.moreThanStandard)
         assertEquals(100, same.dailyLimit)
         val chatty = standard.withOverrides(StationOverrides(talkLevel = TalkLevel.CHATTY))
-        assertTrue(AiCost.of(chatty, standard, null).moreThanStandard)
+        assertTrue(AiCost.of(chatty, standard, operatorAi = true, dailyLimit = 30).moreThanStandard)
         val long = standard.withOverrides(StationOverrides(guideLength = GuideLength.LONG))
         assertTrue(standard.guideLength < GuideLength.LONG)
-        assertTrue(AiCost.of(long, standard, null).moreThanStandard)
+        assertTrue(AiCost.of(long, standard, operatorAi = false, dailyLimit = null).moreThanStandard)
         val quiet = standard.withOverrides(StationOverrides(talkLevel = TalkLevel.QUIET, guideLength = GuideLength.SHORT))
-        assertFalse(AiCost.of(quiet, standard, null).moreThanStandard)
+        assertFalse(AiCost.of(quiet, standard, operatorAi = false, dailyLimit = null).moreThanStandard)
     }
 }

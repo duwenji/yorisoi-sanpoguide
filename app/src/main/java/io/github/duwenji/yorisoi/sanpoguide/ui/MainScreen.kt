@@ -132,7 +132,7 @@ fun MainScreen(
                         Icon(Icons.Filled.History, contentDescription = "散歩の記録")
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, contentDescription = "AIガイドの設定")
+                        Icon(Icons.Filled.Settings, contentDescription = "設定")
                     }
                 },
             )
@@ -170,7 +170,7 @@ fun MainScreen(
             }
             val relayQuota by viewModel.relayQuota.collectAsStateWithLifecycle()
             if (!settings.isConfigured) {
-                val why = if (settings.aiRoute == AiRoute.OPERATOR) "この版では運営の AI を使えない" else "AIのAPIキーが未設定の"
+                val why = if (settings.aiRoute == AiRoute.OPERATOR) "この版では運営の AI を使えない" else "AI の API キーが未設定の"
                 Banner("${why}ため、簡易解説で動作しています。タップして設定", onOpenSettings)
             } else if (settings.aiRoute == AiRoute.OPERATOR && relayQuota?.exhausted() == true) {
                 Banner("今日の運営の AI の回数を使い切りました。日付が変わるまで、決まった文で案内します。タップして設定", onOpenSettings)

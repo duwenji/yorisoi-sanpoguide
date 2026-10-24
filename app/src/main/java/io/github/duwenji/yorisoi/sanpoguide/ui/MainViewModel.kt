@@ -203,7 +203,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _googleCopyright.value = null
         val type = style.google ?: return MapState(MapTiles.Gsi(style))
         val fallback = MapTiles.Gsi(MapStyle.GSI_STANDARD)
-        if (apiKey.isEmpty()) return MapState(fallback, "Google マップの APIキーが未設定のため、地理院の地図で表示しています")
+        if (apiKey.isEmpty()) return MapState(fallback, "Google マップの API キーが未設定のため、地理院の地図で表示しています")
         return try {
             MapState(MapTiles.Google(style, type, apiKey, app.googleTiles.session(apiKey, type)))
         } catch (e: CancellationException) {

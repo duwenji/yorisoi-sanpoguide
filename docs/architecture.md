@@ -126,10 +126,10 @@ flowchart LR
 - チャンネルを切り替えると、次に話すのは新しいチャンネルの一言（`WalkSession.pendingGreeting`）。その後 1 分はスポット案内と休憩・区切りを控える（`WalkSession.justSwitched()`）。
 - チャンネルのきっかけ（スポット・地点）は、チャンネルが「話題」や「話す場面」で除いているスポットでも出す（チャンネルが意図して置いたため）。どちらも、とどまっている間と切り替えの直後は出さない。スポットのきっかけは、スポット案内の間隔（`TalkLevel.spotGapMs`）も守る。散歩の開始・終了のきっかけは開始・終了の一言のあとに出す。
 - 読み上げ中は判定しない（`Speaker.isSpeaking` と `Mutex` で 1 件ずつ）。
-- AI へのつなぎ方は 2 つ（`GuideSettings.aiRoute`。platform ADR-AI-RELAY）。**運営の AI**（`OPERATOR`）は運営の中継（platform API-AI-RELAY）を `RelayClient` で呼び、キーは要らない。**自分の APIキー**（`OWN_KEY`）は選んだ AI サービスを端末から直接呼ぶ。保存された値がないときは、キーを入れていれば自分の APIキー、なければ運営の AI（`GuideSettings.defaultRoute`）。中継の URL は `BuildConfig.AI_RELAY_URL`（本番の中継ができるまでは、デバッグ版もリリース版も開発用の中継）。空なら運営の AI は選べない。インストール ID とセッションは `ai_relay` の設定に置く（`guide/OperatorAi`）。Play Integrity の判定は `BuildConfig.PLAY_CLOUD_PROJECT_NUMBER` が 0 でないときだけ付ける
-- AI を呼ぶのは 1 日に設定の上限まで（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる。`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。運営の AI では、中継が数える 1 日の上限（`RelayClient.quota`）にも従う。どちらかの上限に達したら定型文にする。
+- AI へのつなぎ方は 2 つ（`GuideSettings.aiRoute`。platform ADR-AI-RELAY）。**運営の AI**（`OPERATOR`）は運営の中継（platform API-AI-RELAY）を `RelayClient` で呼び、キーは要らない。**自分の API キー**（`OWN_KEY`）は選んだ AI サービスを端末から直接呼ぶ。保存された値がないときは、キーを入れていれば自分の API キー、なければ運営の AI（`GuideSettings.defaultRoute`）。中継の URL は `BuildConfig.AI_RELAY_URL`（本番の中継ができるまでは、デバッグ版もリリース版も開発用の中継）。空なら運営の AI は選べない。インストール ID とセッションは `ai_relay` の設定に置く（`guide/OperatorAi`）。Play Integrity の判定は `BuildConfig.PLAY_CLOUD_PROJECT_NUMBER` が 0 でないときだけ付ける
+- AI を呼ぶのは 1 日の上限まで。上限に達したら定型文にする。自分の API キーでは設定の上限（`GuideSettings.dailyAiLimit`、既定 100 回。上限なしも選べる）まで、端末で数える（`settings/AiUsage`）。数えるのは AI サービスに届いた呼び出しだけで、キャッシュの解説は数えない。運営の AI では設定の上限を使わず、中継が数える 1 日の上限（`RelayClient.quota`）に従う（platform ADR-AI-RELAY R-2）。
 - AI の返事に URL・メールアドレス・電話番号があれば使わず、定型文にする（`guide/OutputCheck`。全角の数字・記号は半角にそろえてから見る）。
-- AI の解説と話しかけには、根拠の有無にかかわらず作者を添える。運営の AI は「文: 運営の AI」、自分の APIキーは「文: AI（モデル名）」（`material/creditLine`）。定型文には付けない。
+- AI の解説と話しかけには、根拠の有無にかかわらず作者を添える。運営の AI は「文: 運営の AI」、自分の API キーは「文: AI（モデル名）」（`material/creditLine`）。定型文には付けない。
 - 記録の保存は、スポット案内・距離の区切り・散歩の終了のときに行う。区切りで話さないチャンネルでも、区切りの時点で保存だけはする。
 
 ### スポットが近くに複数あるとき
@@ -251,7 +251,7 @@ flowchart LR
 - 散歩中に切り替えると、`WalkService` が `current` の変化を見て、記録に区間を足し（`WalkSession.stations`）、一言を予約する。同じチャンネルの設定を変えただけでは切り替えとみなさない。
 - 第三者のチャンネルは、散策者が足したリスト（API-002）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
 - 第三者のチャンネルは散策者が変えられない（使う・使わないだけ）。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せる
-- 第三者のチャンネルを使う前に、AI の費用の目安を出す（`station/AiCost`。話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限）。散策者が「使う」を選ぶまで、そのチャンネルで AI は呼ばない
+- 第三者のチャンネルを使う前に、AI の費用の目安を出す（`station/AiCost`。話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限。上限は、運営の AI では中継の上限、自分の API キーでは設定の上限）。散策者が「使う」を選ぶまで、そのチャンネルで AI は呼ばない
 - 天気の急変・日の入り・施設の案内は、チャンネルに項目がない（止められない）。
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
@@ -328,7 +328,7 @@ flowchart LR
 | 話す条件や優先順位を変える                                 | `companion/TalkDecider.kt` の `rules`（ルールの並びとゲート。場面のテストは `TalkDeciderTest`）。決まったことの実行は `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
 | 組み込みのチャンネルを追加・変更する                       | `prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）と、`BuiltInChannels.kt` の `IDS`                  |
 | チャンネルの形式の確認を変える                             | `yorisoi-platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も                                                                                                                        |
-| チャンネルの設定画面の項目を変える                         | `ui/SettingsScreen.kt` の `StationSettings`・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt`                                                                                                 |
+| チャンネルの設定画面の項目を変える                         | `ui/SettingsScreen.kt` の `StationSettings`（背景音の種類は `ScreenAndSoundSection`）・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt`                                                                                                 |
 | 距離・時間・気温などの既定値を変える                       | `settings/Threshold.kt`                                                                                                                                                                                               |
 | 話しかけの頻度の段階を変える                               | `settings/TalkLevel.kt`                                                                                                                                                                                               |
 | 施設案内の条件を変える                                     | `companion/FacilityAdvisor.kt`                                                                                                                                                                                        |
@@ -347,7 +347,7 @@ flowchart LR
 | 組み込みの素材提供者（AI・写真・背景音など）を足す・変える | `material/BuiltIns.kt` と、`SanpoApp.onCreate()` の `Producers`                                                                                                                                                   |
 | 素材集の取得（前もっての取得・基準で選ぶ取得）を変える     | `material/ChannelMaterials.kt`・`material/Selectors.kt`、取得の実行は `ChannelSync`                                                                                                                               |
 | AI の根拠（素材集の資料の選び方・量）を変える              | `material/Grounding.kt`。プロンプトへの入れ方は `guide/GuidePrompt.kt`                                                                                                                                              |
-| AI を呼ぶ回数の上限を変える                                | `settings/AiUsage.kt`（数え方）・`settings/SettingsRepository.kt` の `dailyAiLimit`（既定値）・`ui/SettingsScreen.kt`（選択肢）                                                                                 |
+| AI を呼ぶ回数の上限を変える                                | `settings/AiUsage.kt`（数え方）・`settings/SettingsRepository.kt` の `dailyAiLimit`（既定値）・`ui/SettingsScreen.kt` の `OwnKeySettings`（選択肢）                                                                                 |
 | 使わない返事の条件を変える                                 | `guide/OutputCheck.kt`                                                                                                                                                                                                |
 | AI の費用の目安を変える                                    | `station/AiCost.kt`（計算）・`ui/ChannelsScreen.kt` の `CostDialog`（表示）                                                                                                                                       |
 | 問題を知らせるメールの宛先・文面を変える                   | `report/Report.kt`（入口は `ui/ReportLink.kt`）                                                                                                                                                                     |

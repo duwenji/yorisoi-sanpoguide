@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.report.Report
 import io.github.duwenji.yorisoi.sanpoguide.report.ReportTarget
+import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice
@@ -64,7 +65,10 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
             app.settings.save(app.settings.settings.value.copy(stationId = id))
             return@act
         }
-        _pendingUse.value = PendingUse(providerId, channelId, AiCost.of(station, app.stations.byId(BuiltInStations.STANDARD), app.settings.settings.value.dailyAiLimit))
+        val settings = app.settings.settings.value
+        val operatorAi = settings.aiRoute == AiRoute.OPERATOR
+        val limit = if (operatorAi) app.relay?.quota?.value?.limit else settings.dailyAiLimit
+        _pendingUse.value = PendingUse(providerId, channelId, AiCost.of(station, app.stations.byId(BuiltInStations.STANDARD), operatorAi, limit))
     }
 
     /** Who answers for an installed channel, for a report (platform ADR-004 H-11). */
