@@ -1,6 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.station
 
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
+import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * What a channel asks of the AI, shown before it is used (platform ADR-004 H-9, stakeholders.md W-3):
@@ -26,9 +27,9 @@ data class AiCost(
 
         fun of(channel: Station, standard: Station, operatorAi: Boolean, dailyLimit: Int?): AiCost = AiCost(
             name = channel.name,
-            talk = channel.talkLevel,
+            talk = TalkLevel.of(channel.talkLevel),
             guideLabel = StationLabels.of(channel.guideLength),
-            maxCallsPerHour = maxCallsPerHour(channel.talkLevel),
+            maxCallsPerHour = maxCallsPerHour(TalkLevel.of(channel.talkLevel)),
             moreThanStandard = channel.talkLevel > standard.talkLevel || channel.guideLength > standard.guideLength,
             operatorAi = operatorAi,
             dailyLimit = dailyLimit,

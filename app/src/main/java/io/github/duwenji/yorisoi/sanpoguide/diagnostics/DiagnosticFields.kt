@@ -10,7 +10,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.WalkGate
 import io.github.duwenji.yorisoi.sanpoguide.material.SpotMaterials
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONArray

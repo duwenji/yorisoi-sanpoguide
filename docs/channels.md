@@ -129,7 +129,8 @@ API-003 にすべての種類を定め、アプリは次の段で対応を増や
 |---|---|
 | yorisoi-platform の `core-format`（JVM、Android に依存しない） | `channel.json` の読み込み（`StationManifest`）、API-003 の確認（`StationValidator`）、署名の確認、エラーコード、素材提供者の記述・方針（`ProducerDescriptor`・`ProducerPolicy`）。チャンネル管理システムの機械審査でも、同じものを使う |
 | `:prompts` の `sanpoguide/channels/{id}/` | 組み込みのチャンネル（API-003 の構成。`signature.json` なし）と `BuiltInChannels` |
-| `app` の `station/` | `Station`（設定値とスロットの読み込み）、`BuiltInStations`（`BuiltInChannels` を `Station` にする）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`station/remote/`（第三者のチャンネルの取り込み） |
+| yorisoi-platform の `kit-channel`（JVM） | `Station`（設定値とスロットの読み込み）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`ResourceChannels`（組み込みのチャンネルを resources から読む。`BuiltInChannels` はこれを使う）、`ChannelMaterials`（第三者のチャンネルの素材） |
+| `app` の `station/` | `BuiltInStations`（`BuiltInChannels` を `Station` にする）、`StationPromptVars`（スロットからプロンプトの変数を作る）、`station/remote/`（第三者のチャンネルの取り込み） |
 | `app` の `material/` | 素材提供者の IF（`Producer`・`MaterialRequest`・`Material`・`MaterialResult`）、候補を順に試す `Producers`（API-004 I-7）、組み込みの素材提供者 6 つ（`BuiltIns.kt`）、省略形の展開（`Shorthand`）と、散歩と画面が使う入り口 `Narration` |
 
 ## テスト

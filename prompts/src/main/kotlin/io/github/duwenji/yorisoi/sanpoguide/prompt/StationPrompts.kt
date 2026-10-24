@@ -1,6 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide.prompt
 
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.GuideLength
 import io.github.duwenji.yorisoi.core.format.Slot
 import io.github.duwenji.yorisoi.core.format.StationPackage
@@ -13,7 +14,7 @@ import io.github.duwenji.yorisoi.core.format.TalkEventKind
  */
 object StationPrompts {
     /** A channel's slot text, falling back to the standard channel's for any slot it leaves empty. */
-    fun slots(pkg: StationPackage, standard: StationPackage): (Slot) -> String? = { pkg.slots[it] ?: standard.slots[it] }
+    fun slots(pkg: StationPackage, standard: StationPackage): (Slot) -> String? = Station.slots(pkg, standard)
 
     /** Wording for the guide's length, as the standard prompt has always put it for [GuideLength.NORMAL]. */
     fun lengthText(length: GuideLength): String = when (length) {

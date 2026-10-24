@@ -5,7 +5,7 @@ import io.github.duwenji.yorisoi.core.format.Trigger
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.format.material.Resources
 import io.github.duwenji.yorisoi.kit.geo.Poi
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * What a channel holds about a spot, for the walk's record: the cues that would fire on it

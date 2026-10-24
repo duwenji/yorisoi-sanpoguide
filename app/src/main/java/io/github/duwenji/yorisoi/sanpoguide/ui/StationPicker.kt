@@ -30,7 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * The channel in use, as the main screen's title; tapping it lists the others. Choosing one

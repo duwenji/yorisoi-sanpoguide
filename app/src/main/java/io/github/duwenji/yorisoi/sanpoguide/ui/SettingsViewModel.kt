@@ -15,8 +15,8 @@ import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
-import io.github.duwenji.yorisoi.sanpoguide.station.StationOverrides
+import io.github.duwenji.yorisoi.kit.channel.Station
+import io.github.duwenji.yorisoi.kit.channel.StationOverrides
 import io.github.duwenji.yorisoi.core.format.GuideLength
 import io.github.duwenji.yorisoi.core.format.SoundChoice
 import io.github.duwenji.yorisoi.core.format.SpotKind
@@ -99,11 +99,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun takeSavedStation() = _draft.update { it.copy(stationId = repo.settings.value.stationId) }
 
     /** The chosen channel as the draft would have it, with the user's changes applied. */
-    fun draftStation(settings: GuideSettings): Station = stationRepo.select(settings)
+    fun draftStation(settings: GuideSettings): Station = stationRepo.select(settings.channelChoice)
 
     // The chosen channel's settings (docs/channels.md「散策者のカスタマイズ」). Setting a value back to
     // the channel's own drops the change, so a later default still reaches it.
-    fun setTalkLevel(level: TalkLevel) = editStation { _, o -> o.copy(talkLevel = level) }
+    fun setTalkLevel(level: TalkLevel) = editStation { _, o -> o.copy(talkLevel = level.level) }
     fun setEvent(kind: TalkEventKind, on: Boolean) = editStation { st, o -> o.copy(events = if (on) st.events + kind else st.events - kind) }
     fun setGuideLength(length: GuideLength) = editStation { _, o -> o.copy(guideLength = length) }
     fun setMoodTone(on: Boolean) = editStation { _, o -> o.copy(moodTone = on) }
@@ -112,7 +112,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun resetStation() = editStation { _, _ -> StationOverrides() }
 
     private fun editStation(change: (Station, StationOverrides) -> StationOverrides) = edit { s ->
-        val station = stationRepo.select(s)
+        val station = stationRepo.select(s.channelChoice)
         val changed = station.normalize(change(station, station.overrides))
         s.copy(stationOverrides = (s.stationOverrides - station.id) + if (changed.isEmpty) emptyMap() else mapOf(station.id to changed))
     }

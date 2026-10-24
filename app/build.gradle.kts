@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.yorisoi.kit.geo)
     implementation(libs.yorisoi.kit.mood)
     implementation(libs.yorisoi.kit.companion)
+    implementation(libs.yorisoi.kit.channel)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // and later API-001.
     implementation(libs.tink.android)

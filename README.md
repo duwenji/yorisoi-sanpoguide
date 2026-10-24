@@ -211,12 +211,12 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 | `prompt` | プロンプトファイルの読み込みと組み立て（`PromptTemplates`）、ファイルのパス一覧（`Prompts`） |
 | `mood` | 雰囲気のモデル（`Mood`）、場所の種類の推定（`PlaceGuess`）、画面・音・話しかけで共有する現在の雰囲気（`MoodSource`） |
 | `sound` | 背景音の種類と選び方（`Soundscape`）、音の合成（`Voices`）、再生（`AmbientPlayer`） |
-| `material` | 素材の素材提供者の共通の IF（`Producer`）と組み込みの素材提供者、チャンネルの素材（`ChannelMaterials`）、きっかけの判定（`CueFinder`）と素材への変換（`CuePresenter`）、基準で選ぶ素材提供者（`SelectorProducer`）、見せ方の並べ方（`CueLayout`） |
+| `material` | 素材の素材提供者の共通の IF（`Producer`）と組み込みの素材提供者、前もって取る素材の計画（`MaterialPlan`）、きっかけの判定（`CueFinder`）と素材への変換（`CuePresenter`）、基準で選ぶ素材提供者（`SelectorProducer`）、見せ方の並べ方（`CueLayout`） |
 | `companion` | 散歩の友の発話（状況を集めてプロンプト変数にする。`WalkCompanion`）、進行中の散歩の状態（チャンネルの切り替えを含む。`WalkSession`）、画面向けの発言・散歩状況（`CompanionFeed`）、天気の取得（`WeatherClient`）、話題にするスポットの選択（`SpotChooser`） |
 | `history` | 散歩の記録の保存（`HistoryStore`。使ったチャンネルの区間を含む） |
 | `diagnostics` | 開発者モードでの散歩の詳しい記録（`WalkDiagnostics`）と書き出し（`WalkExport`）。[docs/walk-diagnostics.md](docs/walk-diagnostics.md) |
 | `settings` | 設定の保存（`SettingsRepository`。選んでいるチャンネルとその変更を含む）、API キーの暗号化（`KeyCipher`）、話しかけの頻度の段階（`TalkLevel`） |
-| `station` | チャンネル（`Station`）、組み込みのチャンネルの読み込み（`BuiltInStations`）、選んでいるチャンネルに散策者の変更を重ねる（`StationRepository`） |
+| `station` | 組み込みのチャンネルの読み込み（`BuiltInStations`）、スロットからプロンプトの変数を作る（`StationPromptVars`）。チャンネル（`Station`）と、選んでいるチャンネルに散策者の変更を重ねる `StationRepository` は platform の kit-channel |
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`） |
 | `ui` | Compose の画面（メイン・記録・設定）、発言カード、チャンネルの選択（`StationPicker`）、地図、雰囲気の配色（`MoodTheme`）と絵（`MoodScene`）、ViewModel |
 

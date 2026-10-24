@@ -1,6 +1,11 @@
 package io.github.duwenji.yorisoi.sanpoguide.settings
 
-/** How chatty the walking companion is, for spot talks and small talk alike. */
+import io.github.duwenji.yorisoi.core.format.TalkLevel as ChannelTalkLevel
+
+/**
+ * How chatty the walking companion is, for spot talks and small talk alike: the walking values of
+ * a channel's talk level ([level], the channel format's and the settings' word for it).
+ */
 enum class TalkLevel(
     val label: String,
     /** Minimum gap between two spot talks, so dense streets don't turn into a lecture. */
@@ -17,6 +22,13 @@ enum class TalkLevel(
     QUIET("控えめ", 5 * MINUTE, 6 * MINUTE, 2000.0, 30 * MINUTE, remarkOnRest = false),
     NORMAL("ふつう", 2 * MINUTE, 3 * MINUTE, 1000.0, 15 * MINUTE, remarkOnRest = true),
     CHATTY("おしゃべり", 1 * MINUTE, 2 * MINUTE, 500.0, 8 * MINUTE, remarkOnRest = true),
+    ;
+
+    val level: ChannelTalkLevel get() = ChannelTalkLevel.valueOf(name)
+
+    companion object {
+        fun of(level: ChannelTalkLevel): TalkLevel = valueOf(level.name)
+    }
 }
 
 private const val MINUTE = 60_000L

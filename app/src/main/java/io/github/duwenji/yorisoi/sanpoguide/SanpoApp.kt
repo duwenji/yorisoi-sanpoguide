@@ -42,8 +42,8 @@ import io.github.duwenji.yorisoi.kit.mood.MoodSource
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
-import io.github.duwenji.yorisoi.sanpoguide.station.StationRepository
+import io.github.duwenji.yorisoi.kit.channel.Station
+import io.github.duwenji.yorisoi.kit.channel.StationRepository
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelSync
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ThirdPartyChannels
@@ -146,7 +146,8 @@ class SanpoApp : Application() {
         channels = ThirdPartyChannels(this, BuiltInStations.standardPackage(), appScope, developerMode) {
             spots.location.value?.let { Regions.around(it.latitude, it.longitude) }
         }
-        stations = StationRepository(BuiltInStations.load(), settings.settings, appScope, channels.stations)
+        val choice = settings.settings.map { it.channelChoice }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.channelChoice)
+        stations = StationRepository(BuiltInStations.load(), BuiltInStations.STANDARD, choice, appScope, channels.stations)
         // Each line remembers the channel it was said on, for a report (platform ADR-004 H-11).
         feed.channel = { Report.target(stations.current.value) }
         channels.refreshIfDue()

@@ -37,7 +37,7 @@ import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
 import android.os.Looper

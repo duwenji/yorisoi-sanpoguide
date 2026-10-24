@@ -14,8 +14,8 @@ import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
-import io.github.duwenji.yorisoi.sanpoguide.station.StationSource
+import io.github.duwenji.yorisoi.kit.channel.Station
+import io.github.duwenji.yorisoi.kit.channel.StationSource
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.TestPublisher
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.TinkEd25519
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.sha256
@@ -26,6 +26,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import io.github.duwenji.yorisoi.kit.channel.ChannelMaterials
 
 /** The grounds the AI is given (API-004「AI の根拠」, 確認観点 W-21・W-22・W-24). */
 class GroundingTest {

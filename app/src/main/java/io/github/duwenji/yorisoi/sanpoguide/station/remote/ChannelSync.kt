@@ -3,8 +3,8 @@ package io.github.duwenji.yorisoi.sanpoguide.station.remote
 import io.github.duwenji.yorisoi.core.format.AppProfile
 import io.github.duwenji.yorisoi.core.format.Compatibility
 import io.github.duwenji.yorisoi.core.format.Strictness
-import io.github.duwenji.yorisoi.sanpoguide.material.ChannelMaterials
-import io.github.duwenji.yorisoi.sanpoguide.material.SelectedCollection
+import io.github.duwenji.yorisoi.kit.channel.ChannelMaterials
+import io.github.duwenji.yorisoi.kit.channel.SelectedCollection
 import io.github.duwenji.yorisoi.sanpoguide.material.SelectorPlan
 import io.github.duwenji.yorisoi.sanpoguide.material.MaterialPlan
 import io.github.duwenji.yorisoi.sanpoguide.material.Prefetch
@@ -13,8 +13,8 @@ import io.github.duwenji.yorisoi.core.format.material.CollectionListedAs
 import io.github.duwenji.yorisoi.core.format.material.CollectionPackage
 import io.github.duwenji.yorisoi.core.format.material.CollectionValidator
 import io.github.duwenji.yorisoi.sanpoguide.station.SanpoProfile
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
-import io.github.duwenji.yorisoi.sanpoguide.station.StationSource
+import io.github.duwenji.yorisoi.kit.channel.Station
+import io.github.duwenji.yorisoi.kit.channel.StationSource
 import io.github.duwenji.yorisoi.core.format.ChannelList
 import io.github.duwenji.yorisoi.core.format.CollectionReferences
 import io.github.duwenji.yorisoi.core.format.CollectionStatus

@@ -8,7 +8,7 @@ import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.kit.voice.Soundscape
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
+import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * What the app asks producers for today, written as candidates in order: the expansion of a

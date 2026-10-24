@@ -16,6 +16,7 @@ import org.junit.rules.TemporaryFolder
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
+import io.github.duwenji.yorisoi.sanpoguide.station.companionSystemVars
 
 /**
  * Third-party channels end to end on the JVM (API-002 アプリの振る舞い): a provider and publishers

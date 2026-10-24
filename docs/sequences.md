@@ -45,7 +45,7 @@
 | P16 | CueShow | `walk/CueShow.kt`（きっかけを見せる） | 5 |
 | P17 | SanpoApp | `SanpoApp.kt`（共有部品と `appScope`） | 1, 9 |
 | P18 | SettingsRepository | `settings/SettingsRepository.kt` | 1, 7, 8 |
-| P19 | StationRepository | `station/StationRepository.kt`（チャンネルの一覧と使っているチャンネル） | 1, 7, 8 |
+| P19 | StationRepository | `yorisoi-platform/kit-channel` の `StationRepository.kt`（チャンネルの一覧と使っているチャンネル） | 1, 7, 8 |
 | P20 | ThirdPartyChannels | `station/remote/ThirdPartyChannels.kt`（`ChannelSync` を 1 件ずつ IO スレッドで動かす） | 1, 2, 7 |
 | P21 | ChannelSync | `station/remote/ChannelSync.kt`（リスト・パッケージ・素材集の取得と確認） | 1, 7 |
 | P22 | StationValidator | `yorisoi-platform/core-format` の `StationValidator` | 7 |
@@ -57,7 +57,7 @@
 | P28 | WeatherClient | `yorisoi-platform/kit-geo` の `WeatherClient`（Open-Meteo） | 3 |
 | P29 | Narration | `material/Narration.kt`（散歩と画面が使う素材の窓口） | 3, 4, 6, 9 |
 | P30 | Producers | `material/Producer.kt` の `Producers`（候補を順に試す） | 3, 4, 6 |
-| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`）・チャンネルに同梱（`ResourceProducer`）・素材集（`ChannelMaterials`・`Selectors`） | 5 |
+| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`）・チャンネルに同梱（`ResourceProducer`）・素材集（kit-channel の `ChannelMaterials`・`Selectors`） | 5 |
 | P32 | GuideRepository | `guide/GuideRepository.kt`（AI の解説とキャッシュ・自由な生成） | 4, 6 |
 | P33 | SpotPhotos | `yorisoi-platform/kit-geo` の `SpotPhotos` | 6 |
 | P34 | CueFinder | `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5 |

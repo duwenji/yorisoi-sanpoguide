@@ -7,8 +7,8 @@ import io.github.duwenji.yorisoi.core.format.material.CollectionValidator
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.format.material.ProducerDescriptor
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.Station
-import io.github.duwenji.yorisoi.sanpoguide.station.StationSource
+import io.github.duwenji.yorisoi.kit.channel.Station
+import io.github.duwenji.yorisoi.kit.channel.StationSource
 import io.github.duwenji.yorisoi.core.format.CollectionStatus
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.core.format.material.Grants
@@ -32,6 +32,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.ZoneId
+import io.github.duwenji.yorisoi.kit.channel.ChannelMaterials
 
 /** A third party's cues on the walk: which fire, and what each presentation comes to. */
 class CuesTest {
