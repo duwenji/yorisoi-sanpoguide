@@ -1,7 +1,7 @@
 # GitHub Pages (main, /docs) publishes the landing page and privacy policy; the rest is for the repository.
 title: 散策ガイド
 lang: ja
-exclude: ["*.md", "architecture.html"]
+exclude: ["*.md", "*.csv", "architecture.html"]
 include: ["privacy-policy.md"]
 theme: jekyll-theme-primer
 defaults:

@@ -11,3 +11,5 @@ gradlew text eol=lf
 app/src/main/assets/** text eol=lf
 prompts/src/main/resources/** text eol=lf
 **/prompt-golden.txt text eol=lf
+# Play Console exports and imports the data safety answers as CRLF; keep the file as exported.
+docs/play-data-safety.csv text eol=crlf
