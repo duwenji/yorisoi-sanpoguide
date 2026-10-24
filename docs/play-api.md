@@ -99,12 +99,14 @@ node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リ
 node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing --commit
 node tools/play.mjs edit --version-code 5 --track alpha                  # 上げ済みの版をほかのトラックに出す
 node tools/play.mjs edit --track SanpoGuide-CT --discard-drafts          # トラックの下書きを捨てる
+node tools/play.mjs edit --track alpha --halt                            # 配布中のリリースを停止する
 node tools/play.mjs edit --listing --contact --screenshots               # ストアの掲載情報を文書と store/ にそろえる
 node tools/play.mjs data-safety docs/play-data-safety.csv
 ```
 
 - `--version-code` は、Play に上げ済みの版（同じ versionCode の AAB は二度上げられない）を別のトラックに出す。内部テストで確かめた版をクローズドテスト・本番に出すときに使う。`--notes` がなければ、その版がほかのトラックで持つリリースノートを写す
 - `--discard-drafts` は、トラックの下書きのリリースを捨てる。公開済みのリリースは残る
+- `--halt` は、トラックで配布中のリリースを停止する。Play は一つ前のリリースを配布中に戻し、それは停止できない。トラックを止めたいときは、Play Console でトラックのテスターを外す。停止したリリースを配り直すときは `--version-code` で出し直す
 - `--listing` は、[play-console.md の「ストアの掲載情報」](play-console.md#ストアの掲載情報)のアプリ名・簡単な説明・詳しい説明を送る
 - `--contact` は、連絡先のウェブサイトを [play-console.md の「アプリの基本」](play-console.md#アプリの基本)にそろえ、電話番号を消す（入れるとストアで公開される）。メールアドレスは変えない
 - `--screenshots` は、スマートフォンのスクリーンショットを `store/screenshots/` の PNG に、ファイル名の順で置き換える
