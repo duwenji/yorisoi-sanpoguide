@@ -166,7 +166,7 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 - 散歩の記録の画面は、試しの散歩の一覧しか出ないので入れない
 - 撮った PNG は透過を外して 24 ビットにする（`magick 画像 -background white -alpha remove -alpha off PNG24:画像`）
 
-アイコンとフィーチャー グラフィックは [`store/src/`](../store/src/) の SVG から `sh store/src/build.sh` で作る。
+アイコンとフィーチャー グラフィックは [`store/src/`](../store/src/) の SVG から `sh store/src/build.sh` で作る。Play に出す画像と動画（アイコン・フィーチャー グラフィック・スクリーンショット・[フォアグラウンドサービスの申告](#フォアグラウンドサービスの申告)の動画）は、すべて [`store/`](../store/) に置く。
 
 ### データ セーフティ
 
@@ -201,4 +201,4 @@ Google の定義では、端末から外に送るものは、送り先が運営�
 | バックグラウンドの位置情報の権限 | 求めない（`ACCESS_BACKGROUND_LOCATION` なし。散策者が画面で「散策をはじめる」を押したときに始める） |
 | 説明 | 散策者が「散策をはじめる」を押してから「散策を終える」を押すまで、画面を閉じても現在地を追い、近づいたスポットの解説と、歩いた距離・経路の記録をする。散策中は通知を出し続け、通知の「終了」からも終えられる |
 | 散策者への影響 | 位置を追うのをやめると、画面を閉じている間のスポットの案内と、散歩の記録が途切れる |
-| 動画 | 「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れを撮り、YouTube（限定公開）の URL を入れる |
+| 動画 | [`store/videos/foreground-service-demo.mp4`](../store/videos/foreground-service-demo.mp4)。「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れ。URL は GitHub のファイルのページ https://github.com/duwenji/yorisoi-sanpoguide/blob/main/store/videos/foreground-service-demo.mp4 （その場で再生できる）を入れる。撮り直したら同じファイル名で置き換える（URL は変わらない） |
