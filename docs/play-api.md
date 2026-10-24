@@ -7,7 +7,7 @@ Play Console の画面の操作の一部を、`tools/play.mjs` から Google Pla
 | できる | できない（Play Console の画面で入れる） |
 |---|---|
 | AAB をトラックに上げ、リリースノートを付ける | アプリのアクセス権・広告・コンテンツのレーティングなど、データ セーフティ以外のアプリのコンテンツ |
-| ストアの簡単な説明・詳しい説明を [play-console.md](play-console.md#ストアの掲載情報) の文に置き換える | アイコン・フィーチャー グラフィック・スクリーンショット |
+| ストアのアプリ名・説明文・スマートフォンのスクリーンショット・連絡先を [play-console.md](play-console.md#ストアの掲載情報) と `store/` にそろえる | アイコン・フィーチャー グラフィック |
 | データ セーフティの答えを CSV で置き換える | 価格・公開する国・テスターのリスト |
 | 審査に出す | 段階的な公開の割合の変更・停止 |
 
@@ -94,17 +94,20 @@ node tools/play.mjs status
 
 ```sh
 node tools/play.mjs status                        # トラックとリリースの一覧
-node tools/play.mjs listing                       # --listing で送る説明文（play-console.md から）
+node tools/play.mjs listing                       # --listing で送るアプリ名と説明文（play-console.md から）
 node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing
 node tools/play.mjs edit --aab release/yorisoi-sanpoguide-1.3.0.aab --notes "リリースノート" --listing --commit
 node tools/play.mjs edit --version-code 5 --track alpha                  # 上げ済みの版をほかのトラックに出す
 node tools/play.mjs edit --track SanpoGuide-CT --discard-drafts          # トラックの下書きを捨てる
+node tools/play.mjs edit --listing --contact --screenshots               # ストアの掲載情報を文書と store/ にそろえる
 node tools/play.mjs data-safety docs/play-data-safety.csv
 ```
 
 - `--version-code` は、Play に上げ済みの版（同じ versionCode の AAB は二度上げられない）を別のトラックに出す。内部テストで確かめた版をクローズドテスト・本番に出すときに使う。`--notes` がなければ、その版がほかのトラックで持つリリースノートを写す
 - `--discard-drafts` は、トラックの下書きのリリースを捨てる。公開済みのリリースは残る
-
+- `--listing` は、[play-console.md の「ストアの掲載情報」](play-console.md#ストアの掲載情報)のアプリ名・簡単な説明・詳しい説明を送る
+- `--contact` は、連絡先のウェブサイトを [play-console.md の「アプリの基本」](play-console.md#アプリの基本)にそろえ、電話番号を消す（入れるとストアで公開される）。メールアドレスは変えない
+- `--screenshots` は、スマートフォンのスクリーンショットを `store/screenshots/` の PNG に、ファイル名の順で置き換える
 - `edit` は `--commit` がなければ Play に確かめさせるだけで、何も変えない。まず `--commit` なしで通し、問題がなければ `--commit` を付けて審査に出す
 - `--commit` で出ると、Play Console で保存して審査に出していない変更も一緒に出る
 - トラックは既定で内部テスト（`internal`）。`--track alpha`（クローズドテスト）・`production`（本番）も選べる。API で出したリリースは段階的な公開にならず、トラックの全員に出る。本番に段階的に出すときは Play Console で出す

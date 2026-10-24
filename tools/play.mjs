@@ -2,15 +2,18 @@
  * Publishes to Google Play through the Google Play Developer API (docs/play-api.md).
  *
  *   node tools/play.mjs status                                   # the tracks and their releases
- *   node tools/play.mjs listing                                  # the descriptions `--listing` sends
+ *   node tools/play.mjs listing                                  # the name and descriptions `--listing` sends
  *   node tools/play.mjs edit --aab release/x.aab --notes "…"     # checks an edit, then throws it away
  *   node tools/play.mjs edit --aab release/x.aab --notes "…" --listing --commit
  *   node tools/play.mjs edit --version-code 5 --track alpha           # a bundle already on Play
  *   node tools/play.mjs edit --track my-track --discard-drafts
+ *   node tools/play.mjs edit --listing --contact --screenshots       # the whole store listing
  *   node tools/play.mjs data-safety docs/play-data-safety.csv
  *
  * `edit` puts an AAB on a track (`--track`, internal by default) and, with `--listing`, the store
- * listing's descriptions from docs/play-console.md, in one edit. `--version-code` puts a bundle already
+ * listing's name and descriptions from docs/play-console.md, in one edit. `--contact` sets the
+ * website from docs/play-console.md and clears the phone number; `--screenshots` replaces the phone
+ * screenshots with store/screenshots/*.png in file name order. `--version-code` puts a bundle already
  * on Play on the track instead, with the release notes it has on another track unless `--notes` is
  * given. `--discard-drafts` removes the track's draft releases. Without `--commit` it only asks
  * Play to validate the edit. Committing sends the changes for review, together with any changes
@@ -22,7 +25,7 @@
  */
 
 import { createSign } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -70,16 +73,36 @@ async function call(method, url, body, contentType = 'application/json') {
   return text ? JSON.parse(text) : {};
 }
 
-/** The descriptions in docs/play-console.md: the text block under each heading. */
+const consoleDoc = () => readFileSync(new URL('../docs/play-console.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+
+/** The last cell of the row for `item` in a table of docs/play-console.md. */
+function row(doc, item) {
+  const line = doc.split('\n').find((l) => l.startsWith(`| ${item} |`));
+  if (!line) throw new Error(`play-console.md has no table row "${item}"`);
+  return line.split('|').at(-2).trim();
+}
+
+/** The app name (the first code span of its row) and the descriptions (the text block under each heading). */
 function listing() {
-  const doc = readFileSync(new URL('../docs/play-console.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const doc = consoleDoc();
   const block = (heading) => {
     const m = doc.match(new RegExp(`^#+ ${heading}\\n\\n\`\`\`text\\n([\\s\\S]*?)\\n\`\`\``, 'm'));
     if (!m) throw new Error(`play-console.md has no text block under the heading "${heading}"`);
     return m[1];
   };
-  return { shortDescription: block('簡単な説明'), fullDescription: block('詳しい説明') };
+  const title = row(doc, 'アプリ名').match(/`([^`]+)`/)?.[1];
+  if (!title) throw new Error('play-console.md has no app name in a code span');
+  return { title, shortDescription: block('簡単な説明'), fullDescription: block('詳しい説明') };
 }
+
+/** The contact details: the website from play-console.md, and no phone number (it would be public). */
+function contact() {
+  const contactWebsite = row(consoleDoc(), '連絡先の詳細').match(/https:\/\/[^\s。]+/)?.[0];
+  if (!contactWebsite) throw new Error('play-console.md has no website in the contact details row');
+  return { contactWebsite, contactPhone: '' };
+}
+
+const SCREENSHOTS = new URL('../store/screenshots/', import.meta.url);
 
 async function status() {
   const { id } = await call('POST', `${API}/edits`, {});
@@ -133,7 +156,19 @@ async function edit(opts) {
     if (opts.listing) {
       const l = listing();
       await call('PATCH', `${API}/edits/${id}/listings/${LANGUAGE}`, l);
-      console.log(`listing: ${LANGUAGE} (${l.shortDescription.length} / ${l.fullDescription.length} characters)`);
+      console.log(`listing: ${LANGUAGE} "${l.title}" (${l.shortDescription.length} / ${l.fullDescription.length} characters)`);
+    }
+    if (opts.contact) {
+      const d = await call('PATCH', `${API}/edits/${id}/details`, contact());
+      console.log(`contact: website ${d.contactWebsite}, phone "${d.contactPhone ?? ''}"`);
+    }
+    if (opts.screenshots) {
+      const files = readdirSync(SCREENSHOTS).filter((f) => f.endsWith('.png')).sort();
+      await call('DELETE', `${API}/edits/${id}/listings/${LANGUAGE}/phoneScreenshots`);
+      for (const f of files) {
+        await call('POST', `${UPLOAD}/edits/${id}/listings/${LANGUAGE}/phoneScreenshots?uploadType=media`, readFileSync(new URL(f, SCREENSHOTS)), 'image/png');
+      }
+      console.log(`screenshots: ${files.join(', ')}`);
     }
     await call('POST', `${API}/edits/${id}:validate`);
     if (!opts.commit) {
@@ -162,6 +197,8 @@ const { positionals, values } = parseArgs({
     track: { type: 'string', default: 'internal' },
     listing: { type: 'boolean', default: false },
     'discard-drafts': { type: 'boolean', default: false },
+    contact: { type: 'boolean', default: false },
+    screenshots: { type: 'boolean', default: false },
     commit: { type: 'boolean', default: false },
   },
 });
@@ -173,7 +210,7 @@ try {
   else if (command === 'edit') await edit(values);
   else if (command === 'data-safety' && arg) await dataSafety(arg);
   else {
-    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text | --version-code n [--notes text]] [--track t] [--discard-drafts] [--listing] [--commit] | data-safety file.csv');
+    console.error('usage: node tools/play.mjs status | listing | edit [--aab file --notes text | --version-code n [--notes text]] [--track t] [--discard-drafts] [--listing] [--contact] [--screenshots] [--commit] | data-safety file.csv');
     process.exitCode = 2;
   }
 } catch (e) {
