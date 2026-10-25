@@ -8,7 +8,7 @@ import io.github.duwenji.yorisoi.kit.llm.GuideException
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
 import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.llm.RelayQuota
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle

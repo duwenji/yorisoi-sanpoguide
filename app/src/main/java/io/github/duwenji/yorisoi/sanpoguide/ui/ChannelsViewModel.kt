@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.report.Report
 import io.github.duwenji.yorisoi.sanpoguide.report.ReportTarget
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice

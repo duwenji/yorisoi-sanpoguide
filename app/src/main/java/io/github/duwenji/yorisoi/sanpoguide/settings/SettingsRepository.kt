@@ -2,6 +2,8 @@ package io.github.duwenji.yorisoi.sanpoguide.settings
 
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
+import io.github.duwenji.yorisoi.kit.llm.AiConnection
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.kit.llm.KeyCipher
 import android.content.Context
 import androidx.core.content.edit
@@ -15,12 +17,6 @@ import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-/**
- * How the AI is reached (platform ADR-AI-RELAY R-1): the operator's AI through its relay, paid by
- * the operator up to its daily limit, or the user's own key straight to the service they chose.
- */
-enum class AiRoute { OPERATOR, OWN_KEY }
 
 /**
  * How the AI is reached and, for the user's own key, which AI service to use, with per-provider
@@ -80,16 +76,14 @@ data class GuideSettings(
     fun model(p: Provider = provider): String = models[p]?.takeIf { it.isNotBlank() } ?: p.defaultModel
     fun baseUrl(p: Provider = provider): String = if (p == Provider.CUSTOM) customBaseUrl else p.defaultBaseUrl
 
-    val isConfigured: Boolean
-        get() = when (aiRoute) {
-            AiRoute.OPERATOR -> operatorAiAvailable
-            AiRoute.OWN_KEY -> apiKey().isNotBlank() && model().isNotBlank() &&
-                (provider == Provider.CLAUDE || baseUrl().isNotBlank())
-        }
+    /** The AI settings as platform kit-llm's AiGateway reads them. */
+    val connection: AiConnection
+        get() = AiConnection(aiRoute, provider, apiKey(), model(), baseUrl(), dailyAiLimit)
+
+    val isConfigured: Boolean get() = connection.isConfigured(operatorAiAvailable)
 
     /** The model named beside what the AI said: the service's own for a user's key. */
-    val aiName: String
-        get() = if (aiRoute == AiRoute.OPERATOR) OPERATOR_AI_NAME else model()
+    val aiName: String get() = connection.name
 
     companion object {
         /** The daily limits offered on the settings screen; null is「上限なし」. */
@@ -101,7 +95,7 @@ data class GuideSettings(
         /** Whether this build has a relay to talk to (release builds don't until production's is up). */
         val operatorAiAvailable: Boolean get() = BuildConfig.AI_RELAY_URL.isNotEmpty()
 
-        const val OPERATOR_AI_NAME = "運営の AI"
+        const val OPERATOR_AI_NAME = AiConnection.OPERATOR_AI_NAME
 
         /**
          * The route when none is saved (ADR-AI-RELAY R-4): someone who already put in a key keeps it
