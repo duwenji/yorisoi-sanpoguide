@@ -20,7 +20,7 @@ import io.github.duwenji.yorisoi.core.format.RejectCode
 import io.github.duwenji.yorisoi.core.format.StationCheck
 import io.github.duwenji.yorisoi.core.format.StationValidator
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.TestPublisher
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.TinkEd25519
+import io.github.duwenji.yorisoi.kit.channel.remote.TinkEd25519
 import io.github.duwenji.yorisoi.sanpoguide.station.remote.sha256
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
