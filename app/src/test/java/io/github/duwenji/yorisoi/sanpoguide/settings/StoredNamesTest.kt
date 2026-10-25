@@ -9,6 +9,7 @@ import io.github.duwenji.yorisoi.core.format.SpotKind
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 
 /**
  * Names the phone has already stored. Moving these types to other modules or

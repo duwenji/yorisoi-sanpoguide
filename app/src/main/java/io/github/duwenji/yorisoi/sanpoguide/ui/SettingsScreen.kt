@@ -62,7 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold

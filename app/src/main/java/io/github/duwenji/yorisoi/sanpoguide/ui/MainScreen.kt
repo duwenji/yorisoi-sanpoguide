@@ -1,6 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
-import io.github.duwenji.yorisoi.sanpoguide.settings.AiRoute
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.kit.geo.map.FacilityItem
 import io.github.duwenji.yorisoi.kit.geo.map.MapTiles
 import io.github.duwenji.yorisoi.kit.geo.map.RouteToSpot

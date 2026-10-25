@@ -6,6 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import io.github.duwenji.yorisoi.kit.llm.AiRoute
 
 /** The operator's AI and the user's own key (platform ADR-AI-RELAY R-1, R-4). */
 class AiRouteTest {
