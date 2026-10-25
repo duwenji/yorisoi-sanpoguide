@@ -18,7 +18,6 @@ import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.sanpoguide.R
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.FacilityAdvice
-import io.github.duwenji.yorisoi.sanpoguide.companion.FacilityAdvisor
 import io.github.duwenji.yorisoi.sanpoguide.companion.NearbySpot
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkDecider
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkDecision
@@ -31,6 +30,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlanJson
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkSession
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.relativeDirection
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.DiagnosticFields
 import io.github.duwenji.yorisoi.sanpoguide.history.SpotVisit
 import io.github.duwenji.yorisoi.sanpoguide.material.Content
@@ -452,7 +452,7 @@ class WalkService : LifecycleService() {
     private fun directionTo(location: Location, advice: FacilityAdvice): String? {
         if (!location.hasBearing() || location.speed < MIN_HEADING_SPEED || advice.distanceM < 15) return null
         val target = Location("").apply { latitude = advice.facility.lat; longitude = advice.facility.lon }
-        return FacilityAdvisor.relativeDirection(location.bearing, location.bearingTo(target))
+        return relativeDirection(location.bearing, location.bearingTo(target))
     }
 
     private fun speakLine(text: String, spotName: String? = null) = speakLine(Utterance(System.currentTimeMillis(), text, spotName))

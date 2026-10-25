@@ -99,12 +99,4 @@ class FacilityAdvisorTest {
             FacilityAdvisor.pick(listOf(vending to 20f), 20 * minute, mild, emptySet(), emptyMap(), now, cool)!!.need,
         )
     }
-
-    @Test
-    fun `direction relative to heading`() {
-        assertEquals("前方", FacilityAdvisor.relativeDirection(heading = 350f, bearing = 10f))
-        assertEquals("右手", FacilityAdvisor.relativeDirection(heading = 0f, bearing = 90f))
-        assertEquals("左手", FacilityAdvisor.relativeDirection(heading = 90f, bearing = 0f))
-        assertEquals("後ろ", FacilityAdvisor.relativeDirection(heading = 0f, bearing = -170f))
-    }
 }
