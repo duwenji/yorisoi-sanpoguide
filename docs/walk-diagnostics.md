@@ -29,7 +29,7 @@ python tools/analyze_walks.py sanpoguide-walks-20261018-1530.json --walk <id>
 ## 置き場所と量
 
 - 端末の `files/diagnostics/<散歩の id>.jsonl`（1 行に 1 つの出来事）。散歩の id は散歩の記録（`walk_history.json`）の `id` と同じ
-- 最新 30 件の散歩まで（`WalkDiagnostics.MAX_WALKS`）。古いものから消す
+- 最新 30 件の散歩まで（platform kit-companion の `SessionRecorder.MAX_SESSIONS`）。古いものから消す
 - 記録の画面で「記録をすべて削除」すると、詳しい記録も消える
 - 散歩の記録と同じく、クラウドのバックアップにも端末間の移行にも含めない
 
