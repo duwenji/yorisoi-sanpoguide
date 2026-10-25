@@ -2,7 +2,7 @@ package io.github.duwenji.yorisoi.sanpoguide.guide
 
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.mood.Mood
-import io.github.duwenji.yorisoi.sanpoguide.material.Ground
+import io.github.duwenji.yorisoi.kit.channel.material.Ground
 import java.util.Locale
 
 /** Values for the spot-guide prompt files (`guide/user`, `fallback/guide`). The wording lives in the files. */

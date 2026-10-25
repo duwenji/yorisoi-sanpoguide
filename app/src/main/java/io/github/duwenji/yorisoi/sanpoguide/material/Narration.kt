@@ -1,5 +1,10 @@
 package io.github.duwenji.yorisoi.sanpoguide.material
 
+import io.github.duwenji.yorisoi.kit.channel.material.Subject
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialRequest
+import io.github.duwenji.yorisoi.kit.channel.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialResult
+import io.github.duwenji.yorisoi.kit.channel.material.Producers
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkEvent
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkSession
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
@@ -35,7 +40,7 @@ object Shorthand {
 class Narration(private val producers: Producers, private val station: () -> Station, private val mood: () -> Mood? = { null }) {
     /** The companion's line for [event], with its credit to show; always a line, since the fixed lines can't fail. */
     suspend fun line(event: TalkEvent, session: WalkSession?, weather: Weather?): Material =
-        when (val result = producers.first(Shorthand.COMPANION, request(Subject.Event(event), MaterialType.TEXT, session, weather))) {
+        when (val result = producers.first(Shorthand.COMPANION, request(EventSubject(event), MaterialType.TEXT, session, weather))) {
             is MaterialResult.Ready -> result.material
             else -> error("No text from ${Shorthand.COMPANION}: $result")
         }
@@ -60,16 +65,16 @@ class Narration(private val producers: Producers, private val station: () -> Sta
 
     /** The photo request for a spot's sheet, to [peek][Producer.peek] before [sheetPhoto]. */
     fun peekSheetPhoto(poi: Poi): MaterialResult? =
-        producers[Shorthand.SHEET_PHOTO.first()]?.peek(request(Subject.Spot(poi, null), MaterialType.IMAGE))
+        producers[Shorthand.SHEET_PHOTO.first()]?.peek(request(PoiSubject(poi, null), MaterialType.IMAGE))
 
     suspend fun sheetPhoto(poi: Poi): MaterialResult =
-        producers.first(Shorthand.SHEET_PHOTO, request(Subject.Spot(poi, null), MaterialType.IMAGE))
+        producers.first(Shorthand.SHEET_PHOTO, request(PoiSubject(poi, null), MaterialType.IMAGE))
 
     /** The background sound for [mood] on [channel]. */
     suspend fun ambient(channel: Station, mood: Mood): Soundscape? {
-        val request = MaterialRequest(Subject.None, MaterialType.AUDIO, MaterialContext(channel, mood = mood))
+        val request = MaterialRequest(Subject.None, MaterialType.AUDIO, walkContext(channel, mood = mood))
         val ready = producers.first(Shorthand.AMBIENT, request) as? MaterialResult.Ready
-        return (ready?.material?.content as? Content.Ambient)?.sound
+        return (ready?.material?.content as? AmbientContent)?.sound
     }
 
     private companion object {
@@ -78,8 +83,8 @@ class Narration(private val producers: Producers, private val station: () -> Sta
     }
 
     private fun request(subject: Subject, type: MaterialType, session: WalkSession? = null, weather: Weather? = null) =
-        MaterialRequest(subject, type, MaterialContext(station(), session, weather))
+        MaterialRequest(subject, type, walkContext(station(), session, weather))
 
     private fun spotRequest(poi: Poi, distanceM: Int?) =
-        MaterialRequest(Subject.Spot(poi, distanceM), MaterialType.TEXT, MaterialContext(station(), mood = mood()))
+        MaterialRequest(PoiSubject(poi, distanceM), MaterialType.TEXT, walkContext(station(), mood = mood()))
 }

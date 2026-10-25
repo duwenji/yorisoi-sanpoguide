@@ -9,7 +9,7 @@ import io.github.duwenji.yorisoi.kit.llm.RelayClient
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
-import io.github.duwenji.yorisoi.sanpoguide.material.Ground
+import io.github.duwenji.yorisoi.kit.channel.material.Ground
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.kit.llm.AiUsage

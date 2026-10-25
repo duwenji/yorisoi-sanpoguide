@@ -1,5 +1,8 @@
 package io.github.duwenji.yorisoi.sanpoguide.material
 
+import io.github.duwenji.yorisoi.kit.channel.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.Shown
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.format.PresentAs
 

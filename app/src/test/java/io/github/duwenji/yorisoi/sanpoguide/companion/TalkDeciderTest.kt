@@ -9,8 +9,8 @@ import io.github.duwenji.yorisoi.kit.geo.FacilityKind
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.weather.ForecastSlot
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
-import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
-import io.github.duwenji.yorisoi.sanpoguide.material.Subject
+import io.github.duwenji.yorisoi.kit.channel.material.CueFire
+import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
 import org.junit.Assert.assertEquals
