@@ -4,15 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
-import io.github.duwenji.yorisoi.sanpoguide.report.Report
-import io.github.duwenji.yorisoi.sanpoguide.report.ReportTarget
+import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
+import io.github.duwenji.yorisoi.kit.channel.report.ReportTarget
 import io.github.duwenji.yorisoi.kit.llm.AiRoute
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelNotice
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelSyncException
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ProviderView
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.TrialChannel
+import io.github.duwenji.yorisoi.kit.channel.remote.ChannelNotice
+import io.github.duwenji.yorisoi.kit.channel.remote.ChannelSyncException
+import io.github.duwenji.yorisoi.kit.channel.remote.ProviderView
+import io.github.duwenji.yorisoi.kit.channel.remote.TrialChannel
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,7 +73,7 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
 
     /** Who answers for an installed channel, for a report (platform ADR-004 H-11). */
     fun reportTarget(providerId: String, channelId: String): ReportTarget? =
-        app.stations.list.value.firstOrNull { it.id == "$providerId/$channelId" }?.let(Report::target)
+        app.stations.list.value.firstOrNull { it.id == "$providerId/$channelId" }?.let(AppReport.report::target)
 
     fun confirmUse() {
         val p = _pendingUse.value ?: return

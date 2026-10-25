@@ -3,6 +3,7 @@ package io.github.duwenji.yorisoi.sanpoguide
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.net.ConnectivityManager
 import android.util.Log
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.sanpoguide.companion.CompanionFeed
@@ -42,14 +43,17 @@ import io.github.duwenji.yorisoi.kit.mood.MoodSource
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
 import io.github.duwenji.yorisoi.sanpoguide.station.BuiltInStations
+import io.github.duwenji.yorisoi.sanpoguide.station.SanpoProfile
 import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.kit.channel.StationRepository
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ChannelSync
+import io.github.duwenji.yorisoi.kit.channel.remote.ChannelSync
 import io.github.duwenji.yorisoi.core.format.CueEvent
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ThirdPartyChannels
+import io.github.duwenji.yorisoi.kit.channel.remote.OkHttpProviderHttp
+import io.github.duwenji.yorisoi.kit.channel.remote.ThirdPartyChannels
+import io.github.duwenji.yorisoi.kit.channel.remote.TinkEd25519
 import io.github.duwenji.yorisoi.sanpoguide.walk.CueShow
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
-import io.github.duwenji.yorisoi.sanpoguide.report.Report
+import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -146,13 +150,24 @@ class SanpoApp : Application() {
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
         // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
-        channels = ThirdPartyChannels(this, BuiltInStations.standardPackage(), appScope, developerMode) {
+        val connectivity = getSystemService(ConnectivityManager::class.java)
+        channels = ThirdPartyChannels(
+            dir = File(filesDir, "channels"),
+            http = OkHttpProviderHttp("SanpoGuide/${BuildConfig.VERSION_NAME}"),
+            verifier = TinkEd25519,
+            profile = SanpoProfile.of(BuildConfig.VERSION_CODE),
+            allowLocalHttp = BuildConfig.DEBUG,
+            unmetered = { connectivity?.isActiveNetworkMetered == false },
+            standard = BuiltInStations.standardPackage(),
+            scope = appScope,
+            developerMode = developerMode,
+        ) {
             spots.location.value?.let { Regions.around(it.latitude, it.longitude) }
         }
         val choice = settings.settings.map { it.channelChoice }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.channelChoice)
         stations = StationRepository(BuiltInStations.load(), BuiltInStations.STANDARD, choice, appScope, channels.stations)
         // Each line remembers the channel it was said on, for a report (platform ADR-004 H-11).
-        feed.channel = { Report.target(stations.current.value) }
+        feed.channel = { AppReport.report.target(stations.current.value) }
         channels.refreshIfDue()
         appScope.launch {
             // A switch to or from a channel that prefers shops shows them, or clears them, right away.

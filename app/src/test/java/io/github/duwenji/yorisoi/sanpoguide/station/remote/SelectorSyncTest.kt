@@ -1,5 +1,11 @@
 package io.github.duwenji.yorisoi.sanpoguide.station.remote
 
+import io.github.duwenji.yorisoi.kit.channel.remote.ChannelStore
+import io.github.duwenji.yorisoi.kit.channel.remote.ChannelSync
+import io.github.duwenji.yorisoi.kit.channel.remote.ProviderHttp
+import io.github.duwenji.yorisoi.kit.channel.remote.TinkEd25519
+import io.github.duwenji.yorisoi.kit.channel.remote.TooLargeException
+import io.github.duwenji.yorisoi.sanpoguide.station.SanpoProfile
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.sanpoguide.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.CueFinder
@@ -63,7 +69,7 @@ class SelectorSyncTest {
     @Before
     fun setUp() {
         files["$base/.well-known/sanpo-channels"] = provider.discovery().toByteArray()
-        sync = ChannelSync(ChannelStore(folder.root), http, TinkEd25519, appVersion = 1, now = { clock }, region = { here })
+        sync = ChannelSync(ChannelStore(folder.root), http, TinkEd25519, appVersion = 1, now = { clock }, region = { here }, profile = SanpoProfile.of(1))
     }
 
     /** A channel with one selector of history photos, used by a cue on any shrine. */

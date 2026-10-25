@@ -39,10 +39,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ListedStatus
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ListedView
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.ProviderView
-import io.github.duwenji.yorisoi.sanpoguide.station.remote.TrialChannel
+import io.github.duwenji.yorisoi.kit.channel.remote.ListedStatus
+import io.github.duwenji.yorisoi.kit.channel.remote.ListedView
+import io.github.duwenji.yorisoi.kit.channel.remote.ProviderView
+import io.github.duwenji.yorisoi.kit.channel.remote.TrialChannel
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
