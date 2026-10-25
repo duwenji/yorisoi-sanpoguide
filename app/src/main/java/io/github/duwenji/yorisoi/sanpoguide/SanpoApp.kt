@@ -8,7 +8,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.sanpoguide.companion.CompanionFeed
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.DiagnosticFields
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.TimingInterceptor
-import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkDiagnostics
+import io.github.duwenji.yorisoi.kit.companion.SessionRecorder
 import io.github.duwenji.yorisoi.kit.geo.weather.WeatherClient
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapTiles
 import io.github.duwenji.yorisoi.kit.geo.OverpassClient
@@ -116,7 +116,7 @@ class SanpoApp : Application() {
     lateinit var mood: MoodSource
         private set
     /** The developer's detailed record of each walk taken in developer mode. */
-    lateinit var diagnostics: WalkDiagnostics
+    lateinit var diagnostics: SessionRecorder
         private set
     lateinit var photos: SpotPhotos
         private set
@@ -130,7 +130,10 @@ class SanpoApp : Application() {
         Configuration.getInstance().userAgentValue = "SanpoGuide/${BuildConfig.VERSION_NAME} (Android)"
 
         settings = SettingsRepository(this)
-        diagnostics = WalkDiagnostics(File(filesDir, "diagnostics"))
+        // platform kit-companion; the event types are what the export's analysis reads.
+        diagnostics = SessionRecorder(File(filesDir, "diagnostics"), startType = "walk_start", endType = "walk_end") {
+            Log.w("SessionRecorder", "Could not write a diagnostics line", it)
+        }
         // The channel decides which shops to search for; read when searching, after start-up.
         spotCache = SpotCache(File(cacheDir, "spots"))
         spots = SpotRepository(

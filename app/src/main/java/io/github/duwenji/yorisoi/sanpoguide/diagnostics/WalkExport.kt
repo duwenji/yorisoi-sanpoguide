@@ -7,7 +7,7 @@ import org.json.JSONObject
 
 /**
  * The file the developer exports from the history screen: every saved walk in the history's own
- * format, each with its [WalkDiagnostics] events when the walk was recorded in developer mode.
+ * format, each with its developer's record (platform kit-companion's SessionRecorder) when the walk was recorded in developer mode.
  * The field names are what analysis scripts read; [VERSION] goes up when one changes meaning.
  */
 object WalkExport {

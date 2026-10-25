@@ -17,7 +17,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-/** How the walk's decisions, situations and settings are written into [WalkDiagnostics]. */
+/** How the walk's decisions, situations and settings are written into the developer's record (platform kit-companion's SessionRecorder). */
 object DiagnosticFields {
     /** What was decided, by kind, with what it was about (not the whole spot with its tags). */
     fun decision(d: TalkDecision): List<Pair<String, Any?>> = when (d) {

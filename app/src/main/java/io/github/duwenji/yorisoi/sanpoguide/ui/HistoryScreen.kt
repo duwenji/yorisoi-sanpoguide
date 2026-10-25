@@ -44,7 +44,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
-import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkDiagnostics
+import io.github.duwenji.yorisoi.kit.companion.SessionRecorder
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkExport
 import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
 import kotlinx.coroutines.Dispatchers
@@ -152,7 +152,7 @@ fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
             item {
                 Text(
                     if (developerMode) {
-                        "記録はこの端末内にだけ保存されます。開発者モードでは、散歩ごとの詳しい記録（位置・判定・AI とのやり取り）も最新 ${WalkDiagnostics.MAX_WALKS} 件まで残り、右上のボタンで書き出せます。"
+                        "記録はこの端末内にだけ保存されます。開発者モードでは、散歩ごとの詳しい記録（位置・判定・AI とのやり取り）も最新 ${SessionRecorder.MAX_SESSIONS} 件まで残り、右上のボタンで書き出せます。"
                     } else {
                         "記録はこの端末内にだけ保存されます。"
                     },
