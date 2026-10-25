@@ -56,12 +56,12 @@
 | P27 | SpotRepository | `yorisoi-platform/kit-geo` の `SpotRepository`（Overpass でスポット・施設を検索） | 3 |
 | P28 | WeatherClient | `yorisoi-platform/kit-geo` の `WeatherClient`（Open-Meteo） | 3 |
 | P29 | Narration | `material/Narration.kt`（散歩と画面が使う素材の窓口） | 3, 4, 6, 9 |
-| P30 | Producers | `material/Producer.kt` の `Producers`（候補を順に試す） | 3, 4, 6 |
-| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`）・チャンネルに同梱（`ResourceProducer`）・素材集（kit-channel の `ChannelMaterials`・`Selectors`） | 5 |
+| P30 | Producers | `yorisoi-platform/kit-channel` の `material/Producer.kt` の `Producers`（候補を順に試す） | 3, 4, 6 |
+| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`）・チャンネルに同梱（kit-channel の `ResourceProducer`）・素材集（kit-channel の `ChannelMaterials`・`SelectorProducer`） | 5 |
 | P32 | GuideRepository | `guide/GuideRepository.kt`（AI の解説とキャッシュ・自由な生成） | 4, 6 |
 | P33 | SpotPhotos | `yorisoi-platform/kit-geo` の `SpotPhotos` | 6 |
-| P34 | CueFinder | `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5 |
-| P35 | CuePresenter | `material/Cues.kt` の `CuePresenter`（きっかけを素材にする） | 4, 5 |
+| P34 | CueFinder | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5 |
+| P35 | CuePresenter | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CuePresenter`（きっかけを素材にする） | 4, 5 |
 | P36 | 出力 | 読み上げ（`kit-voice` の `Speaker`）・発言カード（`CompanionFeed.add`）・通知 | 3, 4, 5, 6, 8, 9 |
 
 P26 と P36 はどちらも `CompanionFeed` を使うが、P26 は地図とカードの上の数字に出す状態、P36 は発言（カード 1 枚ずつ）として分けている。

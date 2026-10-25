@@ -4,7 +4,7 @@ import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
-import io.github.duwenji.yorisoi.sanpoguide.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.Material
 import io.github.duwenji.yorisoi.kit.channel.report.ReportTarget
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

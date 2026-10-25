@@ -1,11 +1,13 @@
 package io.github.duwenji.yorisoi.sanpoguide.material
 
+import io.github.duwenji.yorisoi.kit.channel.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Material
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 
 /** The picture of an image material, scaled down so its longer side is at most about [maxPx]; null for other material. */
 fun Material.bitmap(maxPx: Int): Bitmap? = when (val c = content) {
-    is Content.Image -> c.bitmap
+    is BitmapContent -> c.bitmap
     is Content.EncodedImage -> decodeImage(c.bytes, maxPx)
     else -> null
 }

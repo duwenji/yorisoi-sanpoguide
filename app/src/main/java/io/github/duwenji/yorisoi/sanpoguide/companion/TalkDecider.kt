@@ -7,7 +7,7 @@ import io.github.duwenji.yorisoi.kit.companion.TalkRule
 import io.github.duwenji.yorisoi.kit.geo.Facility
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
-import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
+import io.github.duwenji.yorisoi.kit.channel.material.CueFire
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds

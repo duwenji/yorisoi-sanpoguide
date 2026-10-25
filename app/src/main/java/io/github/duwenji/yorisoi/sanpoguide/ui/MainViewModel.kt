@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
+import io.github.duwenji.yorisoi.sanpoguide.material.BitmapContent
 import io.github.duwenji.yorisoi.kit.llm.RelayQuota
 import io.github.duwenji.yorisoi.kit.geo.map.FacilityItem
 import io.github.duwenji.yorisoi.kit.geo.map.MapTiles
@@ -28,11 +29,11 @@ import io.github.duwenji.yorisoi.kit.geo.RouteGeometry
 import io.github.duwenji.yorisoi.kit.geo.WalkRoute
 import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
-import io.github.duwenji.yorisoi.sanpoguide.material.Content
-import io.github.duwenji.yorisoi.sanpoguide.material.Credit
+import io.github.duwenji.yorisoi.kit.channel.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Credit
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
 import io.github.duwenji.yorisoi.sanpoguide.material.Pace
-import io.github.duwenji.yorisoi.sanpoguide.material.MaterialResult
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialResult
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.sanpoguide.settings.GuideSettings
@@ -422,7 +423,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         app.narration.peekSheetPhoto(poi)?.let(::photoState) ?: PhotoState.Loading
 
     private fun photoState(result: MaterialResult): PhotoState? = when (result) {
-        is MaterialResult.Ready -> (result.material.content as? Content.Image)?.let { PhotoState.Ready(it.bitmap, result.material.credit) }
+        is MaterialResult.Ready -> (result.material.content as? BitmapContent)?.let { PhotoState.Ready(it.bitmap, result.material.credit) }
         is MaterialResult.Unavailable -> if (result.reason == MaterialResult.Reason.METERED) PhotoState.WaitingForWifi else PhotoState.None
         MaterialResult.None -> PhotoState.None
     }

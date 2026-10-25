@@ -1,5 +1,8 @@
 package io.github.duwenji.yorisoi.sanpoguide.walk
 
+import io.github.duwenji.yorisoi.sanpoguide.material.PoiSubject
+import io.github.duwenji.yorisoi.sanpoguide.material.EventSubject
+import io.github.duwenji.yorisoi.sanpoguide.material.walkContext
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationManager
@@ -33,13 +36,13 @@ import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.relativeDirection
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.DiagnosticFields
 import io.github.duwenji.yorisoi.sanpoguide.history.SpotVisit
-import io.github.duwenji.yorisoi.sanpoguide.material.Content
-import io.github.duwenji.yorisoi.sanpoguide.material.CueFire
+import io.github.duwenji.yorisoi.kit.channel.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.CueFire
 import io.github.duwenji.yorisoi.sanpoguide.material.CueLayout
-import io.github.duwenji.yorisoi.sanpoguide.material.Material
-import io.github.duwenji.yorisoi.sanpoguide.material.MaterialContext
-import io.github.duwenji.yorisoi.sanpoguide.material.Shown
-import io.github.duwenji.yorisoi.sanpoguide.material.Subject
+import io.github.duwenji.yorisoi.kit.channel.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialContext
+import io.github.duwenji.yorisoi.kit.channel.material.Shown
+import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
 import io.github.duwenji.yorisoi.kit.channel.Station
@@ -232,7 +235,7 @@ class WalkService : LifecycleService() {
                 talk {
                     if (app.stations.current.value.talksOn(TalkEventKind.START)) speakLine(app.narration.line(TalkEvent.Start, s, weather))
                     // The channel's own cues for the start come after the greeting (API-003 `event: start`).
-                    eventCues(s, CueEvent.START, Subject.Event(TalkEvent.Start))
+                    eventCues(s, CueEvent.START, EventSubject(TalkEvent.Start))
                 }
             }
             try {
@@ -353,7 +356,7 @@ class WalkService : LifecycleService() {
                 NearbySpot(
                     poi, d, already,
                     visitedBefore = !already && app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty(),
-                    cue = if (already) null else media?.let { app.cueFinder.spot(station.id, it, poi, d.toInt(), s.shownCues, now) },
+                    cue = if (already) null else media?.let { app.cueFinder.spot(station.id, it, PoiSubject(poi, d.toInt()), s.shownCues, now) },
                     planned = s.plan.stops.any { it.poiId == poi.id },
                 )
             }
@@ -421,7 +424,7 @@ class WalkService : LifecycleService() {
     // ---- a channel's cues ----
 
     private suspend fun present(s: WalkSession, fire: CueFire, station: Station): List<Shown> =
-        app.cues.present(fire, station, MaterialContext(station, s, weather, app.mood.mood.value))
+        app.cues.present(fire, station, walkContext(station, s, weather, app.mood.mood.value))
 
     /**
      * Shows what a cue came to, in its order ([CueShow]); its spoken lines go in the queue the
@@ -531,7 +534,7 @@ class WalkService : LifecycleService() {
                 app.speaker.speak(text)
             }
             // The channel's own cues for the end come after the summary (API-003 `event: finish`).
-            app.showEventCues(station, CueEvent.FINISH, Subject.Event(TalkEvent.Finish(record)), s.shownCues, MaterialContext(station, null, lastWeather))
+            app.showEventCues(station, CueEvent.FINISH, EventSubject(TalkEvent.Finish(record)), s.shownCues, walkContext(station, weather = lastWeather))
             app.diagnostics.finish(s.id)
         }
     }

@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.diagnostics
 
+import io.github.duwenji.yorisoi.sanpoguide.material.PoiSubject
 import io.github.duwenji.yorisoi.kit.geo.Facility
 import io.github.duwenji.yorisoi.kit.geo.FacilityKind
 import io.github.duwenji.yorisoi.kit.geo.Poi
@@ -7,7 +8,7 @@ import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkDecision
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkSituation
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkGate
-import io.github.duwenji.yorisoi.sanpoguide.material.SpotMaterials
+import io.github.duwenji.yorisoi.kit.channel.material.SpotMaterials
 import io.github.duwenji.yorisoi.sanpoguide.settings.Threshold
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
 import io.github.duwenji.yorisoi.kit.channel.Station
@@ -124,7 +125,7 @@ object DiagnosticFields {
             spots.sortedBy { it.second }.forEach { (poi, distanceM) ->
                 val o = JSONObject().put("poiId", poi.id).put("name", poi.name)
                     .put("category", poi.category).put("distanceM", distanceM.toInt())
-                val related = stations.mapNotNull { station -> SpotMaterials.of(station, poi)?.let { channelAbout(station, it) } }
+                val related = stations.mapNotNull { station -> SpotMaterials.of(station, PoiSubject(poi, null))?.let { channelAbout(station, it) } }
                 if (related.isNotEmpty()) o.put("channels", JSONArray(related))
                 put(o)
             }

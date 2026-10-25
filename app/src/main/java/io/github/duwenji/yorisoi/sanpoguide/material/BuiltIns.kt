@@ -1,11 +1,17 @@
 package io.github.duwenji.yorisoi.sanpoguide.material
 
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialRequest
+import io.github.duwenji.yorisoi.kit.channel.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Credit
+import io.github.duwenji.yorisoi.kit.channel.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialResult
+import io.github.duwenji.yorisoi.kit.channel.material.Producer
 import android.util.Log
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuidePrompt
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
-import io.github.duwenji.yorisoi.sanpoguide.material.MaterialResult.Reason
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialResult.Reason
 import io.github.duwenji.yorisoi.core.format.material.BuiltInProducers
 import io.github.duwenji.yorisoi.core.format.material.MaterialType
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
@@ -42,14 +48,14 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
     override val descriptor = BuiltInProducers.AI_GUIDE
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
-        val spot = request.subject as? Subject.Spot ?: return MaterialResult.None
+        val spot = request.subject as? PoiSubject ?: return MaterialResult.None
         val s = settings.settings.value
         if (!s.isConfigured) return MaterialResult.Unavailable(Reason.NO_KEY)
         return failing(TAG) {
             // Over the limit, a narration made before still comes from the cache; a new one doesn't.
             val text = try {
                 val station = request.context.station
-                guides.guideFor(spot.poi, spot.distanceM, station, request.grounding, request.context.mood?.takeIf { station.moodTone })
+                guides.guideFor(spot.poi, spot.distanceM, station, request.grounding, request.context.walk?.mood?.takeIf { station.moodTone })
             } catch (e: IllegalStateException) {
                 if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e
             }
@@ -68,10 +74,10 @@ class AiCompanionProducer(private val companion: WalkCompanion, private val sett
     override val descriptor = BuiltInProducers.AI_COMPANION
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
-        val event = (request.subject as? Subject.Event)?.event ?: return MaterialResult.None
+        val event = (request.subject as? EventSubject)?.event ?: return MaterialResult.None
         val c = request.context
         return failing(TAG) {
-            val line = companion.aiLine(event, c.session, c.weather, c.station)
+            val line = companion.aiLine(event, c.walk?.session, c.walk?.weather, c.station)
             when {
                 line == null -> MaterialResult.Unavailable(if (settings.settings.value.isConfigured) Reason.LIMIT else Reason.NO_KEY)
                 line.isBlank() -> MaterialResult.Unavailable(Reason.FAILED, "empty reply")
@@ -94,13 +100,13 @@ class FallbackTextProducer(private val prompts: PromptTemplates, private val com
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
         val text = when (val subject = request.subject) {
-            is Subject.Spot -> if (request.context.after?.reason == Reason.FAILED) {
+            is PoiSubject -> if (request.context.after?.reason == Reason.FAILED) {
                 prompts.render(Prompts.Fallback.NEARBY, mapOf("name" to subject.poi.name, "category" to subject.poi.category))
             } else {
                 prompts.render(Prompts.Fallback.GUIDE, GuidePrompt.fallbackVars(subject.poi))
             }
-            is Subject.Event -> companion.fallbackLine(subject.event, request.context.session)
-            is Subject.Point, Subject.None -> return MaterialResult.None
+            is EventSubject -> companion.fallbackLine(subject.event, request.context.walk?.session)
+            else -> return MaterialResult.None
         }
         return ready(MaterialType.TEXT, Content.Text(text), descriptor.id)
     }
@@ -111,7 +117,7 @@ class CommonsPhotoProducer(private val photos: SpotPhotos, private val settings:
     override val descriptor = BuiltInProducers.COMMONS_PHOTO
 
     override fun peek(request: MaterialRequest): MaterialResult? {
-        val spot = request.subject as? Subject.Spot ?: return MaterialResult.None
+        val spot = request.subject as? PoiSubject ?: return MaterialResult.None
         val s = settings.settings.value
         return when {
             !s.spotPhotos || !photos.hasPhotoHint(spot.poi) -> MaterialResult.None
@@ -122,10 +128,10 @@ class CommonsPhotoProducer(private val photos: SpotPhotos, private val settings:
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
         peek(request)?.let { return it }
-        val spot = request.subject as Subject.Spot
+        val spot = request.subject as PoiSubject
         val photo = photos.photoFor(spot.poi) ?: return MaterialResult.None
         return ready(
-            MaterialType.IMAGE, Content.Image(photo.bitmap), descriptor.id,
+            MaterialType.IMAGE, BitmapContent(photo.bitmap), descriptor.id,
             Credit(photo.author, photo.license, source = photo.pageUrl, via = "Wikimedia Commons"),
         )
     }
@@ -136,9 +142,9 @@ class AmbientProducer : Producer {
     override val descriptor = BuiltInProducers.AMBIENT
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
-        val mood = request.context.mood ?: return MaterialResult.None
+        val mood = request.context.walk?.mood ?: return MaterialResult.None
         val sound = SoundscapeChoice.of(request.context.station.sound, mood)
-        return ready(MaterialType.AUDIO, Content.Ambient(sound), descriptor.id)
+        return ready(MaterialType.AUDIO, AmbientContent(sound), descriptor.id)
     }
 }
 
@@ -147,7 +153,7 @@ class MoodSceneProducer : Producer {
     override val descriptor = BuiltInProducers.MOOD_SCENE
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
-        val mood = request.context.mood ?: return MaterialResult.None
-        return ready(MaterialType.IMAGE, Content.Scene(mood), descriptor.id)
+        val mood = request.context.walk?.mood ?: return MaterialResult.None
+        return ready(MaterialType.IMAGE, SceneContent(mood), descriptor.id)
     }
 }

@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide
 
+import io.github.duwenji.yorisoi.sanpoguide.material.walkContext
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -28,17 +29,17 @@ import io.github.duwenji.yorisoi.sanpoguide.material.AiCompanionProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.AiGuideProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.AmbientProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.CommonsPhotoProducer
-import io.github.duwenji.yorisoi.sanpoguide.material.CueFinder
+import io.github.duwenji.yorisoi.kit.channel.material.CueFinder
 import io.github.duwenji.yorisoi.sanpoguide.material.CueLayout
-import io.github.duwenji.yorisoi.sanpoguide.material.CuePresenter
-import io.github.duwenji.yorisoi.sanpoguide.material.FileCueMemory
+import io.github.duwenji.yorisoi.kit.channel.material.CuePresenter
+import io.github.duwenji.yorisoi.kit.channel.material.FileCueMemory
 import io.github.duwenji.yorisoi.sanpoguide.material.FallbackTextProducer
-import io.github.duwenji.yorisoi.sanpoguide.material.MaterialContext
+import io.github.duwenji.yorisoi.kit.channel.material.MaterialContext
 import io.github.duwenji.yorisoi.sanpoguide.material.MoodSceneProducer
 import io.github.duwenji.yorisoi.sanpoguide.material.Narration
-import io.github.duwenji.yorisoi.sanpoguide.material.Producers
+import io.github.duwenji.yorisoi.kit.channel.material.Producers
 import io.github.duwenji.yorisoi.core.format.material.Regions
-import io.github.duwenji.yorisoi.sanpoguide.material.Subject
+import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.kit.mood.MoodSource
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
@@ -215,7 +216,7 @@ class SanpoApp : Application() {
         )
         narration = Narration(producers, station = { stations.current.value }, mood = { mood.mood.value })
         cueFinder = CueFinder(FileCueMemory(java.io.File(filesDir, "cues.json")))
-        cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE)
+        cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE, log = { message, e -> Log.w("CuePresenter", message, e) })
         cueShow = CueShow(this, feed, speaker)
         appScope.launch {
             // A channel the user chooses outside a walk shows its cues for being chosen (API-003
@@ -223,7 +224,7 @@ class SanpoApp : Application() {
             settings.settings.map { it.stationId }.distinctUntilChanged().drop(1).collect { id ->
                 if (WalkService.walking.value) return@collect
                 val station = withTimeoutOrNull(STATION_WAIT_MS) { stations.current.first { it.id == id } } ?: return@collect
-                showEventCues(station, CueEvent.SELECT, Subject.None, mutableSetOf(), MaterialContext(station, mood = mood.mood.value))
+                showEventCues(station, CueEvent.SELECT, Subject.None, mutableSetOf(), walkContext(station, mood = mood.mood.value))
             }
         }
         appScope.launch { history.load() }

@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
+import io.github.duwenji.yorisoi.sanpoguide.material.BitmapContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,9 +37,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import io.github.duwenji.yorisoi.sanpoguide.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
-import io.github.duwenji.yorisoi.sanpoguide.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.Material
 import io.github.duwenji.yorisoi.sanpoguide.material.bitmap
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import kotlinx.coroutines.Dispatchers
@@ -47,7 +48,7 @@ import kotlinx.coroutines.withContext
 /** An image material, decoded off the main thread; its `alt` is what a screen reader says. */
 @Composable
 fun MaterialImage(m: Material, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Fit, maxPx: Int = 1600) {
-    val image by produceState(if (m.content is Content.Image) m.bitmap(maxPx) else null, m) {
+    val image by produceState(if (m.content is BitmapContent) m.bitmap(maxPx) else null, m) {
         if (value == null) value = withContext(Dispatchers.Default) { m.bitmap(maxPx) }
     }
     image?.let { Image(it.asImageBitmap(), contentDescription = m.alt, contentScale = contentScale, modifier = modifier) }

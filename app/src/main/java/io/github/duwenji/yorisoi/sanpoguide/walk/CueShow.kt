@@ -10,11 +10,11 @@ import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import io.github.duwenji.yorisoi.sanpoguide.companion.CompanionFeed
 import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
 import io.github.duwenji.yorisoi.kit.voice.Speaker
-import io.github.duwenji.yorisoi.sanpoguide.material.Content
+import io.github.duwenji.yorisoi.kit.channel.material.Content
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
 import io.github.duwenji.yorisoi.sanpoguide.material.CueLayout
 import io.github.duwenji.yorisoi.sanpoguide.material.CueStep
-import io.github.duwenji.yorisoi.sanpoguide.material.Material
+import io.github.duwenji.yorisoi.kit.channel.material.Material
 import io.github.duwenji.yorisoi.sanpoguide.material.bitmap
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.sanpoguide.ui.MainActivity
