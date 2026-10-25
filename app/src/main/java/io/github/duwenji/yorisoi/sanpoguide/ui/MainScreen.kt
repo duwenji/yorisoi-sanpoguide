@@ -51,9 +51,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalConvenienceStore
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.PedalBike
 import androidx.compose.material.icons.filled.Roofing
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
@@ -745,6 +747,9 @@ private fun facilityIcon(kind: FacilityKind) = when (kind) {
     FacilityKind.VENDING_MACHINE -> Icons.Filled.LocalDrink
     FacilityKind.SHELTER -> Icons.Filled.Roofing
     FacilityKind.BENCH -> Icons.Filled.Chair
+    // A cyclist's kinds; the walk doesn't search them (kit-geo FacilityKind.WALK).
+    FacilityKind.BICYCLE_PARKING, FacilityKind.BICYCLE_SHOP, FacilityKind.BICYCLE_PUMP -> Icons.Filled.PedalBike
+    FacilityKind.CONVENIENCE_STORE -> Icons.Filled.LocalConvenienceStore
 }
 
 /** The most pressing notice, with how many more there are. */

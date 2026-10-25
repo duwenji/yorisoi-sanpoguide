@@ -71,18 +71,4 @@ object FacilityAdvisor {
             FacilityNeed.TOILET, FacilityNeed.SEAT -> true
         }
     }
-
-    /**
-     * Where [bearing] (to the facility) lies relative to the walking [heading], both in degrees
-     * clockwise from north: "前方", "右手", "左手" or "後ろ".
-     */
-    fun relativeDirection(heading: Float, bearing: Float): String {
-        val diff = ((bearing - heading) % 360 + 540) % 360 - 180 // -180..180, positive = right
-        return when {
-            diff in -45f..45f -> "前方"
-            diff in 45f..135f -> "右手"
-            diff in -135f..-45f -> "左手"
-            else -> "後ろ"
-        }
-    }
 }
