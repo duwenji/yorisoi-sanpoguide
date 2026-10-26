@@ -5,10 +5,10 @@ gradlew text eol=lf
 *.jar binary
 *.png binary
 *.apk binary
-# Channel packages and prompts must be LF: the channel format (API-003) rejects CR, and the
-# app ships these files byte for byte. Without this, a Windows checkout with core.autocrlf=true
-# builds an APK whose built-in channels fail their own checks.
-app/src/main/assets/** text eol=lf
+# The built-in channels and prompts (the prompt pack) must be LF: the channel format
+# (platform API-CHANNEL-PACKAGE) rejects CR, and the app ships these files byte for byte. Without
+# this, a Windows checkout with core.autocrlf=true builds an APK whose built-in channels fail their
+# own checks.
 prompts/src/main/resources/** text eol=lf
 **/prompt-golden.txt text eol=lf
 # Play Console exports and imports the data safety answers as CRLF; keep the file as exported.
