@@ -55,6 +55,8 @@ data class GuideSettings(
     val spotCacheEnabled: Boolean = true,
     /** How new a kept search must be to use it without asking again; one of [SPOT_CACHE_FRESH_DAYS]. */
     val spotCacheFreshDays: Int = 7,
+    /** Whether the ways walked again and again become frequent ways by themselves (platform REQ-FREQUENT-WAYS F-17). */
+    val findWays: Boolean = true,
     /**
      * How many times a day the user's own key may be called; null for no limit (platform ADR-004 H-9).
      * Channels talk within it. The operator's AI keeps the relay's limit instead (ADR-AI-RELAY R-2).
@@ -143,6 +145,7 @@ class SettingsRepository(context: Context) {
             putBoolean(KEY_SHARE_LOCATION_WITH_AI, settings.shareLocationWithAi)
             putBoolean(KEY_SPOT_CACHE, settings.spotCacheEnabled)
             putInt(KEY_SPOT_CACHE_FRESH_DAYS, settings.spotCacheFreshDays)
+            putBoolean(KEY_FIND_WAYS, settings.findWays)
             putInt(KEY_DAILY_AI_LIMIT, settings.dailyAiLimit ?: NO_LIMIT)
             putString(KEY_MAP_STYLE, settings.mapStyle.name)
             val mapsKey = settings.googleMapsApiKey.trim()
@@ -196,6 +199,7 @@ class SettingsRepository(context: Context) {
             spotCacheEnabled = prefs.getBoolean(KEY_SPOT_CACHE, DEFAULTS.spotCacheEnabled),
             spotCacheFreshDays = prefs.getInt(KEY_SPOT_CACHE_FRESH_DAYS, DEFAULTS.spotCacheFreshDays)
                 .takeIf { it in GuideSettings.SPOT_CACHE_FRESH_DAYS } ?: DEFAULTS.spotCacheFreshDays,
+            findWays = prefs.getBoolean(KEY_FIND_WAYS, DEFAULTS.findWays),
             dailyAiLimit = if (prefs.contains(KEY_DAILY_AI_LIMIT)) prefs.getInt(KEY_DAILY_AI_LIMIT, NO_LIMIT).takeIf { it != NO_LIMIT } else DEFAULTS.dailyAiLimit,
             mapStyle = prefs.getString(KEY_MAP_STYLE, null)
                 ?.let { name -> MapStyle.entries.firstOrNull { it.name == name } }
@@ -251,6 +255,7 @@ class SettingsRepository(context: Context) {
         const val KEY_PHOTOS_ON_MOBILE = "photos_on_mobile"
         const val KEY_SHARE_LOCATION_WITH_AI = "share_location_with_ai"
         const val KEY_SPOT_CACHE = "spot_cache"
+        const val KEY_FIND_WAYS = "find_ways"
         const val KEY_SPOT_CACHE_FRESH_DAYS = "spot_cache_fresh_days"
         const val KEY_MAP_STYLE = "map_style"
         const val KEY_GOOGLE_MAPS_KEY = "google_maps_api_key"

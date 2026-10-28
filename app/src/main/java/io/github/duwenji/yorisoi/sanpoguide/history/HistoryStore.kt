@@ -51,6 +51,9 @@ data class SpotVisit(
     }
 }
 
+/** A frequent way gone along on a walk, and how many times that made (platform REQ-FREQUENT-WAYS F-12); [new] when the walk made it one. */
+data class WalkWay(val id: String, val name: String, val passes: Int, val new: Boolean)
+
 data class WalkRecord(
     val id: Long,
     val startedAt: Long,
@@ -61,6 +64,8 @@ data class WalkRecord(
     /** The channels used, in order. */
     val stations: List<StationSegment>,
     val plan: WalkPlan = WalkPlan(),
+    /** The frequent ways gone along (platform REQ-FREQUENT-WAYS F-12). */
+    val ways: List<WalkWay> = emptyList(),
 ) {
     val durationMs: Long get() = endedAt - startedAt
 }
@@ -158,6 +163,9 @@ internal object WalkJson {
             w.stations.forEach { put(JSONObject().put("station", it.station).put("from", it.fromMs)) }
         })
         .put("plan", WalkPlanJson.toJson(w.plan))
+        .put("ways", JSONArray().apply {
+            w.ways.forEach { put(JSONObject().put("id", it.id).put("name", it.name).put("passes", it.passes).put("new", it.new)) }
+        })
 
     fun fromJson(o: JSONObject): WalkRecord {
         val route = o.getJSONArray("route")
@@ -194,6 +202,9 @@ internal object WalkJson {
             } else {
                 WalkPlan()
             },
+            ways = o.optJSONArray("ways")?.let { a ->
+                (0 until a.length()).map { i -> a.getJSONObject(i).let { WalkWay(it.getString("id"), it.getString("name"), it.getInt("passes"), it.getBoolean("new")) } }
+            }.orEmpty(),
         )
     }
 }

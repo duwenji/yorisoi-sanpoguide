@@ -54,6 +54,18 @@ import io.github.duwenji.yorisoi.kit.channel.remote.ThirdPartyChannels
 import io.github.duwenji.yorisoi.kit.channel.remote.TinkEd25519
 import io.github.duwenji.yorisoi.sanpoguide.walk.CueShow
 import io.github.duwenji.yorisoi.sanpoguide.walk.WalkService
+import io.github.duwenji.yorisoi.sanpoguide.walk.WayPrefetchWorker
+import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
+import io.github.duwenji.yorisoi.sanpoguide.history.WalkWay
+import io.github.duwenji.yorisoi.kit.geo.FrequentWay
+import io.github.duwenji.yorisoi.kit.geo.FrequentWayFinder
+import io.github.duwenji.yorisoi.kit.geo.FrequentWayStore
+import io.github.duwenji.yorisoi.kit.geo.LatLon
+import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.RouteGeometry
+import io.github.duwenji.yorisoi.kit.geo.Trip
+import io.github.duwenji.yorisoi.kit.geo.map.WayTalk
+import kotlinx.coroutines.withContext
 import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -101,6 +113,10 @@ class SanpoApp : Application() {
     lateinit var speaker: Speaker
         private set
     lateinit var history: HistoryStore
+        private set
+
+    /** The ways walked again and again, and the ones the user made (platform REQ-FREQUENT-WAYS). */
+    lateinit var ways: FrequentWayStore
         private set
     lateinit var activeWalkPlan: ActiveWalkPlanStore
         private set
@@ -193,6 +209,8 @@ class SanpoApp : Application() {
         speaker = Speaker(this)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
+        ways = FrequentWayStore(File(filesDir, "ways.json"), WAY_FINDER) { Log.w("FrequentWayStore", "Could not keep the ways", it) }
+        WayPrefetchWorker.scheduleDaily(this)
         activeWalkPlan = ActiveWalkPlanStore(File(filesDir, "active_walk_plan.json"))
         mood = MoodSource(spots, feed.weather, appScope)
         companion = WalkCompanion(
@@ -283,7 +301,36 @@ class SanpoApp : Application() {
         )
         .build()
 
+    /**
+     * The walk that ended, with the frequent ways it went along or made (platform REQ-FREQUENT-WAYS
+     * F-3, F-4, F-12), among the walks of the last 60 days. Named after a spot visited along the way.
+     */
+    suspend fun withWays(walk: WalkRecord): WalkRecord = withContext(Dispatchers.IO) {
+        val earlier = history.walks.value.filter { it.id != walk.id && it.endedAt >= walk.endedAt - FrequentWayStore.WINDOW_MS }
+        val visited = walk.visits.map { Poi(it.poiId, it.name, it.lat, it.lon, it.category, emptyMap()) }
+        val passed = ways.afterTrip(trip(walk), earlier.map(::trip), find = settings.settings.value.findWays) { points ->
+            FrequentWayFinder.nameFrom(points, visited)
+        }
+        walk.copy(ways = passed.map { WalkWay(it.way.id, it.way.name, it.passes, it.new) })
+    }
+
+    /** What was said along [way] on the walks kept: the last visit to each spot near it (F-13). */
+    fun talksOn(way: FrequentWay): List<WayTalk> = history.walks.value
+        .flatMap { it.visits }
+        .filter { RouteGeometry.distanceToLineM(LatLon(it.lat, it.lon), way.points) <= SPOT_NEAR_WAY_M }
+        .sortedByDescending { it.at }
+        .distinctBy { it.name }
+        .map { WayTalk(it.name, it.at, it.remark.orEmpty()) }
+
     companion object {
+        /** A walker's ways (platform REQ-FREQUENT-WAYS D-8). */
+        val WAY_FINDER = FrequentWayFinder(minLengthM = 300.0)
+
+        /** A spot this near a way was talked about on it. */
+        private const val SPOT_NEAR_WAY_M = 100.0
+
+        private fun trip(walk: WalkRecord) = Trip(walk.endedAt, walk.route)
+
         // A chosen channel becomes the current one at once, unless its package is still being read.
         private const val STATION_WAIT_MS = 10_000L
         const val CHANNEL_CUE = "cue"

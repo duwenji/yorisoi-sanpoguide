@@ -48,7 +48,8 @@ class TalkDeciderTest {
         already: Boolean = false,
         cue: CueFire? = null,
         planned: Boolean = false,
-    ) = NearbySpot(poi(name, category), distanceM, already, visitedBefore, cue, planned)
+        visitedRecently: Boolean = false,
+    ) = NearbySpot(poi(name, category), distanceM, already, visitedBefore, cue, planned, visitedRecently)
     private fun cue(key: String) = CueFire(Cue(key, Trigger.Point(35.0, 139.0, 50), null, Repeat.ONCE_PER_WALK, emptyList()), Subject.None, key)
 
     /** Clear now, a thunderstorm within the next quarter hour. */
@@ -108,6 +109,15 @@ class TalkDeciderTest {
         // NORMAL keeps two minutes between spot talks.
         assertEquals(TalkDecision.Nothing, decide(within.copy(lastSpotTalkAt = now - minute)))
         assertEquals(TalkDecision.Spot::class, decide(within.copy(lastSpotTalkAt = now - 2 * minute))::class)
+    }
+
+    @Test
+    fun `a spot visited on a walk less than a day ago is passed over, unless a cue or the plan points at it (platform REQ-FREQUENT-WAYS F-10)`() {
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(spots = listOf(spot("八幡宮", 30f, visitedBefore = true, visitedRecently = true)))))
+        val next = decide(calm.copy(spots = listOf(spot("八幡宮", 30f, visitedBefore = true, visitedRecently = true), spot("円覚寺", 40f))))
+        assertEquals(TalkDecision.Spot(poi("円覚寺"), 40), next)
+        val planned = decide(calm.copy(spots = listOf(spot("八幡宮", 30f, visitedBefore = true, visitedRecently = true, planned = true))))
+        assertEquals(TalkDecision.Spot(poi("八幡宮"), 30), planned)
     }
 
     @Test

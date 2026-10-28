@@ -580,9 +580,16 @@ private fun DeviceDataSection(draft: GuideSettings, viewModel: SettingsViewModel
         TextButton(onClick = viewModel::clearSpotCache, enabled = !spotCacheCleared) {
             Text(if (spotCacheCleared) "スポット検索の結果を消しました" else "スポット検索の結果を消す")
         }
+        SwitchRow(
+            "よく通る道を自動で見つける",
+            "同じ道を 3 回歩くと、よく通る道として覚えます。Wi-Fi のときに、その道のスポットを前もって調べておきます。" +
+                "道は散歩の記録の画面から見られます",
+            draft.findWays, viewModel::setFindWays,
+        )
         Note(
             "残した結果から、おおよそ歩いた場所が分かります。散歩の記録をすべて削除したときも一緒に消えます。" +
-                "散歩の記録は、この端末内にだけ保存します。",
+                "散歩の記録とよく通る道は、この端末内にだけ保存します。" +
+                "前の散歩で 1 日のうちに話したスポットは、もう一度は話しません。",
         )
     }
 }

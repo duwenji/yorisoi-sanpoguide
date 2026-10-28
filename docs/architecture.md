@@ -143,7 +143,7 @@ flowchart LR
   - 2 分以上とどまっていない（とどまっている間は周りを順に紹介しない）
   - 読み上げ中でない
 - 間隔が空く前に 60m の外へ出たら、そのときは案内されない。案内済み（`talkedAbout`）にはならないので、また近づけば案内される。
-- 今回の散歩で案内したスポット（同じ ID、または同じ名前で近い位置）は候補から外れる。過去の散歩で訪れたスポットは、再訪の一言の候補になる。
+- 今回の散歩で案内したスポット（同じ ID、または同じ名前で近い位置）は候補から外れる。過去の散歩で訪れたスポットは、再訪の一言の候補になる。ただし、前の散歩で訪れてから 24 時間たっていないスポットは、きっかけかプランで指されていなければ候補から外れる（`NearbySpot.visitedRecently`、`WalkService.RECENT_VISIT_MS`。platform REQ-FREQUENT-WAYS F-10）。
 - スポットの通知は 1 枠（`SPOT_NOTIFICATION_ID`）を使い回すため、新しい案内が前の通知を置き換える。
 
 ## 図 3 · スポット解説: 地図か一覧でスポットを選んだとき
@@ -285,6 +285,15 @@ flowchart LR
 - 散歩の外でチャンネルを選んだときの `select` のきっかけは `SanpoApp.showEventCues()` が出す。散歩の終了のきっかけも同じ
 - 素材集の資料を根拠として添えるのは、AI が作る素材提供者（`generated`）への依頼だけ（`groundedFor()`、図 3）。ほかの素材提供者には渡さない
 - アプリが出せる範囲（録音した音声を除くすべてのスロット・きっかけ・見せ方）は `station/SanpoProfile` にまとめ、`ChannelSync` はこれに合わないチャンネルを一覧に出さず、取り込まない
+
+### よく通る道
+
+platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-FREQUENT-WAYS.md) の SanpoGuide 側。見つけ方・残し方・前もっての取得・画面は kit-geo のもの（`FrequentWayFinder`・`FrequentWayStore`・`SpotRepository.prefetch`・`FrequentWaysScreen`）を使う。
+
+- 散歩が終わって記録を残すとき（`WalkService.finishWalk`）、`SanpoApp.withWays` が過去 60 日の散歩と比べて、通った道の回数を数え、設定の「よく通る道を自動で見つける」が入なら新しい道を探す（3 回・300 m・30 m 以内。`SanpoApp.WAY_FINDER`）。名前は、その散歩で訪れたスポットから付ける。通った道と何回目か、新しくできた道は `WalkRecord.ways` に入れ、記録の一覧に出す
+- `walk/WayPrefetchWorker`（WorkManager）が、1 日 1 回と散歩のあとに、従量制でないネットワーク・電池が少なくないときだけ、道に沿ってスポットを取っておく。散歩中は何もしない
+- 同じスポットを続けて話さない: 上の「スポットが近くに複数あるとき」。24 時間より前に訪れたスポットは、今までどおり再訪の一言（前回の話を AI に渡す）になる
+- 記録の画面の「よく通る道」から `FrequentWaysScreen`（言葉は `WayWords.WALK`）を開く。記録の 1 件の「この散歩からよく通る道を作る」は `NewWayFromTrip`。記録をすべて削除すると、保存していない自動の道と消した道の記録も消す（`FrequentWayStore.clearFound`）
 
 ## パッケージ一覧
 

@@ -127,6 +127,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setShareLocationWithAi(on: Boolean) = edit { it.copy(shareLocationWithAi = on) }
     fun setSpotCacheEnabled(on: Boolean) = edit { it.copy(spotCacheEnabled = on) }
     fun setSpotCacheFreshDays(days: Int) = edit { it.copy(spotCacheFreshDays = days) }
+    fun setFindWays(on: Boolean) = edit { it.copy(findWays = on) }
 
     private val _spotCacheCleared = MutableStateFlow(false)
     /** Whether the kept spot searches were cleared while on this screen. */

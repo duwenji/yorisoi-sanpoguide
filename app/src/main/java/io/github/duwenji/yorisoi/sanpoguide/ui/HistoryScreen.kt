@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,6 +48,8 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.kit.companion.SessionRecorder
 import io.github.duwenji.yorisoi.sanpoguide.diagnostics.WalkExport
 import io.github.duwenji.yorisoi.sanpoguide.history.WalkRecord
+import io.github.duwenji.yorisoi.kit.geo.LatLon
+import io.github.duwenji.yorisoi.kit.geo.map.NewWayFromTrip
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -90,9 +93,16 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
 
     fun stationsOf(walk: WalkRecord): String = stations.namesOf(walk.stations.map { it.station })
 
+    /** A frequent way made from part of [walk] (platform REQ-FREQUENT-WAYS F-16). */
+    fun saveWay(walk: WalkRecord, name: String, points: List<LatLon>) {
+        app.ways.add(name, points, passedAt = walk.endedAt)
+    }
+
     fun clearAll() {
         viewModelScope.launch {
             history.clear()
+            // The ways found in the walks go with them; the ones saved stay (F-2).
+            app.ways.clearFound()
             withContext(Dispatchers.IO) {
                 app.diagnostics.clear()
                 app.spotCache.clear()
@@ -103,11 +113,29 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
+fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit, onOpenWays: () -> Unit) {
     val walks by viewModel.walks.collectAsStateWithLifecycle()
     val developerMode by viewModel.developerMode.collectAsStateWithLifecycle()
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    var makingWay by rememberSaveable { mutableStateOf<Long?>(null) }
     val context = LocalContext.current
+    walks.find { it.id == makingWay }?.let { walk ->
+        BackHandler { makingWay = null }
+        Scaffold { padding ->
+            Column(Modifier.padding(padding).padding(16.dp)) {
+                NewWayFromTrip(
+                    walk.route,
+                    onSave = { name, points ->
+                        viewModel.saveWay(walk, name, points)
+                        makingWay = null
+                        Toast.makeText(context, "「$name」をよく通る道にしました", Toast.LENGTH_SHORT).show()
+                    },
+                    onCancel = { makingWay = null },
+                )
+            }
+        }
+        return
+    }
     val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         uri?.let { viewModel.export(it) { message -> Toast.makeText(context, message, Toast.LENGTH_LONG).show() } }
     }
@@ -122,6 +150,7 @@ fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
                     }
                 },
                 actions = {
+                    TextButton(onClick = onOpenWays) { Text("よく通る道") }
                     if (walks.isNotEmpty() && developerMode) {
                         IconButton(onClick = { exporter.launch(viewModel.exportFileName()) }) {
                             Icon(Icons.Filled.FileDownload, contentDescription = "記録を書き出す（開発者向け）")
@@ -147,6 +176,11 @@ fun HistoryScreen(viewModel: HistoryViewModel, onClose: () -> Unit) {
             item { Summary(walks) }
             items(walks, key = { it.id }) { walk ->
                 WalkRow(walk, viewModel.stationsOf(walk))
+                if (walk.route.size >= 2) {
+                    TextButton(onClick = { makingWay = walk.id }, modifier = Modifier.padding(start = 8.dp)) {
+                        Text("この散歩からよく通る道を作る")
+                    }
+                }
                 HorizontalDivider()
             }
             item {
@@ -230,6 +264,10 @@ private fun WalkRow(walk: WalkRecord, stations: String) {
                 walk.plan.stops.takeIf { it.isNotEmpty() }
                     ?.let { stops -> add("立ち寄り先: ${stops.joinToString("、") { it.name }}") }
                 walk.plan.note?.takeIf { it.isNotBlank() }?.let { add("メモ: $it") }
+                // The frequent ways gone along, and those this walk made (platform REQ-FREQUENT-WAYS F-12, D-12).
+                walk.ways.filter { it.new }.forEach { add("よく通る道にしました: ${it.name}") }
+                walk.ways.filter { !it.new }.takeIf { it.isNotEmpty() }
+                    ?.let { ways -> add("よく通る道: " + ways.joinToString("、") { "${it.name}（${it.passes}回目）" }) }
             }.joinToString("\n")
             Text(details)
         },

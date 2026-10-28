@@ -1,5 +1,9 @@
 package io.github.duwenji.yorisoi.sanpoguide.ui
 
+import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
+import io.github.duwenji.yorisoi.kit.geo.map.FrequentWaysScreen
+import io.github.duwenji.yorisoi.kit.geo.map.WayActions
+import io.github.duwenji.yorisoi.kit.geo.map.WayWords
 import io.github.duwenji.yorisoi.kit.mood.MoodTheme
 import android.Manifest
 import android.content.ActivityNotFoundException
@@ -32,7 +36,7 @@ class MainActivity : ComponentActivity() {
     private val historyViewModel: HistoryViewModel by viewModels()
     private val channelsViewModel: ChannelsViewModel by viewModels()
 
-    private enum class Screen { MAIN, SETTINGS, HISTORY, CHANNELS, PLAN }
+    private enum class Screen { MAIN, SETTINGS, HISTORY, CHANNELS, PLAN, WAYS }
     private var hasLocationPermission by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
@@ -87,14 +91,30 @@ class MainActivity : ComponentActivity() {
                         plannerStartError = "散策を開始できませんでした。位置情報の権限を確認してください。"
                     }
                 }
-                if (screen == Screen.CHANNELS) BackHandler { closeChannels() } else if (screen != Screen.MAIN) BackHandler { screen = Screen.MAIN }
+                if (screen == Screen.CHANNELS) {
+                    BackHandler { closeChannels() }
+                } else if (screen == Screen.WAYS) {
+                    BackHandler { screen = Screen.HISTORY }
+                } else if (screen != Screen.MAIN) {
+                    BackHandler { screen = Screen.MAIN }
+                }
                 when (screen) {
                     Screen.SETTINGS -> SettingsScreen(
                         settingsViewModel, onClose = { screen = Screen.MAIN },
                         onOpenChannels = { openChannels(Screen.SETTINGS) },
                     )
                     Screen.CHANNELS -> ChannelsScreen(channelsViewModel, onClose = ::closeChannels)
-                    Screen.HISTORY -> HistoryScreen(historyViewModel, onClose = { screen = Screen.MAIN })
+                    Screen.HISTORY -> HistoryScreen(historyViewModel, onClose = { screen = Screen.MAIN }, onOpenWays = { screen = Screen.WAYS })
+                    Screen.WAYS -> {
+                        val app = application as SanpoApp
+                        val ways by app.ways.ways.collectAsStateWithLifecycle()
+                        FrequentWaysScreen(
+                            ways,
+                            WayActions(rename = app.ways::rename, save = app.ways::save, delete = app.ways::delete, talksOn = app::talksOn),
+                            WayWords.WALK,
+                            onClose = { screen = Screen.HISTORY },
+                        )
+                    }
                     Screen.PLAN -> WalkPlanScreen(
                         viewModel = viewModel,
                         startError = plannerStartError,

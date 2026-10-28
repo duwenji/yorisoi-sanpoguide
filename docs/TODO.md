@@ -53,6 +53,11 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] チャンネル: 各チャンネルの語り口、優先する話題の加点（+2）、きっかけの出方。グルメの旅・ショッピングの店の検索
 - [ ] Overpass の失敗の頻度を集計し（詳しい記録の `overpass`）、自前・商用のサーバーを検討する材料にする（[エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#共通の検討事項)の「公開サーバーの負荷」）。Overpass の予備のサーバーの証明書が Android 11 で信頼されない件も
 
+## よく通る道（platform REQ-FREQUENT-WAYS）
+
+- [ ] 歩いての確認: 同じ道を 3 回歩くとよく通る道になるか、300 m（仮。U-1）が散歩に合っているか。Wi-Fi で前もっての取得が動くか、前の日に話したスポットを続けて話さないか
+- [ ] Play のデータ セーフティの見直し（端末の中だけなので、送る情報は変わらない見込み）
+
 ## チャンネル
 
 設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNEL-CURATION（旧 ADR-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md)・[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
