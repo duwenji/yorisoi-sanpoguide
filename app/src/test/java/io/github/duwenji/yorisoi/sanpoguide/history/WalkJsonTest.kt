@@ -28,6 +28,14 @@ class WalkJsonTest {
     }
 
     @Test
+    fun `a walk keeps the frequent ways gone along (platform REQ-FREQUENT-WAYS F-12)`() {
+        val withWays = walk.copy(ways = listOf(WalkWay("w1", "川沿いの道", 4, new = false), WalkWay("w2", "中央公園のあたりの道", 3, new = true)))
+        assertEquals(withWays, WalkJson.fromJson(JSONObject(WalkJson.toJson(withWays).toString())))
+        // Walks kept before there were ways.
+        assertEquals(emptyList<WalkWay>(), WalkJson.fromJson(JSONObject(WalkJson.toJson(walk).toString()).apply { remove("ways") }).ways)
+    }
+
+    @Test
     fun `a legacy walk without plan loads with an empty plan`() {
         val legacy = JSONObject(
             """{"id":1,"startedAt":1,"endedAt":2000000,"distanceM":0.0,"route":[],"visits":[],"stations":[]}"""

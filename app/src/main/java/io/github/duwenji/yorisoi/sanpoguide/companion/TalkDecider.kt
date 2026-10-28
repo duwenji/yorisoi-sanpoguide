@@ -20,6 +20,7 @@ import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeDetector
  *
  * @param alreadyThisWalk talked about on this walk already (by id, or the same place by name)
  * @param visitedBefore visited on an earlier walk: a "welcome back" rather than a guide
+ * @param visitedRecently visited on an earlier walk less than a day ago: not talked about again (platform REQ-FREQUENT-WAYS F-10)
  * @param cue the channel's cue for this spot that would fire now, if any
  */
 data class NearbySpot(
@@ -29,6 +30,7 @@ data class NearbySpot(
     val visitedBefore: Boolean,
     val cue: CueFire? = null,
     val planned: Boolean = false,
+    val visitedRecently: Boolean = false,
 )
 
 /**
@@ -139,6 +141,8 @@ object TalkDecider {
         Rule("spot", setOf(WalkGate.SPOT_GAP, WalkGate.MOVING, WalkGate.SETTLED)) { s ->
             val nearby = s.spots
                 .filter { !it.alreadyThisWalk && it.distanceM <= ANNOUNCE_RADIUS_M }
+                // Not again the day after, unless the channel or the plan points at it.
+                .filter { !it.visitedRecently || it.cue != null || it.planned }
                 .sortedBy { it.distanceM }
             // A spot the channel put a cue on comes first, even of a kind it skips or with spot talk
             // off: the channel placed it on purpose (API-003「きっかけ」). The spacing still holds.

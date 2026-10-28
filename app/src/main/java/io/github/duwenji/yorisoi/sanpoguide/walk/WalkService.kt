@@ -353,9 +353,11 @@ class WalkService : LifecycleService() {
             .filter { (_, d) -> d <= TalkDecider.ANNOUNCE_RADIUS_M }
             .map { (poi, d) ->
                 val already = poi.id in s.talkedAbout || s.visits.any { it.matches(poi) }
+                val last = if (already) null else app.history.visitsTo(poi, excludingWalk = s.id).firstOrNull()
                 NearbySpot(
                     poi, d, already,
-                    visitedBefore = !already && app.history.visitsTo(poi, excludingWalk = s.id).isNotEmpty(),
+                    visitedBefore = last != null,
+                    visitedRecently = last != null && now - last.at < RECENT_VISIT_MS,
                     cue = if (already) null else media?.let { app.cueFinder.spot(station.id, it, PoiSubject(poi, d.toInt()), s.shownCues, now) },
                     planned = s.plan.stops.any { it.poiId == poi.id },
                 )
@@ -525,7 +527,8 @@ class WalkService : LifecycleService() {
         val station = app.stations.current.value
         val summarize = station.talksOn(TalkEventKind.FINISH)
         app.appScope.launch {
-            app.history.save(record)
+            app.history.save(app.withWays(record))
+            WayPrefetchWorker.afterWalk(app)
             if (summarize) {
                 val line = app.narration.line(TalkEvent.Finish(record), null, lastWeather)
                 val text = CueShow.textOf(line).orEmpty()
@@ -599,6 +602,9 @@ class WalkService : LifecycleService() {
     }
 
     companion object {
+        /** A spot talked about on a walk less than this ago isn't talked about again (platform REQ-FREQUENT-WAYS F-10). */
+        const val RECENT_VISIT_MS = 24L * 60 * 60 * 1000
+
         private const val TAG = "WalkService"
         private const val NOTIFICATION_ID = 1
         // One slot for spot talks: each new spot replaces the last instead of piling up.
