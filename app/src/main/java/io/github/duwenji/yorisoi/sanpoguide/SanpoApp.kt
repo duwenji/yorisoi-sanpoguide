@@ -18,6 +18,7 @@ import io.github.duwenji.yorisoi.kit.geo.RouteClient
 import io.github.duwenji.yorisoi.kit.geo.SpotCache
 import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.kit.geo.SpotRepository
+import io.github.duwenji.yorisoi.kit.geo.SpotTiles
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
 import io.github.duwenji.yorisoi.kit.llm.AiUsage
 import io.github.duwenji.yorisoi.kit.llm.OperatorAi
@@ -163,6 +164,7 @@ class SanpoApp : Application() {
             cache = spotCache,
             useCache = { settings.settings.value.spotCacheEnabled },
             freshMs = { TimeUnit.DAYS.toMillis(settings.settings.value.spotCacheFreshDays.toLong()) },
+            tiles = SpotTiles(BuildConfig.SPOT_TILES_URL, "SanpoGuide/${BuildConfig.VERSION_NAME}", tilesHttp()),
         )
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
@@ -296,6 +298,20 @@ class SanpoApp : Application() {
                     listOf("host" to request.url.host, "status" to status, "error" to error, "ms" to ms) +
                         DiagnosticFields.overpassQuery(request) +
                         (body?.let(DiagnosticFields::overpassAnswer) ?: emptyList()),
+                )
+            }),
+        )
+        .build()
+
+    /** The operator's tiles' settings (kit-geo `SpotTiles` defaults) plus a record of each tile asked for. */
+    private fun tilesHttp(): OkHttpClient = OkHttpClient.Builder()
+        .callTimeout(10, TimeUnit.SECONDS)
+        .addInterceptor(
+            TimingInterceptor({ request, status, error, ms, body ->
+                diagnostics.event(
+                    "tiles",
+                    "tile" to request.url.encodedPath.removePrefix("/v1/").removeSuffix(".json"), "status" to status,
+                    "error" to error, "ms" to ms, "bytes" to body?.encodeToByteArray()?.size,
                 )
             }),
         )
