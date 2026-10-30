@@ -23,6 +23,7 @@ import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkPlan
 import io.github.duwenji.yorisoi.kit.geo.Facility
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapsException
+import io.github.duwenji.yorisoi.kit.geo.map.OsmTilesException
 import io.github.duwenji.yorisoi.kit.geo.FacilityKind
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.geo.RouteGeometry
@@ -190,8 +191,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _focus.value = facility
     }
 
-    /** Bumped by [refresh], so a Google map that failed to connect is tried again. */
+    /** Bumped by [refresh], so a Google or OpenStreetMap map that failed to connect is tried again. */
     private val mapRetry = MutableStateFlow(0)
+    /** OpenStreetMap tiles kept failing on the map; cleared by [refresh]. */
+    private val osmFailed = MutableStateFlow(false)
 
     // Declared before [map]: its eager collection runs resolveMap() during construction.
     private val _googleCopyright = MutableStateFlow<String?>(null)
@@ -200,14 +203,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var copyrightJob: Job? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val map: StateFlow<MapState> = combine(settings, mapRetry) { s, _ -> s.mapStyle to s.googleMapsApiKey.trim() }
-        .mapLatest { (style, key) -> resolveMap(style, key) }
+    val map: StateFlow<MapState> = combine(settings, mapRetry, osmFailed) { s, _, failed -> Triple(s.mapStyle, s.googleMapsApiKey.trim(), failed) }
+        .mapLatest { (style, key, failed) -> resolveMap(style, key, failed) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, MapState(MapTiles.Gsi(MapStyle.GSI_STANDARD)))
 
-    private suspend fun resolveMap(style: MapStyle, apiKey: String): MapState {
+    private suspend fun resolveMap(style: MapStyle, apiKey: String, osmFailed: Boolean): MapState {
         _googleCopyright.value = null
-        val type = style.google ?: return MapState(MapTiles.Gsi(style))
         val fallback = MapTiles.Gsi(MapStyle.GSI_STANDARD)
+        if (style == MapStyle.OSM_STANDARD) return resolveOsm(fallback, osmFailed)
+        val type = style.google ?: return MapState(MapTiles.Gsi(style))
         if (apiKey.isEmpty()) return MapState(fallback, "Google マップの API キーが未設定のため、地理院の地図で表示しています")
         return try {
             MapState(MapTiles.Google(style, type, apiKey, app.googleTiles.session(apiKey, type)))
@@ -219,6 +223,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Log.w(TAG, "Map Tiles API session failed", e)
             MapState(fallback, "Google マップに接続できなかったため、地理院の地図で表示しています（メニューの「周辺を再検索」で再接続します）")
         }
+    }
+
+    /** OpenStreetMap's server may refuse or drop the app at any time (no SLA); the GSI map stands in. */
+    private suspend fun resolveOsm(fallback: MapTiles, failed: Boolean): MapState {
+        if (failed) return MapState(fallback, "OpenStreetMap の地図を取得できなくなったため、地理院の地図で表示しています$OSM_RETRY")
+        return try {
+            app.osmTiles.check()
+            MapState(MapTiles.Osm)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: OsmTilesException) {
+            MapState(fallback, "${e.message}。地理院の地図で表示しています$OSM_RETRY")
+        } catch (e: Exception) {
+            Log.w(TAG, "OpenStreetMap tile check failed", e)
+            MapState(fallback, "OpenStreetMap の地図に接続できなかったため、地理院の地図で表示しています$OSM_RETRY")
+        }
+    }
+
+    /** The map's OpenStreetMap tiles keep failing to download; switches to the GSI map. */
+    fun onMapTilesFailed() {
+        if (map.value.tiles == MapTiles.Osm) osmFailed.value = true
     }
 
     /** The map settled on a new area; fetches the attribution for it when Google tiles are shown. */
@@ -326,7 +351,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     @SuppressLint("MissingPermission") // Called only after the permission is granted.
     fun refresh() {
-        if (map.value.notice != null) mapRetry.update { it + 1 }
+        if (map.value.notice != null) {
+            osmFailed.value = false
+            mapRetry.update { it + 1 }
+        }
         if (_loading.value) return
         _locationOff.value = !isLocationEnabled()
         if (_locationOff.value) {
@@ -483,6 +511,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private companion object {
         const val TAG = "MainViewModel"
+        const val OSM_RETRY = "（メニューの「周辺を再検索」で再接続します）"
         /** Farther than this from the drawn route, the user has taken another way. */
         const val OFF_ROUTE_M = 30.0
         /** After a failed lookup, try again once the user has moved this far. */

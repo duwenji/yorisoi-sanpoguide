@@ -527,6 +527,12 @@ private fun MapSection(draft: GuideSettings, viewModel: SettingsViewModel) {
             }
         }
         Note(draft.mapStyle.description)
+        if (draft.mapStyle == MapStyle.OSM_STANDARD) {
+            Note(
+                "地図を表示すると、表示している場所の地図画像を OpenStreetMap のサーバーから取得します。" +
+                    "寄付で運営されている共用のサーバーのため、オフライン用にまとめて保存することはしません。",
+            )
+        }
         if (draft.mapStyle.needsGoogleKey) {
             Label("Google Maps Platform の API キー")
             ApiKeyField(value = draft.googleMapsApiKey, onValueChange = viewModel::setGoogleMapsApiKey)
@@ -604,7 +610,7 @@ private fun AboutSection(viewModel: SettingsViewModel) {
     var taps by remember { mutableIntStateOf(0) }
     Section("このアプリについて") {
         Note(
-            "地図: 国土地理院　スポット: © OpenStreetMap contributors　天気: Open-Meteo.com　" +
+            "地図: 国土地理院・© OpenStreetMap contributors　スポット: © OpenStreetMap contributors　天気: Open-Meteo.com　" +
                 "写真: Wikimedia Commons（作者・ライセンスは各写真の下に表示）",
         )
         Text(
