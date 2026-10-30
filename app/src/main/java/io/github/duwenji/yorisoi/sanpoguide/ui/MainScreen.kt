@@ -7,6 +7,9 @@ import io.github.duwenji.yorisoi.kit.geo.map.RouteToSpot
 import io.github.duwenji.yorisoi.kit.geo.map.SpotGroup
 import io.github.duwenji.yorisoi.kit.geo.map.SpotItem
 import io.github.duwenji.yorisoi.kit.geo.map.SpotMap
+import io.github.duwenji.yorisoi.kit.geo.map.SpotFactsView
+import io.github.duwenji.yorisoi.kit.geo.map.summaryLine
+import io.github.duwenji.yorisoi.kit.geo.SpotFacts
 import io.github.duwenji.yorisoi.kit.geo.map.facilityColor
 import io.github.duwenji.yorisoi.kit.geo.map.rememberHeading
 import io.github.duwenji.yorisoi.sanpoguide.R
@@ -471,7 +474,10 @@ private fun GroupFilter(spots: List<SpotItem>, group: SpotGroup?, onGroup: (Spot
     }
 }
 
-/** The picked spot: hear or read its guide (written only now), or go back to the list. */
+/**
+ * The picked spot: what its map data says in a line (kit-geo SpotFacts), then hear or read its
+ * guide (written only now), or go back to the list.
+ */
 @Composable
 private fun SpotCard(
     item: SpotItem,
@@ -484,6 +490,7 @@ private fun SpotCard(
     modifier: Modifier = Modifier,
 ) {
     val poi = item.poi
+    val facts = remember(poi.id) { SpotFacts.of(poi.tags) }
     Column(modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 8.dp, bottom = 20.dp)) {
         Row(verticalAlignment = Alignment.Top) {
             Box(
@@ -492,11 +499,13 @@ private fun SpotCard(
             )
             Column(Modifier.weight(1f)) {
                 Text(poi.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                facts.reading?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Text(
                     listOfNotNull(poi.category, item.distanceM?.let { formatDistance(poi, it) }).joinToString("・"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                facts.summaryLine()?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 if (item.visitCount > 0) {
                     Text(
                         "これまでに ${item.visitCount} 回立ち寄りました", style = MaterialTheme.typography.bodySmall,
@@ -642,17 +651,24 @@ private fun SpotRow(item: SpotItem, onClick: () -> Unit) {
 @Composable
 private fun GuideSheet(spot: SelectedSpot, onSpeak: (String) -> Unit, onStop: () -> Unit) {
     val poi = spot.item.poi
+    val facts = remember(poi.id) { SpotFacts.of(poi.tags) }
     Column(
         Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 32.dp)
             .verticalScroll(rememberScrollState())
     ) {
         SpotPhotoView(spot.photo)
         Text(poi.name, style = MaterialTheme.typography.headlineSmall)
+        facts.reading?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         Text(
             listOfNotNull(poi.category, spot.item.distanceM?.let { formatDistance(poi, it) }).joinToString(" ・ "),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        // The map data's facts, there whether or not the AI's guide can be had.
+        if (facts.details.isNotEmpty() || facts.links.isNotEmpty()) {
+            SpotFactsView(facts, Modifier.padding(top = 16.dp))
+            HorizontalDivider(Modifier.padding(top = 16.dp))
+        }
         Spacer(Modifier.height(16.dp))
         when (val guide = spot.guide) {
             GuideState.NotAsked, GuideState.Loading -> Row(verticalAlignment = Alignment.CenterVertically) {
