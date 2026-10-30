@@ -53,7 +53,7 @@
 | P24 | HistoryStore | `history/HistoryStore.kt`（`walk_history.json`） | 1, 3, 4, 9 |
 | P25 | ActiveWalkPlanStore | `walk/ActiveWalkPlanStore.kt`（`active_walk_plan.json`） | 2, 9 |
 | P26 | CompanionFeed | `companion/CompanionFeed.kt` の状態（散歩の数字・歩いた道・案内中のスポット） | 2, 4, 9 |
-| P27 | SpotRepository | `yorisoi-platform/kit-geo` の `SpotRepository`（Overpass でスポット・施設を検索） | 3 |
+| P27 | SpotRepository | `yorisoi-platform/kit-geo` の `SpotRepository`（運営のタイル、なければ Overpass でスポット・施設を検索） | 3 |
 | P28 | WeatherClient | `yorisoi-platform/kit-geo` の `WeatherClient`（Open-Meteo） | 3 |
 | P29 | Narration | `material/Narration.kt`（散歩と画面が使う素材の窓口） | 3, 4, 6, 9 |
 | P30 | Producers | `yorisoi-platform/kit-channel` の `material/Producer.kt` の `Producers`（候補を順に試す） | 3, 4, 6 |
@@ -238,7 +238,7 @@ sequenceDiagram
 | 3-3 | P12 → P28 | 散歩で最初の位置のときだけ、すぐに天気（現在・予報・日の入り）を取る。以後は 15 分ごと（3-8）。失敗したら前の天気のまま。 | `refreshWeather()`・`WeatherClient.current()` |
 | 3-4 | P12 → P29 | チャンネルが「開始」で話すなら、開始の一言を作る（3-15〜3-20 と同じ流れ）。 | `Narration.line(TalkEvent.Start)` |
 | 3-5 | P12 → P36 | 開始の一言を話し、続けてチャンネルの `start` のきっかけを出す（図 5）。 | `speakLine()`・`eventCues(CueEvent.START)` |
-| 3-6 | P12 → P27 | 現在地を渡す。前の検索から 300m より動いた・チャンネルが求めるお店の種類が変わったときだけ、Overpass でスポットと施設を検索し直す。失敗はログだけ。 | `SpotRepository.onLocation()`（kit-geo） |
+| 3-6 | P12 → P27 | 現在地を渡す。前の検索から 300m より動いた・チャンネルが求めるお店の種類が変わったときだけ、スポットと施設を検索し直す（運営のタイルを先に使い、取れないときは Overpass）。失敗はログだけ。 | `SpotRepository.onLocation()`（kit-geo） |
 | 3-7 | P13 → P12 | 止まっていて位置の更新が来なくても判定するため、30 秒ごとに起きる。 | `startTicker()` |
 | 3-8 | P12 → P28 | 前に取ってから 15 分たっていれば天気を取り直す。 | `refreshWeather()` |
 | 3-9 | P12 → P12 | 話すかどうかの判定を始める。散歩か位置がなければ戻る。 | `maybeTalk()` |

@@ -2,8 +2,8 @@
 
 アプリ全体を 7 枚の図で説明する。最初に、アプリの中心にある「チャンネル」の考え方と関係者を示す。図 1 で「どこに何があるか」をつかみ、図 2〜7 で散策モードの話しかけ・スポット解説・雰囲気・地図のルートと向き・チャンネル・素材ときっかけという 6 つの流れを追う。
 
-- ソース 56 ファイル / 約 7,700 行（アプリ 52 ファイル・7,424 行、プロンプト・パック `:prompts` 4 ファイル・290 行。共通の部品は yorisoi-platform）、アプリのパッケージ 11
-- 画面 4（メイン・設定・記録・配信されているチャンネル）、常駐サービス 1（`WalkService`）、外部サービス 8（Google マップとチャンネル・リストは設定で選んだときだけ）
+- アプリのパッケージ 10（共通の部品は yorisoi-platform）、プロンプト・パック `:prompts`
+- 画面 6（メイン・散策前のプラン・設定・記録・よく通る道・配信されているチャンネル）、常駐サービス 1（`WalkService`）、裏の作業 1（`WayPrefetchWorker`）。外部サービスのうち OSM・Google の地図とチャンネル・リストは設定で選んだときだけ
 
 図はコードから手で書き起こしたもの。`WalkService` の判定順を変えたり、パッケージを追加したりしたときは、この文書も更新する。主な処理を呼び出しの順に追った図は [sequences.md](sequences.md) にある。
 
@@ -17,7 +17,7 @@
 flowchart TB
   CP["チャンネル提供者"] -- "チャンネル（署名つき）" --> OPS
   MP["素材提供者"] -- "素材集（署名つき）" --> OPS
-  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>yorisoi-console"] -- "API-002" --> Sync
+  OPS["運営<br/>審査・承認済みチャンネル・リストに署名<br/>yorisoi-console"] -- "API-CHANNEL-LIST" --> Sync
   subgraph APP["アプリ"]
     BuiltIn["組み込みのチャンネル・素材"] --> Repo
     Sync["ChannelSync<br/>署名・ハッシュ・形式を確かめる"] --> Repo["StationRepository.current"]
@@ -61,20 +61,21 @@ flowchart LR
     mood["kit-mood<br/>MoodSource・Mood・PlaceGuess"]
     station["station・kit-channel<br/>StationRepository・Station（kit-channel）<br/>← sanpoguide/channels/（yorisoi-platform/core-format で確認）<br/>第三者のチャンネル: ThirdPartyChannels・ChannelSync（kit-channel）"]
     material["material<br/>Narration・組み込みの素材提供者<br/>Producers・Grounding・CueFinder・CuePresenter<br/>ChannelMaterials（kit-channel）"]
-    data["kit-geo<br/>SpotRepository<br/>OverpassClient・SpotPhotos<br/>RouteClient・WeatherClient・GoogleMapTiles"]
+    data["kit-geo<br/>SpotRepository・SpotTiles・SpotCache<br/>OverpassClient・SpotPhotos・FrequentWay<br/>RouteClient・WeatherClient・GoogleMapTiles"]
     guide["guide・kit-llm・kit-voice<br/>GuideRepository・Speaker<br/>LlmClient・Provider・RelayClient・OperatorAi・OutputCheck・AiUsage"]
     companion["companion<br/>TalkDecider・WalkCompanion・CompanionFeed<br/>WeatherChange ほか"]
     sound["kit-voice<br/>AmbientPlayer・Voices<br/>※ WalkService が生成"]
   end
 
   subgraph EXT["外部・端末"]
-    Overpass["Overpass API<br/>スポット・施設"]
+    Tiles["運営のスポットのタイル<br/>スポット・施設（先に使う）"]
+    Overpass["Overpass API<br/>スポット・施設（タイルがないとき）"]
     OSRM["FOSSGIS OSRM<br/>徒歩ルート"]
     Wikimedia["Wikimedia<br/>写真"]
     AI["AI サービス<br/>運営の AI の中継 / Claude / OpenAI 互換 API"]
     OpenMeteo["Open-Meteo<br/>天気・予報・日の入り"]
     Device["端末<br/>TTS・音声出力・GPS・方位センサー"]
-    GSI["地図画像<br/>地理院タイル / Google Map Tiles API"]
+    GSI["地図画像<br/>地理院タイル / OSM 標準 / Google Map Tiles API"]
     Provider["チャンネル・リスト（任意）<br/>リスト・パッケージ・素材集<br/>例: yorisoi-console"]
     Mail["メールアプリ<br/>散策者が書いて送る"]
   end
@@ -82,7 +83,7 @@ flowchart LR
   MainActivity -- "開始・終了" --> WalkService
   MainViewModel & SettingsViewModel & HistoryViewModel & ChannelsViewModel -- "app.◯◯ で参照" --> APP
   WalkService -- "app.◯◯ で参照" --> APP
-  data --> Overpass & Wikimedia & OSRM & OpenMeteo
+  data --> Tiles & Overpass & Wikimedia & OSRM & OpenMeteo
   data -. "セッション・出典" .-> GSI
   guide --> AI
   station --> Provider
@@ -236,8 +237,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  Assets["sanpoguide/channels/{id}/<br/>channel.json・prompts/"] --> Check["BuiltInChannels・BuiltInStations<br/>StationValidator（yorisoi-platform/core-format）<br/>API-003 の確認"]
-  ThirdParty["第三者のチャンネル<br/>リスト（API-002）・試用チケット<br/>ThirdPartyChannels・ChannelSync"] --> Check
+  Assets["sanpoguide/channels/{id}/<br/>channel.json・prompts/"] --> Check["BuiltInChannels・BuiltInStations<br/>StationValidator（yorisoi-platform/core-format）<br/>API-CHANNEL-PACKAGE の確認"]
+  ThirdParty["第三者のチャンネル<br/>リスト（API-CHANNEL-LIST）・試用チケット<br/>ThirdPartyChannels・ChannelSync"] --> Check
   Check --> Repo["<b>StationRepository</b><br/>current: Station"]
   Settings["設定<br/>stationId・stationOverrides"] --> Repo
   Repo --> Guide["GuideRepository<br/>解説の役割・重点・長さ、キャッシュ"]
@@ -251,14 +252,14 @@ flowchart LR
 - `StationRepository.current` は、選んでいるチャンネルに散策者の変更（`StationOverrides`。初期値から変えた項目だけ）を重ねたもの。変えられるのは組み込みのチャンネルだけ。
 - プロンプトの `guide/system`・`companion/system` は枠で、チャンネルの文章は変数として入る（テンプレートとしては解釈されない）。最後に共通の指示 `shared/guard` が必ず付く。
 - 散歩中に切り替えると、`WalkService` が `current` の変化を見て、記録に区間を足し（`WalkSession.stations`）、一言を予約する。同じチャンネルの設定を変えただけでは切り替えとみなさない。
-- 第三者のチャンネルは、散策者が足したリスト（API-002）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
+- 第三者のチャンネルは、散策者が足したリスト（API-CHANNEL-LIST）から取り込む。`ChannelSync` がリストの署名（要約、P-8）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、`StationValidator` を通したものだけを端末に保存する（`ChannelStore`）。リストは 24 時間ごと（起動時・散歩の開始時に期限を見る）に取り直し、取り下げられたチャンネルは消して標準に戻す。署名の確認は Tink の Ed25519（`TinkEd25519`）
 - 第三者のチャンネルは散策者が変えられない（使う・使わないだけ）。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せる
 - 第三者のチャンネルを使う前に、AI の費用の目安を出す（`station/AiCost`。話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限。上限は、運営の AI では中継の上限、自分の API キーでは設定の上限）。散策者が「使う」を選ぶまで、そのチャンネルで AI は呼ばない
 - 天気の急変・日の入り・施設の案内は、チャンネルに項目がない（止められない）。
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
 
-チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、[platform API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)・[platform API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
+チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)・[platform API-MATERIAL-PRODUCER](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
 
 ```mermaid
 flowchart LR
@@ -311,12 +312,12 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | `settings`  | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値                                                                                                                                                                                                                | SettingsRepository, OverrideCodec, TalkLevel, Threshold                                                                                                                  |   361 |
 | `history`   | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定                                                                                                                                                                                                                                                | HistoryStore（WalkJson）                                                                                                                                                 |   190 |
 | `station`   | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、プロンプトの変数、画面の表示名、AI の費用の目安、アプリが出せる範囲（チャンネルそのもの・選んでいるチャンネル・第三者のチャンネルの取り込みは `yorisoi-platform/kit-channel`） | BuiltInStations, StationPromptVars, StationLabels, AiCost, SanpoProfile | 126 |
-| `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
+| `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
 | `diagnostics` | 開発者モードでの散歩の詳しい記録（位置・判定・発言・AI・Overpass・天気）と書き出し（記録そのものは `yorisoi-platform/kit-companion` の `SessionRecorder`）（[walk-diagnostics.md](walk-diagnostics.md)） | WalkExport, DiagnosticFields, TimingInterceptor | 217 |
 | `report`    | 問題を知らせるメールを開く（宛先と下書きは `yorisoi-platform/kit-channel`）                                                                                                                                                                                                                                                                                        | AppReport |    22 |
 | (root)        | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ                                                                                                                                                                                                                                                                | SanpoApp                                                                                                                                                                 |   212 |
 
-共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM（旧 ADR-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
+共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
 
 | モジュール                                | パッケージ                                               | 役割                                                                                                                                                                 | 主なファイル                                                                                                                 |  行数 |
 | ----------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----: |
@@ -324,13 +325,13 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | `yorisoi-platform/core-prompt`（JVM）   | `…core.prompt`                                        | プロンプトのテンプレート                                                                                                                                             | PromptTemplates                                                                                                              |    90 |
 | `yorisoi-platform/kit-voice`            | `io.github.duwenji.yorisoi.kit.voice`                  | 読み上げ（TTS・オーディオフォーカス）、背景音の合成と再生                                                                                                            | Speaker, AmbientPlayer, Voices, Soundscape                                                                                   |   500 |
 | `yorisoi-platform/kit-llm`              | `…kit.llm`                                            | AI サービスの抽象と実装、運営の AI の中継のクライアント、API キーの暗号化、自分のキーの 1 日の呼び出しの数、使わない返事の判定                                        | Provider（LlmClient）, ClaudeClient, OpenAiCompatibleClient, RelayClient, OperatorAi, KeyCipher, AiUsage, OutputCheck        |   597 |
-| `yorisoi-platform/kit-geo`              | `…kit.geo`・`.weather`・`.map`                    | Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、天気の急変の判定、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
+| `yorisoi-platform/kit-geo`              | `…kit.geo`・`.weather`・`.map`                    | 運営のタイルと Overpass でのスポット・施設検索とその端末への保存、よく通る道、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、天気の急変の判定、地図（種類の切り替え・ルート・向き・Google の地図タイル） | OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles | 1,366 |
 | `yorisoi-platform/kit-companion`（JVM） | `…kit.companion`                                      | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する                                                    | TalkEngine, TalkRule, TalkGates                                                                                              |    42 |
 | `yorisoi-platform/kit-channel`（JVM）   | `…kit.channel`                                        | チャンネル: 散策者の変更を重ねた設定値とスロット、チャンネルの一覧と使っているチャンネル、組み込みのチャンネルの読み込み、第三者のチャンネルの素材、第三者のチャンネルの取り込み（`remote`）、素材の計画と素材提供者（`material`）、通報（`report`） | Station, StationRepository, ResourceChannels, ChannelMaterials, remote/ChannelSync, remote/ThirdPartyChannels, material/Producer, material/Cues, material/Grounding, report/Report | 2,140 |
 | `yorisoi-platform/kit-mood`             | `…kit.mood`                                           | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方                                                                                             | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice                                                         |   622 |
 | `:prompts`（JVM）                       | `io.github.duwenji.yorisoi.sanpoguide.prompt`          | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本                                                                              | Prompts, StationPrompts, BuiltInChannels, ReviewSamples                                                                      |   290 |
 
-チャンネルの形式（platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST（旧 API-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIAL-PRODUCER（旧 API-004）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIAL-PRODUCER](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
@@ -338,8 +339,8 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 話しかけ・解説の文面を変える                               | 枠は `prompts/src/main/resources/sanpoguide/prompts/`（一覧は [prompts.md](prompts.md)）、役割や話題はチャンネルの `sanpoguide/channels/{id}/prompts/`                                                               |
 | 話す条件や優先順位を変える                                 | `companion/TalkDecider.kt` の `rules`（ルールの並びとゲート。場面のテストは `TalkDeciderTest`）。決まったことの実行は `walk/WalkService.kt` の `maybeTalk()`。スポットの選び方は `companion/SpotChooser.kt` |
-| 組み込みのチャンネルを追加・変更する                       | `prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は platform [API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）と、`BuiltInChannels.kt` の `IDS`                  |
-| チャンネルの形式の確認を変える                             | `yorisoi-platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-003 も                                                                                                                        |
+| 組み込みのチャンネルを追加・変更する                       | `prompts/src/main/resources/sanpoguide/channels/{id}/`（形式は platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）と、`BuiltInChannels.kt` の `IDS`                  |
+| チャンネルの形式の確認を変える                             | `yorisoi-platform/core-format/`（`StationValidator`）。形式そのものを変えるときは API-CHANNEL-PACKAGE も                                                                                                                        |
 | チャンネルの設定画面の項目を変える                         | `ui/SettingsScreen.kt` の `StationSettings`（背景音の種類は `ScreenAndSoundSection`）・`ui/SettingsViewModel.kt`、保存は `settings/SettingsRepository.kt`                                                                                                 |
 | 距離・時間・気温などの既定値を変える                       | `settings/Threshold.kt`                                                                                                                                                                                               |
 | 話しかけの頻度の段階を変える                               | `settings/TalkLevel.kt`                                                                                                                                                                                               |
@@ -370,4 +371,4 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 
 ## 計画中: 位置に紐づく秘密メッセージ
 
-アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-SECRET-MESSAGES（旧 API-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
+アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
