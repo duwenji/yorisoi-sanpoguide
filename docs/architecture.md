@@ -211,12 +211,13 @@ flowchart LR
 
 ### 地図の種類
 
-設定の「地図」（`GuideSettings.mapStyle`）で、国土地理院の 4 種類（標準・淡色・写真・標高）と Google マップの 2 種類（地図・航空写真）を選ぶ。
+設定の「地図」（`GuideSettings.mapStyle`）で、国土地理院の 4 種類（標準・淡色・写真・標高）、OpenStreetMap の標準地図、Google マップの 2 種類（地図・航空写真）を選ぶ。
 
 - 設定値は `MainViewModel.map` が `MapTiles` に変換し、`SpotMap` が osmdroid の地図画像（`kit-geo` の `map/MapTiles.kt`）を差し替える。
 - Google は散策者自身の API キーで Map Tiles API のセッションを作り（`GoogleMapTiles.session()`、2 週間有効）、地図画像の URL に付ける。
 - Google の地図を表示している間は、規約に従い左下にロゴ、右下に表示範囲の出典を出す。出典は地図の移動が止まってから viewport API で取得する（`onMapViewport()`）。
 - キーが未設定・無効・接続できないときは地理院の標準地図にし、理由を地図の上に出す。
+- OpenStreetMap は OSMF の公式タイルサーバー（`tile.openstreetmap.org`）を、OSMF のタイル利用規約に沿って使う（osmdroid の `TileSourceFactory.MAPNIK`: 同時に 2 本まで、まとめてのダウンロードなし、アプリ名入りの User-Agent）。保証のない共用のサーバーなので、選んだときにタイルを 1 枚取ってみて（`OsmTiles.check()`、うまくいけば 1 時間は再確認しない）、取れなければ地理院の標準地図にし、理由を地図の上に出す。表示中にタイルの取得が 4 回続けて失敗したときも（`SpotMap` の `onTilesFailed`）、同じく切り替える。どちらも右上のメニューの「周辺を再検索」で再接続する。
 
 ### AI に送る位置情報
 

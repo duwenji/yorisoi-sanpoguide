@@ -13,6 +13,7 @@ import io.github.duwenji.yorisoi.sanpoguide.diagnostics.TimingInterceptor
 import io.github.duwenji.yorisoi.kit.companion.SessionRecorder
 import io.github.duwenji.yorisoi.kit.geo.weather.WeatherClient
 import io.github.duwenji.yorisoi.kit.geo.map.GoogleMapTiles
+import io.github.duwenji.yorisoi.kit.geo.map.OsmTiles
 import io.github.duwenji.yorisoi.kit.geo.OverpassClient
 import io.github.duwenji.yorisoi.kit.geo.RouteClient
 import io.github.duwenji.yorisoi.kit.geo.SpotCache
@@ -145,6 +146,7 @@ class SanpoApp : Application() {
     val weather = WeatherClient()
     val routes = RouteClient()
     val googleTiles = GoogleMapTiles()
+    val osmTiles = OsmTiles()
     val feed = CompanionFeed()
 
     override fun onCreate() {

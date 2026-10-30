@@ -260,6 +260,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize(),
                     selected = selected?.item?.poi,
                     recenterRequests = recenter,
+                    onTilesFailed = viewModel::onMapTilesFailed,
                 )
                 if (loading) LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
                 (map.tiles as? MapTiles.Google)?.let { tiles ->

@@ -25,7 +25,7 @@ class StoredNamesTest {
         assertEquals(listOf("CLAUDE", "DEEPSEEK", "OPENAI", "GEMINI", "CUSTOM"), Provider.entries.map { it.name })
         // `map_style`
         assertEquals(
-            listOf("GSI_STANDARD", "GSI_PALE", "GSI_PHOTO", "GSI_RELIEF", "GOOGLE_ROADMAP", "GOOGLE_SATELLITE"),
+            listOf("GSI_STANDARD", "GSI_PALE", "GSI_PHOTO", "GSI_RELIEF", "OSM_STANDARD", "GOOGLE_ROADMAP", "GOOGLE_SATELLITE"),
             MapStyle.entries.map { it.name },
         )
         // `station_{id}_talk_level`
