@@ -21,7 +21,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -40,7 +39,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
+import io.github.duwenji.yorisoi.kit.ui.ScreenBar
 import io.github.duwenji.yorisoi.kit.llm.Provider
 import io.github.duwenji.yorisoi.kit.geo.map.MapStyle
 import io.github.duwenji.yorisoi.kit.llm.AiRoute
@@ -119,13 +118,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("設定") },
-                navigationIcon = {
-                    IconButton(onClick = ::leave) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る")
-                    }
-                },
+            ScreenBar(
+                "設定", onBack = ::leave,
                 actions = { TextButton(onClick = ::save, enabled = canSave) { Text("保存") } },
             )
         },

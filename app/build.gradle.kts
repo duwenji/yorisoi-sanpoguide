@@ -102,6 +102,8 @@ dependencies {
     implementation(libs.yorisoi.kit.llm)
     implementation(libs.yorisoi.kit.geo)
     implementation(libs.yorisoi.kit.mood)
+    // The bar on top of the screens and the launcher icon's green, shared with CycleGuide.
+    implementation(libs.yorisoi.kit.ui)
     implementation(libs.yorisoi.kit.companion)
     implementation(libs.yorisoi.kit.channel)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures

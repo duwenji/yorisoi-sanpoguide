@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -33,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.duwenji.yorisoi.kit.ui.ScreenBar
 import io.github.duwenji.yorisoi.kit.geo.map.MapTiles
 import io.github.duwenji.yorisoi.kit.geo.map.SpotItem
 import io.github.duwenji.yorisoi.kit.geo.map.SpotMap
@@ -70,14 +69,7 @@ fun WalkPlanScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("散策プラン") },
-                navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る")
-                    }
-                },
-            )
+            ScreenBar("散策プラン", onBack = onBack)
         },
         bottomBar = {
             Surface(shadowElevation = 4.dp) {
