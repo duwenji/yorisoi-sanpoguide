@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,7 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +34,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.duwenji.yorisoi.sanpoguide.station.AiCost
+import io.github.duwenji.yorisoi.kit.ui.ScreenBar
 import io.github.duwenji.yorisoi.kit.channel.remote.ListedStatus
 import io.github.duwenji.yorisoi.kit.channel.remote.ListedView
 import io.github.duwenji.yorisoi.kit.channel.remote.ProviderView
@@ -67,12 +63,7 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("配信されているチャンネル") },
-                navigationIcon = {
-                    IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る") }
-                },
-            )
+            ScreenBar("配信されているチャンネル", onBack = onClose)
         },
     ) { padding ->
         Column(
