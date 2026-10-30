@@ -3,9 +3,9 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 承認済み。組み込みのチャンネル、第三者のチャンネル、素材の第 1 段（テキスト・画像）は実装済み。素材の第 2 段・第 3 段は未着手 |
-| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST（旧 API-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform ADR-CHANNEL-CURATION（旧 ADR-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md) |
+| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform ADR-CHANNEL-CURATION](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md) |
 
-チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-003「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-003、第三者のチャンネルの取得は API-002 で決めてある。
+チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-CHANNEL-PACKAGE「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-CHANNEL-PACKAGE、第三者のチャンネルの取得は API-CHANNEL-LIST で決めてある。
 
 ## 用語とコード上の名前
 
@@ -17,7 +17,7 @@
 
 ## 組み込みのチャンネル
 
-6 本。設定値は API-003 の `channel.json` の項目。
+6 本。設定値は API-CHANNEL-PACKAGE の `channel.json` の項目。
 
 | 項目 | 標準 | 歴史探訪 | 自然観察 | グルメの旅 | ショッピング | しずかに |
 |---|---|---|---|---|---|---|
@@ -39,10 +39,10 @@
 | `companion/persona` | 気心の知れた友だち | 歴史好きの友だち | 自然好きの友だち | 食べ歩きの好きな友だち | 街歩きと店めぐりの好きな友だち | 標準と同じ |
 | `companion/topics` | 時刻・季節・天気・今回とこれまでの散歩を踏まえた一言 | 歩いている土地の歴史・地名の由来・季節の行事 | 季節の花・鳥の声・空・風・水の音 | 旬の食べ物・季節の味 | 商店街の様子・土地の工芸・季節の品物 | 標準と同じ |
 
-- 標準のチャンネルで組み立てたプロンプトが変わっていないことを、テストで確かめる（API-003 V-02、`PromptGoldenTest`）
+- 標準のチャンネルで組み立てたプロンプトが変わっていないことを、テストで確かめる（API-CHANNEL-PACKAGE V-02、`PromptGoldenTest`）
 - 「しずかに」で `spot` を止めても、一覧・地図でスポットをタップしたときの解説は出す（散策者が自分で求めたものなので）
 - 選んだチャンネルは、散策モードの外（一覧でタップしたときの解説）にも使う
-- グルメの旅・ショッピングは店の種類（API-003「スポットの種類」）を `prefer` に持つので、選んでいる間だけ飲食店・お店を探して地図と一覧に出す（チェーン店は除く）。寺社などは `skip` しない。門前の名物や市の歴史など、食・商いとの関わりとして話す
+- グルメの旅・ショッピングは店の種類（API-CHANNEL-PACKAGE「スポットの種類」）を `prefer` に持つので、選んでいる間だけ飲食店・お店を探して地図と一覧に出す（チェーン店は除く）。寺社などは `skip` しない。門前の名物や市の歴史など、食・商いとの関わりとして話す
 
 ## 散策者のカスタマイズ（組み込みのチャンネル）
 
@@ -58,11 +58,11 @@
 | 優先する話題（`spots.prefer`） | スポットの種類から複数選ぶ |
 | 初期値に戻す | チャンネルごと |
 
-- 語り手・話題の文章（スロット）は変えられない（API-003 の上限と確認を、散策者の入力にまで広げないため）
+- 語り手・話題の文章（スロット）は変えられない（API-CHANNEL-PACKAGE の上限と確認を、散策者の入力にまで広げないため）
 - 保存するのは、初期値から変えた項目だけ（`Threshold` と同じ方式）。アプリの更新で初期値が変わったとき、変えていない項目には新しい初期値が使われる。保存のキーは `station_{id}_{項目}`（項目は `talk_level`・`mood_tone`・`events`・`guide_length`・`sound`・`prefer`。集合は `channel.json` の綴りをカンマでつなぐ。`OverrideCodec`）。初期値と同じ値は `Station.normalize` で落とす
 - 話す場面をすべてオフにした状態も「変更」として保存する（空の集合。項目がない状態とは区別する）
 - 散策者が優先にした種類は、チャンネルが除く種類（`spots.skip`）に入っていても除かない
-- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。ADR-001 の未決事項 No.2）
+- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。ADR-CHANNEL-CURATION の未決事項 No.2）
 - 背景音のオン・オフ、音量、イヤホンのときだけ、画面を雰囲気に合わせるかは、チャンネルではなく全体の設定（端末と安全に関わるため）
 - 選んでいるチャンネルの初期値は「標準」
 
@@ -87,7 +87,7 @@
 
 ## プロンプトの組み立て
 
-- `guide/system.md`・`companion/system.md` は、API-003 の順の枠になっている。スロットの文章は変数（`persona`・`focus`・`topics`）として渡す。読み込み（`{{>`）ではなく変数にしたのは、変数として入れた文章はテンプレートとして解釈されず、`PromptTemplates` もチャンネルごとに作り直さなくてよいため
+- `guide/system.md`・`companion/system.md` は、API-CHANNEL-PACKAGE の順の枠になっている。スロットの文章は変数（`persona`・`focus`・`topics`）として渡す。読み込み（`{{>`）ではなく変数にしたのは、変数として入れた文章はテンプレートとして解釈されず、`PromptTemplates` もチャンネルごとに作り直さなくてよいため
 - ないスロットには標準のチャンネルの文章を入れる（`Station.slot`）
 - 出来事の追加の指示は、出来事のプロンプトの後ろに `companion/station_event` を空行を挟んでつなげる（`WalkCompanion.say`）
 - 共通の指示 `shared/guard.md` を、両方のシステムプロンプトの最後で読み込む
@@ -96,7 +96,7 @@
 
 ## 素材・きっかけ・見せ方
 
-API-003 にすべての種類を定め、アプリは次の段で対応を増やす（M-1）。対応していない種類を使うチャンネルは取り込まない（`unsupported_resource`）。
+API-CHANNEL-PACKAGE にすべての種類を定め、アプリは次の段で対応を増やす（M-1）。対応していない種類を使うチャンネルは取り込まない（`unsupported_resource`）。
 
 | アプリの段 | 素材 | 見せ方 | きっかけ | 状態 |
 |---|---|---|---|---|
@@ -106,10 +106,10 @@ API-003 にすべての種類を定め、アプリは次の段で対応を増や
 
 - 組み込みのチャンネルは素材を持たない（語りだけ）
 - きっかけの判定は話す処理に組み込む。順番は、天気の急変 → きっかけ（`spot`・`point`）→ AI のスポット案内 → 日の入り → 施設 → 休憩・区切り。`spot` のきっかけが `replace` なら、そのスポットの AI の解説は作らない
-- 見せ方の安全の決まり（API-003 F-8）は、見せ方ごとの部品（読み上げ・カード・通知・解説の画面・全画面・再生）の側で強制する。きっかけの側では判定しない（どこから呼ばれても守られるようにするため）
+- 見せ方の安全の決まり（API-CHANNEL-PACKAGE F-8）は、見せ方ごとの部品（読み上げ・カード・通知・解説の画面・全画面・再生）の側で強制する。きっかけの側では判定しない（どこから呼ばれても守られるようにするため）
 - 「歩いている」は位置の速さ（0.5m/s 以上、1 分以内の位置）で判定する（`Pace`）。散歩の外では位置を一度しか取らないため、解説の画面か全画面を開いている間だけ、画面の側で位置の更新を受ける
 - 素材の取得はチャンネルを選んだときに、回線の種類を問わず行う。その後の更新（新しい版の素材集、取り損ねた素材）は従量制でない回線のときだけ。取得が済むまでは、取得していない素材を指す候補を飛ばして次の候補を使う
-- 基準（`selectors`）の素材集は、従量制でない回線のときだけ、チャンネルを選んだとき・起動時・散歩の開始時に、今いる地域とその隣の地域・地域を持たないものを取得する（API-004 P-6）
+- 基準（`selectors`）の素材集は、従量制でない回線のときだけ、チャンネルを選んだとき・起動時・散歩の開始時に、今いる地域とその隣の地域・地域を持たないものを取得する（API-MATERIAL-PRODUCER P-6）
 - 素材の保存先はアプリの内部の領域（`filesDir/channels/` の `col/{SHA-256}.zip`・`res/{SHA-256}`）。どのチャンネルも使わなくなった素材は、チャンネルを消したとき・リストを取得したときにすぐ消す。基準の素材集は、離れた地域に移ると消す
 - `repeat` の `oncePerDay`・`once` の記録は端末に残す（`cues.json`。キーは「チャンネルID#きっかけID」で、チャンネルの版が上がっても引き継ぐ）
 - 散歩の外でチャンネルを選んだときも、`select` のきっかけを出す。散歩中に選んだときは、切り替えの一言の後に出す
@@ -127,21 +127,21 @@ API-003 にすべての種類を定め、アプリは次の段で対応を増や
 
 | 置き場所 | 内容 |
 |---|---|
-| yorisoi-platform の `core-format`（JVM、Android に依存しない） | `channel.json` の読み込み（`StationManifest`）、API-003 の確認（`StationValidator`）、署名の確認、エラーコード、素材提供者の記述・方針（`ProducerDescriptor`・`ProducerPolicy`）。チャンネル管理システムの機械審査でも、同じものを使う |
-| `:prompts` の `sanpoguide/channels/{id}/` | 組み込みのチャンネル（API-003 の構成。`signature.json` なし）と `BuiltInChannels` |
-| yorisoi-platform の `kit-channel`（JVM） | `Station`（設定値とスロットの読み込み）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`ResourceChannels`（組み込みのチャンネルを resources から読む。`BuiltInChannels` はこれを使う）、`ChannelMaterials`（第三者のチャンネルの素材） |
-| `app` の `station/` | `BuiltInStations`（`BuiltInChannels` を `Station` にする）、`StationPromptVars`（スロットからプロンプトの変数を作る）、`station/remote/`（第三者のチャンネルの取り込み） |
-| `app` の `material/` | 素材提供者の IF（`Producer`・`MaterialRequest`・`Material`・`MaterialResult`）、候補を順に試す `Producers`（API-004 I-7）、組み込みの素材提供者 6 つ（`BuiltIns.kt`）、省略形の展開（`Shorthand`）と、散歩と画面が使う入り口 `Narration` |
+| yorisoi-platform の `core-format`（JVM、Android に依存しない） | `channel.json` の読み込み（`StationManifest`）、API-CHANNEL-PACKAGE の確認（`StationValidator`）、署名の確認、エラーコード、素材提供者の記述・方針（`ProducerDescriptor`・`ProducerPolicy`）。チャンネル管理システムの機械審査でも、同じものを使う |
+| `:prompts` の `sanpoguide/channels/{id}/` | 組み込みのチャンネル（API-CHANNEL-PACKAGE の構成。`signature.json` なし）と `BuiltInChannels` |
+| yorisoi-platform の `kit-channel`（JVM） | `Station`（設定値とスロットの読み込み）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`ResourceChannels`（組み込みのチャンネルを resources から読む。`BuiltInChannels` はこれを使う）、`ChannelMaterials`（第三者のチャンネルの素材）、`remote/`（第三者のチャンネルの取り込み: `ChannelSync`・`ThirdPartyChannels`）、`material/`（素材提供者の IF `Producer`、候補を順に試す `Producers`（API-MATERIAL-PRODUCER I-7）、素材の計画 `MaterialPlan`・`SelectorPlan`、きっかけ `Cues`、AI の根拠 `Grounding`）、`report/`（通報） |
+| `app` の `station/` | `BuiltInStations`（`BuiltInChannels` を `Station` にする）、`StationPromptVars`（スロットからプロンプトの変数を作る）、`AiCost`（費用の目安）、`StationLabels` |
+| `app` の `material/` | 組み込みの素材提供者（`BuiltIns.kt`）、散歩と画面が使う入り口 `Narration`、散歩の文脈 `WalkMaterial`、見せ方の並べ方 `CueLayout` |
 
 ## テスト
 
-- `core-format` の単体テスト: API-003 の確認観点 V-03〜V-07（見本の不正なパッケージで拒むこと）
+- `core-format` の単体テスト: API-CHANNEL-PACKAGE の確認観点 V-03〜V-07（見本の不正なパッケージで拒むこと）
 - 組み込みのチャンネルの確認（V-01）と、標準のプロンプトが変わらないこと（V-02）
 - `PromptFilesTest` を全チャンネル × 全出来事で回す。`app/build/prompt-samples/{チャンネル}/` に書き出して見比べられるようにする
 - 話す処理: `talk.events` をすべて偽にしても、天気の急変・日の入り・施設の案内が話されること（V-08。`TalkDeciderTest`）
 - 審査の見本の組み立て（`ReviewSamples`）と、送るプロンプトそのもの（`prompt-golden.txt`）を、全組み込みチャンネルで CI が確かめる
 
-### 組み込みのチャンネルを変えたとき（platform ADR-004 H-13）
+### 組み込みのチャンネルを変えたとき（platform ADR-AI-ROLES H-13）
 
 組み込みのチャンネルは運営の審査を通らない。第三者のチャンネルと同じ基準で確かめるため、`prompts/src/main/resources/sanpoguide/channels/` を変えた PR では、次を手で行い、結果を PR に書く。AI を呼ぶので CI では回さない（費用がかかり、結果も毎回変わるため）。
 
@@ -155,6 +155,6 @@ API-003 にすべての種類を定め、アプリは次の段で対応を増や
 | No. | 内容 | 決める時期 |
 |---|---|---|
 | 1 | 通知からもチャンネルを切り替えられるようにするか（ポケットに入れたまま切り替えたい場合）。今は画面だけ | 実際に歩いてから |
-| 2 | 散策者が自分で書ける短い希望（例: 「関西弁で」）を、組み込みのチャンネルに足せるようにするか。散策者自身の API キーなので費用の問題は小さいが、確認の仕組みが要る | 要望が出たとき |
+| 2 | 散策者が自分で書ける短い希望（例: 「関西弁で」）を、組み込みのチャンネルに足せるようにするか。自分のキーなら費用の問題は小さいが、運営の AI では運営の費用になり、確認の仕組みも要る | 要望が出たとき |
 | 3 | 組み込みのチャンネルの本数と顔ぶれ（「子どもと」「運動」などを足すか） | 実際に歩いてから |
 | 4 | `spots.prefer` の加点の大きさ（+2 で、Wikipedia の記事のある別の種類のスポットと同じ順位になる） | 実際に歩いてから |

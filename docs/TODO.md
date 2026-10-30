@@ -14,7 +14,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 | 優先度 | 項目 | 概要 |
 |---|---|---|
-| ★ | [Google Play での公開](#google-play-での公開) | targetSdk 36、ストアの登録、プライバシー、クローズドテスト |
+| ★ | [Google Play での公開](#google-play-での公開) | 本番の中継、申告、クローズドテスト |
 | ★ | [実際に歩いての確認](#実際に歩いての確認) | 安全・施設の案内、雰囲気、背景音、チャンネルを実機で確かめ、既定値を見直す |
 | ★ | [チャンネル](#チャンネル) | 試用チケットでの通しの確認、通知からの切り替え |
 | ☆ | [位置に紐づく秘密メッセージ](#位置に紐づく秘密メッセージ) | 特定の場所に来たときだけ読める・聞けるメッセージ |
@@ -25,20 +25,17 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## Google Play での公開
 
-- [x] targetSdk と compileSdk を 36 にする（新しいアプリと更新に必須）。向きの固定・edge-to-edge の無効化はしていないので影響なし。エミュレータ（Android 17）で、メイン・設定・戻る操作・散策の開始（位置情報のフォアグラウンドサービス）を確認
-- [ ] リリースは AAB（`./gradlew bundleRelease`）で出す。署名の鍵（`release.jks`）は Play App Signing のアップロード鍵にする
-- [x] バックアップしない設定を Android 12 以上にも広げる（`dataExtractionRules`。端末間の移行も含めない）
-- [x] プライバシーポリシー（[privacy-policy.md](privacy-policy.md)）を GitHub Pages で公開する: https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy
+内部テストに 1.7.0 (12) を出している。出し方は [release.md](release.md)。
+
 - [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告を入れる（答えは [play-console.md](play-console.md)。申告の動画を撮る）
-- [x] ストアの素材: 512×512 のアイコン、1024×500 のフィーチャー画像、スクリーンショット（`store/`。内容と説明文は [play-console.md](play-console.md#ストアの掲載情報)）
 - [ ] ストアの設定で決めること: 外部マーケティング（Google が Play の外で宣伝してよいか）
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト。有料なのでクローズドテストのテスターも購入が要る。プロモーション コードを配るか決める（有料のアプリに使えるか、作れる数を Play Console の「プロモーション」で確かめる）
 
-運営の AI（platform ADR-AI-RELAY）を本番の中継に切り替えるときは、次をそろえる。今はリリース版も開発用の中継（1 日 30 回・月 5 USD、Play Integrity の確認なし）を使う
+運営の AI（platform ADR-AI-RELAY）とスポットのタイル（platform ADR-SPOT-TILES）を本番に切り替えるときは、次をそろえる。今はリリース版も開発用の中継（1 日 30 回・月 5 USD、Play Integrity の確認なし）と開発用のタイルの配信を使う
 
-- [ ] 本番の中継の配備（yorisoi-console の運営の AI の手順）と、`app/build.gradle.kts` の `AI_RELAY_URL`
+- [ ] 本番の中継とタイルの配信の配備（yorisoi-console の手順）と、`app/build.gradle.kts` の `AI_RELAY_URL`・`SPOT_TILES_URL`
 - [ ] Play Integrity: Play Console のアプリに Google Cloud のプロジェクトをつなぎ、その番号を `PLAY_CLOUD_PROJECT_NUMBER` に入れる。サービス アカウントの鍵を本番の中継に入れる
-- [ ] プライバシーポリシー・データ セーフティ・ストアの説明・散策者とチャンネル提供者の手引きを、運営の中継を通ることに合わせる（platform ADR-AI-RELAY T-5）
+- [ ] 本番の運営者・送り先に合わせて、プライバシーポリシー・データ セーフティを見直す
 
 最初の公開は内蔵のチャンネルだけ。設定の「チャンネル・リストと試用チケット」は開発者モードのときだけ出す。第三者のチャンネルを開くときは、管理システムの本番と内蔵のリストを用意し、ボタンを誰にでも出し、プライバシーポリシーの「チャンネル・リストの発行元」を直す
 
@@ -51,7 +48,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] 雰囲気: 場所の種類の推定が合っているか（とくに「史跡」: 石碑などの `historic` が多い場所では、寺社の近くでも史跡と判定されやすい）。AI のトーンの変わり方
 - [ ] 背景音: 実機のイヤホン（有線・Bluetooth）での音質・音量・切り替えのフェード、イヤホンを外したときの停止、他のアプリで音楽を再生したときの停止。電池の消費（22,050Hz・モノラルの合成を 50ms ごと）
 - [ ] チャンネル: 各チャンネルの語り口、優先する話題の加点（+2）、きっかけの出方。グルメの旅・ショッピングの店の検索
-- [ ] Overpass の失敗の頻度を集計し（詳しい記録の `overpass`）、自前・商用のサーバーを検討する材料にする（[エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#共通の検討事項)の「公開サーバーの負荷」）。Overpass の予備のサーバーの証明書が Android 11 で信頼されない件も
+- [ ] スポットの出どころを集計し（詳しい記録の `spot_search` の `source`・`tiles`・`overpass`）、運営のタイルで空白や待ちが減ったか、Overpass に回る割合を確かめる（platform ADR-SPOT-TILES T-4）。Overpass の予備のサーバーの証明書が Android 11 で信頼されない件も
 
 ## よく通る道（platform REQ-FREQUENT-WAYS）
 
@@ -60,12 +57,12 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## チャンネル
 
-設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE（旧 API-003）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNEL-CURATION（旧 ADR-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md)・[platform ADR-MATERIAL-PRODUCERS（旧 ADR-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
+設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNEL-CURATION](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md)・[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 - [ ] 試用チケットで、素材集・基準を使うチャンネルを通しで確かめる（チャンネル提供者の鍵ファイルが届いてから）。カメラで QR を写す確認は実機で
 - [ ] 通知からの切り替え（channels.md の未決事項 No.1。歩いてから決める）
 
-第三者のチャンネル・素材集を審査して公開するのは、アプリとは別の管理システム（[yorisoi-console](https://github.com/duwenji/yorisoi-console)）。アプリとの境界は [platform API-CHANNEL-LIST（旧 API-002）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md) だけ。管理システムの作業は yorisoi-console の docs/TODO.md、関係者ごとの対応案と審査の運用はエコシステム TODO にある。
+第三者のチャンネル・素材集を審査して公開するのは、アプリとは別の管理システム（[yorisoi-console](https://github.com/duwenji/yorisoi-console)）。アプリとの境界は [platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md) だけ。管理システムの作業は yorisoi-console の docs/TODO.md、関係者ごとの対応案と審査の運用はエコシステム TODO にある。
 
 ## 位置に紐づく秘密メッセージ
 
@@ -77,7 +74,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - 公開: その場所を訪れた人なら誰でも見つけられる（宝探し、イベント）
 - チャンネルと組み合わせた、店舗やイベントの隠しコンテンツ
 
-自分宛てだけならサーバーなしで作れる（`HistoryStore` と同じく端末内に保存）。先にここだけ切り出して着手できる。他人宛て・グループ・公開のサーバー API は yorisoi-platform の [API-SECRET-MESSAGES（旧 API-001）](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md) で決めた。接続先は URL で設定し、API に準拠していればサーバーの実装方法・置き場所は問わない。準拠テスト・参照実装のサーバーと、位置の偽装・不適切な投稿への対策は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#位置に紐づく秘密メッセージ) にある。
+自分宛てだけならサーバーなしで作れる（`HistoryStore` と同じく端末内に保存）。先にここだけ切り出して着手できる。他人宛て・グループ・公開のサーバー API は yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md) で決めた。接続先は URL で設定し、API に準拠していればサーバーの実装方法・置き場所は問わない。準拠テスト・参照実装のサーバーと、位置の偽装・不適切な投稿への対策は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#位置に紐づく秘密メッセージ) にある。
 
 - [ ] メッセージを置く（現在地、または地図上の地点を指定）
 - [ ] 開ける条件（半径◯m 以内、日時・期間、特定の相手、合言葉）
@@ -97,7 +94,6 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## その他の候補
 
-- [x] 散策前のプラン入力（テーマ・時間・距離）と、周辺スポットからの立ち寄り候補の提案・選択
 - [ ] 道路に沿った散策ルートの提案・最適化（時間・距離は目安で、達成を保証しない）
 - [ ] 写真・メモを散歩の記録に残す
 - [ ] 散歩の記録から「思い出」を振り返る（1 年前の今日に歩いた場所など）
