@@ -13,12 +13,13 @@
 | 第三者のチャンネルを使うとき | [図 7 · チャンネルの取り込み](#図-7--チャンネルの取り込み-確かめてから使う) |
 | 散策中にチャンネルを切り替えたとき | [図 8 · 散策中の切り替え](#図-8--散策中の切り替え-一言を予約する) |
 | 散策を終えたとき | [図 9 · 散策の終了](#図-9--散策の終了-記録してからまとめの一言) |
+| 散策中、スタジオの一言・お知らせを聞くとき | [図 10 · スタジオ](#図-10--スタジオ-区画ごとに取り話すことがないときに読む) |
 
 図はコードから手で書き起こしたもの。`WalkService`・`SanpoApp`・`ChannelSync` の呼び出し順を変えたときは、この文書も更新する。
 
 ## 図と表の読み方
 
-- **参加者の番号（P01〜P36）**: 図の上に並ぶ参加者（Node）には、下の[参加者一覧](#参加者一覧)の番号を付けている。同じ部品は、どの図でも同じ番号になる。
+- **参加者の番号（P01〜P40）**: 図の上に並ぶ参加者（Node）には、下の[参加者一覧](#参加者一覧)の番号を付けている。同じ部品は、どの図でも同じ番号になる。
 - **ステップの番号（例: 3-12）**: 図の矢印の文の先頭に「図の番号-ステップ番号」で書いている。表の番号と同じで、3-12 は図 3 の 12 番目の矢印。
 - **送り手 → 受け手**: 矢印の根元と先の参加者の番号。P12 → P12 のように同じ番号なら、自分の中の処理。
 - **コード**: パスは `app/src/main/java/io/github/duwenji/yorisoi/sanpoguide/` からの相対。`yorisoi-platform/…` は共通の部品（別のリポジトリ）。
@@ -62,7 +63,11 @@
 | P33 | SpotPhotos | `yorisoi-platform/kit-geo` の `SpotPhotos` | 6 |
 | P34 | CueFinder | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5 |
 | P35 | CuePresenter | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CuePresenter`（きっかけを素材にする） | 4, 5 |
-| P36 | 出力 | 読み上げ（`kit-voice` の `Speaker`）・発言カード（`CompanionFeed.add`）・通知 | 3, 4, 5, 6, 8, 9 |
+| P36 | 出力 | 読み上げ（`kit-voice` の `Speaker`）・発言カード（`CompanionFeed.add`）・通知 | 3, 4, 5, 6, 8, 9, 10 |
+| P37 | StudioHub | `studio/StudioHub.kt`（スタジオの窓口） | 10 |
+| P38 | StudioFeed | `yorisoi-platform/kit-studio` の `StudioFeed`（散歩 1 回分の取得・選び方・反応） | 10 |
+| P39 | スタジオ | 運営のスタジオの API（yorisoi-console の `YorisoiStudio`。platform API-STUDIO） | 10 |
+| P40 | ClipPlayer | `yorisoi-platform/kit-studio` の `ClipPlayer`（お知らせの音声。読み上げが終わってから流す） | 10 |
 
 P26 と P36 はどちらも `CompanionFeed` を使うが、P26 は地図とカードの上の数字に出す状態、P36 は発言（カード 1 枚ずつ）として分けている。
 
@@ -633,3 +638,65 @@ sequenceDiagram
 | 9-11 | P17 → P36 | チャンネルの `finish` のきっかけを出す（図 5。散歩の外の出し方）。 | `SanpoApp.showEventCues(CueEvent.FINISH)` |
 
 - 終わったあとに生成が終わった文は、`speakLine()` が捨てる（常駐の通知を出し直さないため）。まとめの一言だけは、この図のとおり `appScope` から出す。
+
+## 図 10 · スタジオ: 区画ごとに取り、話すことがないときに読む
+
+設定で「一言を聞く」「お知らせを聞く」をオンにしているとき、散策中に近くの一言とお知らせ（掲載）を読み上げる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)・[kit-studio](https://github.com/duwenji/yorisoi-platform/blob/main/kit-studio/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
+
+```mermaid
+sequenceDiagram
+  participant WS as P12 WalkService
+  participant Hub as P37 StudioHub
+  participant SF as P38 StudioFeed
+  participant ST as P39 スタジオ
+  participant TD as P15 TalkDecider
+  participant Out as P36 出力
+  participant CP as P40 ClipPlayer
+
+  WS->>Hub: 10-1 startWalk()
+  Hub-->>WS: 10-2 StudioFeed
+  WS-)SF: 10-3 start()（前の散歩で送れなかった反応を送る）
+  SF->>ST: 10-4 POST /v1/studio/reactions
+  loop 位置が変わるたび
+    WS->>SF: 10-5 onLocation(lat, lon)
+    opt 区画が変わった・5 分たった
+      SF->>ST: 10-6 GET /v1/studio/cells（周りの 9 区画）
+      ST-->>SF: 10-7 一言・お知らせ
+    end
+  end
+  WS->>TD: 10-8 decide()
+  TD-->>WS: 10-9 Nothing
+  opt 前の発言から 1 分空いた
+    WS->>SF: 10-10 next()
+    SF-->>WS: 10-11 Reading（近く・上限の中・まだ聞いていない）
+    WS->>Out: 10-12 カード・読み上げ（「一言」「お知らせ」の印つき）
+    opt お知らせに音声がある
+      WS-)CP: 10-13 play(audio)
+    end
+  end
+  Note over WS: 散策の終了（図 9）
+  WS-)SF: 10-14 finish()（appScope）
+  SF->>ST: 10-15 POST /v1/studio/reactions（聞いた・開いた・いいね）
+  WS->>Hub: 10-16 endWalk()
+```
+
+| 番号 | 送り手 → 受け手 | 処理 | コード |
+|---|---|---|---|
+| 10-1 | P12 → P37 | 散策の開始で、散歩 1 回分のフィードを作る。中継がなければ null。 | `WalkService.onStartCommand()`・`StudioHub.startWalk()` |
+| 10-2 | P37 → P12 | `StudioFeed`。画面の操作（いいね・開いた）も同じフィードに積む。 | `StudioHub.feed` |
+| 10-3 | P12 → P38 | 前の散歩の終わりに送れなかった反応を先に送る。 | `StudioFeed.start()` |
+| 10-4 | P38 → P39 | 反応をまとめて送る。送れなければ端末に残す。 | `StudioClient.reactions()`・`StudioMemory` |
+| 10-5 | P12 → P38 | 位置ごとに渡す。失敗してもログだけで散歩は続ける。 | `StudioFeed.onLocation()` |
+| 10-6 | P38 → P39 | 今の区画（geohash6）と周り 8 つを、区画が変わったときか 5 分ごとに取る。聞く設定がどちらもオフなら取らない。中継のトークンを付ける。 | `StudioClient.cells()` |
+| 10-7 | P39 → P38 | 一言とお知らせ。置いた人を表す値は入らない（自分のものは `mine`）。 | `CellList` |
+| 10-8 | P12 → P15 | いつもどおり話すことを決める（図 3）。 | `TalkDecider.decide()` |
+| 10-9 | P15 → P12 | 話すことがない。 | `TalkDecision.Nothing` |
+| 10-10 | P12 → P38 | 前の発言から `STUDIO_GAP_MS`（1 分）空いていれば、1 つ頼む。 | `WalkService.maybeStudio()` |
+| 10-11 | P38 → P12 | 今いる区画（geohash6）の中で期間と時間帯に入っているお知らせ（1 時間に 2 件・同じものは 1 日 1 回）を先に、なければ今の geohash7 と周り 8 つにある一言（自分のものと聞いたものを除く。1 時間に 10 件）。読んだものを「聞いた」に積む。 | `StudioFeed.next()` |
+| 10-12 | P12 → P36 | `Utterance.studio` に入れてカードに出し、出どころを言ってから読む。カードを開くと、いいね・ブロック・通報（`StudioViewModel`）。 | `Reading.spoken`・`ui/StudioViews.kt` |
+| 10-13 | P12 → P40 | 読み上げが終わるのを待って、お知らせの音声を流す。音声は 10-7 のあとに前もって取り、SHA-256 を確かめてキャッシュに置いたもの。 | `ClipPlayer.play()`・`ClipCache` |
+| 10-14 | P12 → P38 | サービスが止まっても送れるよう、`appScope` で終える。 | `StudioFeed.finish()` |
+| 10-15 | P38 → P39 | 聞いた・開いた・いいねをまとめて送る（API-STUDIO ST-5）。 | `StudioClient.reactions()` |
+| 10-16 | P12 → P37 | フィードを外す。 | `StudioHub.endWalk()` |
+
+- 一言を置く（マイク → 利用規約の同意 → 端末の中での聞き取り → 確認 → `POST /v1/studio/notes`）は画面だけで完結し、`WalkService` を通らない（`ui/StudioViewModel.kt`）
