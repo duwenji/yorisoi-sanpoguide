@@ -14,6 +14,8 @@ import io.github.duwenji.yorisoi.kit.studio.StudioException
 import io.github.duwenji.yorisoi.kit.studio.StudioSettings
 import io.github.duwenji.yorisoi.kit.studio.Terms
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,20 +59,31 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
 
     // ---- placing a note ----
 
+    /** Agreeing and listening, until a note is heard; cancelled with the note. */
+    private var noteJob: Job? = null
+
     /** Starts placing a note: the terms first when they are new, then listening. */
-    fun startNote() = viewModelScope.launch {
+    fun startNote() {
+        noteJob?.cancel()
+        noteJob = viewModelScope.launch { termsOrListen() }
+    }
+
+    private suspend fun termsOrListen() {
         try {
             val terms = hub.termsToAccept()
             if (terms != null) _step.value = NoteStep.Terms(terms) else listen()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _step.value = NoteStep.Idle
             tell(failure(e))
         }
     }
 
-    fun acceptTerms(terms: Terms) = viewModelScope.launch {
+    fun acceptTerms(terms: Terms) {
         hub.acceptTerms(terms.version)
-        listen()
+        noteJob?.cancel()
+        noteJob = viewModelScope.launch { listen() }
     }
 
     private suspend fun listen() {
@@ -84,7 +97,9 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
         _step.value = NoteStep.Confirm(NoteRecognizer.fit(text), app.feed.guiding.value?.name)
     }
 
+    /** Stops placing a note; while listening, the recognizer stops too and nothing is sent. */
     fun cancelNote() {
+        noteJob?.cancel()
         _step.value = NoteStep.Idle
     }
 
