@@ -594,6 +594,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td class="pk">station</td><td>チャンネル。組み込みのチャンネルの読み込み、散策者の変更の反映、プロンプトのスロットの値、画面の表示名、AI の費用の目安、アプリが出せる範囲。<code>station/remote</code> は第三者のチャンネル（リストの設定、リスト・パッケージ・素材集の取得と確認と保存、取り下げ・期限・鍵の移し替え、試用チケット）</td><td class="files">Station, BuiltInStations, StationRepository, StationLabels, AiCost, SanpoProfile, remote/ThirdPartyChannels, remote/ChannelSync, remote/ChannelStore, remote/TinkEd25519</td><td><div class="loc"><span class="bar" style="width:45px"></span>1,268</div></td></tr>
           <tr><td class="pk">material</td><td>素材の素材提供者の共通の IF と組み込みの素材提供者、チャンネルの素材、きっかけの判定と素材への変換、基準で選ぶ素材提供者、見せ方の並べ方、AI の根拠、画像の縮小</td><td class="files">Producer, BuiltIns, Narration, ChannelMaterials, Cues（CueFinder・CuePresenter）, ResourceProducer, Selectors, CueLayout, Grounding, MaterialImages</td><td><div class="loc"><span class="bar" style="width:40px"></span>1,123</div></td></tr>
           <tr><td class="pk">report</td><td>問題を知らせるメールの宛先と下書き</td><td class="files">Report</td><td><div class="loc"><span class="bar" style="width:2px"></span>55</div></td></tr>
+          <tr><td class="pk">studio</td><td>スタジオの窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（画面は <code>ui</code> の StudioViews・StudioViewModel）</td><td class="files">StudioHub</td><td><div class="loc"><span class="bar" style="width:4px"></span>102</div></td></tr>
           <tr><td class="pk">(root)</td><td>共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ</td><td class="files">SanpoApp</td><td><div class="loc"><span class="bar" style="width:8px"></span>212</div></td></tr>
         </tbody>
       </table>
@@ -610,6 +611,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td class="pk">kit-geo</td><td>Overpass でのスポット・施設検索、現在地とスポットの共有状態、Wikimedia の写真、徒歩ルート、天気と日の入り、地図（種類の切り替え・ルート・向き・Google の地図タイル）</td><td class="files">OverpassClient, SpotRepository, SpotPhotos, RouteClient, WeatherClient, SpotMap, MapTiles, MapStyle, Heading, GoogleMapTiles</td><td><div class="loc"><span class="bar" style="width:49px"></span>1,366</div></td></tr>
           <tr><td class="pk">kit-companion</td><td>「いま何を話すか」のエンジン: ルールの並びを、アプリのゲートに従って上から評価する</td><td class="files">TalkEngine, TalkRule, TalkGates</td><td><div class="loc"><span class="bar" style="width:2px"></span>42</div></td></tr>
           <tr><td class="pk">kit-mood</td><td>雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方</td><td class="files">Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice</td><td><div class="loc"><span class="bar" style="width:22px"></span>622</div></td></tr>
+          <tr><td class="pk">kit-studio</td><td>スタジオ: API-STUDIO のクライアント、散歩中の取得と読み上げの順番、聞いた・いいねの記録、お知らせの音声、端末の中での聞き取り</td><td class="files">StudioClient, StudioFeed, StudioMemory, StudioSettings, ClipPlayer, NoteRecognizer</td><td><div class="loc"><span class="bar" style="width:30px"></span>845</div></td></tr>
           <tr><td class="pk">:prompts</td><td>SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本</td><td class="files">Prompts, StationPrompts, BuiltInChannels, ReviewSamples</td><td><div class="loc"><span class="bar" style="width:10px"></span>290</div></td></tr>
         </tbody>
       </table>
@@ -653,6 +655,8 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td>AI を呼ぶ回数の上限を変える</td><td><code>yorisoi-platform/kit-llm</code> の <code>AiUsage.kt</code>（数え方）・<code>settings/SettingsRepository.kt</code> の <code>dailyAiLimit</code>（既定値）・<code>ui/SettingsScreen.kt</code>（選択肢）</td></tr>
           <tr><td>使わない返事の条件を変える</td><td><code>yorisoi-platform/kit-llm</code> の <code>OutputCheck.kt</code></td></tr>
           <tr><td>AI の費用の目安を変える</td><td><code>station/AiCost.kt</code>（計算）・<code>ui/ChannelsScreen.kt</code> の <code>CostDialog</code>（表示）</td></tr>
+          <tr><td>スタジオの一言・お知らせを読み上げる条件を変える</td><td><code>walk/WalkService.kt</code> の <code>maybeStudio</code>（間隔は <code>STUDIO_GAP_MS</code>）。取得と 1 時間の上限は <code>yorisoi-platform/kit-studio</code> の <code>StudioFeed.kt</code></td></tr>
+          <tr><td>一言を置く流れ・スタジオの設定画面を変える</td><td><code>ui/StudioViews.kt</code>・<code>ui/StudioViewModel.kt</code>、サーバーとのやり取りは <code>studio/StudioHub.kt</code></td></tr>
           <tr><td>問題を知らせるメールの宛先・文面を変える</td><td><code>report/Report.kt</code>（入口は <code>ui/ReportLink.kt</code>）</td></tr>
         </tbody>
       </table>
