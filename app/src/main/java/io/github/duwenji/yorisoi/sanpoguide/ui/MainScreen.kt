@@ -113,6 +113,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
 /** Something the user should know, and where a tap on it takes them ([onClick] null: nowhere). */
@@ -139,6 +140,8 @@ fun MainScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val liveWalk by viewModel.liveWalk.collectAsStateWithLifecycle()
     val lines by viewModel.companionLines.collectAsStateWithLifecycle()
+    val studio: StudioViewModel = viewModel()
+    NoteFlow(studio)
     val location by viewModel.location.collectAsStateWithLifecycle()
     val spots by viewModel.spots.collectAsStateWithLifecycle()
     val loading by viewModel.loading.collectAsStateWithLifecycle()
@@ -280,6 +283,7 @@ fun MainScreen(
                 ) {
                     Icon(Icons.Filled.MyLocation, contentDescription = "現在地に戻る")
                 }
+                if (walking) NoteMicButton(studio, Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 84.dp))
             }
             Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (walking || lines.isNotEmpty()) {
@@ -290,6 +294,7 @@ fun MainScreen(
                         onOpen = viewModel::openCue,
                         onReplay = viewModel::replay,
                         onDismiss = viewModel::dismissReview.takeIf { !walking },
+                        studioActions = { StudioLineActions(it, studio) },
                         modifier = Modifier.padding(horizontal = 12.dp),
                     )
                 }

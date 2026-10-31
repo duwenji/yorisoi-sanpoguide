@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkCompanion
 import io.github.duwenji.yorisoi.sanpoguide.companion.LiveWalk
 import io.github.duwenji.yorisoi.sanpoguide.companion.Utterance
+import io.github.duwenji.yorisoi.kit.studio.Reading
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import kotlinx.coroutines.delay
@@ -66,6 +67,8 @@ fun CompanionCard(
     onOpen: (CueDetail) -> Unit = {},
     onReplay: (Utterance) -> Unit = {},
     onDismiss: (() -> Unit)? = null,
+    /** What the user can do with a note or placement of the studio read out (platform kit-studio). */
+    studioActions: @Composable (Reading) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -124,6 +127,7 @@ fun CompanionCard(
                         style = MaterialTheme.typography.labelSmall,
                         color = faint,
                     )
+                    line.studio?.let { StudioLabel(it) }
                     if (line.text.isNotBlank()) {
                         Text(
                             line.text,
@@ -151,7 +155,8 @@ fun CompanionCard(
                     }
                     line.detail?.let { detail -> TextButton(onClick = { onOpen(detail) }) { Text("詳しく見る") } }
                     // Opened lines only: a report is written while standing, not in passing.
-                    if (expanded) line.channel?.let { ReportLink(it, line.at to line.text, "この発言を知らせる") }
+                    if (expanded && line.studio == null) line.channel?.let { ReportLink(it, line.at to line.text, "この発言を知らせる") }
+                    if (expanded) line.studio?.let { studioActions(it) }
                 }
             }
             val latest = lines.firstOrNull()

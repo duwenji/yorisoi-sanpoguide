@@ -297,6 +297,15 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 - 同じスポットを続けて話さない: 上の「スポットが近くに複数あるとき」。24 時間より前に訪れたスポットは、今までどおり再訪の一言（前回の話を AI に渡す）になる
 - 記録の画面の「よく通る道」から `FrequentWaysScreen`（言葉は `WayWords.WALK`）を開く。記録の 1 件の「この散歩からよく通る道を作る」は `NewWayFromTrip`。記録をすべて削除すると、保存していない自動の道と消した道の記録も消す（`FrequentWayStore.clearFound`）
 
+### スタジオ
+
+platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md) の SanpoGuide 側。部品は kit-studio（[API-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-STUDIO.md)）。運営の AI の中継が使えるときだけ動く（中継のトークンを使う）。
+
+- 散歩を始めると `StudioHub.startWalk()` が `StudioFeed` を作り、位置ごとに周辺の区画の一言・掲載を取る（5 分おき）。散歩を終えると、聞いた・開いた・いいねをまとめて送る
+- 話すことがないとき（`TalkDecision.Nothing`）に、前の発言から 1 分空いていれば、`WalkService.maybeStudio` が一言・掲載を 1 つ読み上げる。掲載に音声があれば `ClipPlayer` で続けて流す。発言カードに「一言」「掲載」と出し、開くと、いいね・ブロック・通報・音声をもう一度
+- 散歩中は地図の右下のマイクから一言を置く（`NoteFlow`）。初めては利用規約への同意、聞き取りは端末の中だけ（`NoteRecognizer`）、送る前に文を確かめる
+- 設定の「スタジオ」（`StudioSettingsPart`）で、一言・掲載を聞くかどうか、自分の一言（聞いた数のおおよそ・消す）、ブロックの一覧
+
 ## パッケージ一覧
 
 アプリのパスは `app/src/main/java/io/github/duwenji/yorisoi/sanpoguide/` からの相対。行数は空行・コメントを含む。
@@ -315,6 +324,7 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
 | `diagnostics` | 開発者モードでの散歩の詳しい記録（位置・判定・発言・AI・Overpass・天気）と書き出し（記録そのものは `yorisoi-platform/kit-companion` の `SessionRecorder`）（[walk-diagnostics.md](walk-diagnostics.md)） | WalkExport, DiagnosticFields, TimingInterceptor | 217 |
 | `report`    | 問題を知らせるメールを開く（宛先と下書きは `yorisoi-platform/kit-channel`）                                                                                                                                                                                                                                                                                        | AppReport |    22 |
+| `studio`    | スタジオ（場所に残る一言と提供者の掲載）の窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（部品は `yorisoi-platform/kit-studio`） |
 | (root)        | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ                                                                                                                                                                                                                                                                | SanpoApp                                                                                                                                                                 |   212 |
 
 共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
@@ -329,6 +339,7 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | `yorisoi-platform/kit-companion`（JVM） | `…kit.companion`                                      | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する                                                    | TalkEngine, TalkRule, TalkGates                                                                                              |    42 |
 | `yorisoi-platform/kit-channel`（JVM）   | `…kit.channel`                                        | チャンネル: 散策者の変更を重ねた設定値とスロット、チャンネルの一覧と使っているチャンネル、組み込みのチャンネルの読み込み、第三者のチャンネルの素材、第三者のチャンネルの取り込み（`remote`）、素材の計画と素材提供者（`material`）、通報（`report`） | Station, StationRepository, ResourceChannels, ChannelMaterials, remote/ChannelSync, remote/ThirdPartyChannels, material/Producer, material/Cues, material/Grounding, report/Report | 2,140 |
 | `yorisoi-platform/kit-mood`             | `…kit.mood`                                           | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方                                                                                             | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice                                                         |   622 |
+| `yorisoi-platform/kit-studio`           | `…kit.studio`                                         | スタジオ: API-STUDIO のクライアント、散歩中の取得と読み上げの順番、聞いた・いいねの記録、掲載の音声、端末の中での聞き取り |
 | `:prompts`（JVM）                       | `io.github.duwenji.yorisoi.sanpoguide.prompt`          | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本                                                                              | Prompts, StationPrompts, BuiltInChannels, ReviewSamples                                                                      |   290 |
 
 チャンネルの形式（platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIAL-PRODUCER](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
@@ -364,6 +375,8 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 | 使わない返事の条件を変える                                 | `yorisoi-platform/kit-llm` の `OutputCheck.kt`                                                                                                                                                                        |
 | AI の費用の目安を変える                                    | `station/AiCost.kt`（計算）・`ui/ChannelsScreen.kt` の `CostDialog`（表示）                                                                                                                                       |
 | 問題を知らせるメールの宛先・文面を変える                   | `yorisoi-platform/kit-channel` の `report/Report.kt`（メールを開くのは `report/AppReport.kt`、入口は `ui/ReportLink.kt`）                                                                                                                                                                     |
+| スタジオの一言・掲載を読み上げる条件を変える | `walk/WalkService.kt` の `maybeStudio`（間隔は `STUDIO_GAP_MS`）。取得と 1 時間の上限は `yorisoi-platform/kit-studio` の `StudioFeed.kt` |
+| 一言を置く流れ・スタジオの設定画面を変える | `ui/StudioViews.kt`・`ui/StudioViewModel.kt`、サーバーとのやり取りは `studio/StudioHub.kt` |
 
 ## 計画中: 素材の第 2 段以降
 

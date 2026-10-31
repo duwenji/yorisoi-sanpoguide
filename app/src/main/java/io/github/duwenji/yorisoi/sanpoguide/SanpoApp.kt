@@ -70,6 +70,7 @@ import io.github.duwenji.yorisoi.kit.geo.map.WayTalk
 import kotlinx.coroutines.withContext
 import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
+import io.github.duwenji.yorisoi.sanpoguide.studio.StudioHub
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
@@ -113,6 +114,9 @@ class SanpoApp : Application() {
     lateinit var guides: GuideRepository
         private set
     lateinit var speaker: Speaker
+        private set
+    /** Notes and placements near the walk (platform REQ-STUDIO, kit-studio). */
+    lateinit var studio: StudioHub
         private set
     lateinit var history: HistoryStore
         private set
@@ -211,6 +215,7 @@ class SanpoApp : Application() {
             )
         }
         speaker = Speaker(this)
+        studio = StudioHub(this, relay, BuildConfig.STUDIO_URL, speaker.speaking)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
         ways = FrequentWayStore(File(filesDir, "ways.json"), WAY_FINDER) { Log.w("FrequentWayStore", "Could not keep the ways", it) }

@@ -45,6 +45,8 @@ import io.github.duwenji.yorisoi.kit.channel.material.Shown
 import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
+import io.github.duwenji.yorisoi.kit.studio.Reading
+import io.github.duwenji.yorisoi.kit.studio.StudioFeed
 import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
@@ -83,6 +85,8 @@ class WalkService : LifecycleService() {
     private var weatherFetchedAt = 0L
     private var greeted = false
     private var ambient: AmbientPlayer? = null
+    /** The studio's notes and placements near this walk (platform kit-studio); null without the studio. */
+    private var studio: StudioFeed? = null
 
     /** One line at a time; events that arrive while the companion is talking wait for the next tick. */
     private val talking = Mutex()
@@ -128,6 +132,7 @@ class WalkService : LifecycleService() {
             session = s
             if (app.settings.settings.value.developerMode) startDiagnostics(s)
             app.feed.startWalk(s)
+            studio = app.studio.startWalk()?.also { feed -> lifecycleScope.launch { feed.start() } }
             startLocationUpdates()
             startTicker()
             startAmbient()
@@ -142,6 +147,9 @@ class WalkService : LifecycleService() {
         ambient?.release()
         ambient = null
         session?.let(::finishWalk)
+        studio?.let { feed -> app.appScope.launch { feed.finish() } }
+        studio = null
+        app.studio.endWalk()
         session = null
         _walking.value = false
         super.onDestroy()
@@ -264,6 +272,15 @@ class WalkService : LifecycleService() {
                 // `fallback` when kept spots from nearby are shown instead.
                 app.diagnostics.event("spot_search_failed", "error" to e.toString(), "source" to app.spots.source?.name?.lowercase())
             }
+            studio?.let { feed ->
+                try {
+                    feed.onLocation(location.latitude, location.longitude)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Studio fetch failed", e)
+                }
+            }
             maybeTalk()
         }
     }
@@ -338,8 +355,22 @@ class WalkService : LifecycleService() {
                 s.lastMilestoneDistanceM = s.distanceM
                 saveProgress(s)
             }
-            TalkDecision.Nothing -> Unit
+            TalkDecision.Nothing -> maybeStudio(s, now)
         }
+    }
+
+    /**
+     * Between the companion's lines, a note or placement of the studio near the user, if any
+     * (platform REQ-STUDIO D-10, D-21): never right after a line, and a placement's audio after its words.
+     */
+    private suspend fun maybeStudio(s: WalkSession, now: Long) {
+        val feed = studio ?: return
+        if (now - s.lastSpokeAt < STUDIO_GAP_MS) return
+        val reading = feed.next() ?: return
+        app.diagnostics.event("studio", "kind" to if (reading is Reading.OfNote) "note" else "placement")
+        talk { speakLine(Utterance(System.currentTimeMillis(), reading.spoken, studio = reading)) }
+        val audio = (reading as? Reading.OfPlacement)?.audio ?: return
+        lifecycleScope.launch { app.studio.player.play(audio) }
     }
 
     /**
@@ -619,6 +650,8 @@ class WalkService : LifecycleService() {
         // Below walking pace (m/s) the reported heading is noise.
         private const val MIN_HEADING_SPEED = 0.5f
         private const val MIN_SAVED_WALK_MS = 60_000L
+        // The studio waits this long after the companion's last line (kit-studio README 未決事項 3).
+        private const val STUDIO_GAP_MS = 60_000L
         // Measured from the user, not around each spot.
         const val ANNOUNCE_RADIUS_M = TalkDecider.ANNOUNCE_RADIUS_M
 

@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.7.0"
+        versionCode = 13
+        versionName = "1.8.0"
 
         // The operator's AI (platform API-AI-RELAY): every build uses the development relay until
         // production's is deployed.
@@ -32,6 +32,9 @@ android {
         // The operator's spot tiles (platform API-SPOT-TILES ST-1): every build uses the development
         // ones until production's are deployed.
         buildConfigField("String", "SPOT_TILES_URL", "\"https://ds73vvo5wv45e.cloudfront.net/\"")
+        // The studio (platform API-STUDIO ST-1): every build uses the development studio until
+        // production's is deployed.
+        buildConfigField("String", "STUDIO_URL", "\"https://x568icz881.execute-api.ap-northeast-1.amazonaws.com/api/\"")
     }
 
     signingConfigs {
@@ -106,6 +109,8 @@ dependencies {
     implementation(libs.yorisoi.kit.ui)
     implementation(libs.yorisoi.kit.companion)
     implementation(libs.yorisoi.kit.channel)
+    // The studio: notes and placements near the walk (platform REQ-STUDIO, kit-studio).
+    implementation(libs.yorisoi.kit.studio)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // and later API-001.
     implementation(libs.tink.android)
