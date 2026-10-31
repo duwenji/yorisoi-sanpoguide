@@ -18,7 +18,7 @@ tink = "1.23.0"
 json = "20240303"
 junit = "4.13.2"
 # The yorisoi platform (github.com/duwenji/yorisoi-platform): one version for all modules.
-yorisoi = "2.25.0"
+yorisoi = "2.26.0"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -47,6 +47,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 yorisoi-core-format = { module = "io.github.duwenji.yorisoi:core-format", version.ref = "yorisoi" }
 yorisoi-core-prompt = { module = "io.github.duwenji.yorisoi:core-prompt", version.ref = "yorisoi" }
 yorisoi-kit-voice = { module = "io.github.duwenji.yorisoi:kit-voice", version.ref = "yorisoi" }
+yorisoi-kit-studio = { module = "io.github.duwenji.yorisoi:kit-studio", version.ref = "yorisoi" }
 yorisoi-kit-llm = { module = "io.github.duwenji.yorisoi:kit-llm", version.ref = "yorisoi" }
 yorisoi-kit-geo = { module = "io.github.duwenji.yorisoi:kit-geo", version.ref = "yorisoi" }
 yorisoi-kit-mood = { module = "io.github.duwenji.yorisoi:kit-mood", version.ref = "yorisoi" }

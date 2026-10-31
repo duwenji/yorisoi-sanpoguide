@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.duwenji.yorisoi.sanpoguide.BuildConfig
 import io.github.duwenji.yorisoi.kit.ui.ScreenBar
 import io.github.duwenji.yorisoi.kit.llm.Provider
@@ -137,6 +138,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             ScreenAndSoundSection(draft, station, viewModel)
             MapSection(draft, viewModel)
             DeviceDataSection(draft, viewModel)
+            Section("スタジオ") { StudioSettingsPart(viewModel()) }
             AboutSection(viewModel)
         }
     }
