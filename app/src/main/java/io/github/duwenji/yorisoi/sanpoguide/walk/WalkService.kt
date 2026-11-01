@@ -124,11 +124,11 @@ class WalkService : LifecycleService() {
                 this, NOTIFICATION_ID, walkingNotification("いってらっしゃい。近くに来たらお知らせします"),
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
             )
-            // Lists are fetched when a walk starts if a day has passed, never during it (API-002 取得の時期).
+            // Lists are fetched when a walk starts if a day has passed, never during it (API-CHANNEL-LIST 取得の時期).
             app.channels.refreshIfDue()
             val s = WalkSession(plan = plan)
             s.startStation(app.stations.current.value.key)
-            // A channel on trial says so first (API-002 試用チケット).
+            // A channel on trial says so first (API-CHANNEL-LIST 試用チケット).
             app.stations.current.value.takeIf { it.source?.trial == true }?.let { s.pendingGreeting = trialNotice(it) + it.manifest.greeting }
             session = s
             if (app.settings.settings.value.developerMode) startDiagnostics(s)
@@ -243,7 +243,7 @@ class WalkService : LifecycleService() {
                 refreshWeather(location)
                 talk {
                     if (app.stations.current.value.talksOn(TalkEventKind.START)) speakLine(app.narration.line(TalkEvent.Start, s, weather))
-                    // The channel's own cues for the start come after the greeting (API-003 `event: start`).
+                    // The channel's own cues for the start come after the greeting (API-CHANNEL-PACKAGE `event: start`).
                     eventCues(s, CueEvent.START, EventSubject(TalkEvent.Start))
                 }
             }
@@ -315,7 +315,7 @@ class WalkService : LifecycleService() {
             is TalkDecision.Greeting -> talk {
                 s.pendingGreeting = null
                 speakLine(decision.line)
-                // A channel chosen mid-walk shows its cues for being chosen after its greeting (API-003 `event: select`).
+                // A channel chosen mid-walk shows its cues for being chosen after its greeting (API-CHANNEL-PACKAGE `event: select`).
                 if (decision.select) {
                     s.pendingSelect = false
                     eventCues(s, CueEvent.SELECT, Subject.None)
@@ -473,7 +473,7 @@ class WalkService : LifecycleService() {
 
     /**
      * Shows what a cue came to, in its order ([CueShow]); its spoken lines go in the queue the
-     * companion speaks from (API-003 F-13). The cue counts as shown even when it came to
+     * companion speaks from (API-CHANNEL-PACKAGE F-13). The cue counts as shown even when it came to
      * nothing, so it isn't tried again on every tick.
      */
     private fun show(s: WalkSession, fire: CueFire, shown: List<Shown>, spotName: String?) {
@@ -582,7 +582,7 @@ class WalkService : LifecycleService() {
                 app.diagnostics.event("said", "text" to text, "credit" to creditLine(line), "summary" to true)
                 app.speaker.speak(text)
             }
-            // The channel's own cues for the end come after the summary (API-003 `event: finish`).
+            // The channel's own cues for the end come after the summary (API-CHANNEL-PACKAGE `event: finish`).
             app.showEventCues(station, CueEvent.FINISH, EventSubject(TalkEvent.Finish(record)), s.shownCues, walkContext(station, weather = lastWeather))
             app.diagnostics.finish(s.id)
         }

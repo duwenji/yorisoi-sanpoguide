@@ -56,7 +56,7 @@ class ReviewSamplesTest {
                 assertFalse("${s.id} has a leftover tag:\n$text", "{{" in text || "}}" in text)
                 assertFalse("${s.id} has a blank run:\n$text", "\n\n\n" in text)
             }
-            // The shared rules close every system prompt, whatever the channel (API-003).
+            // The shared rules close every system prompt, whatever the channel (API-CHANNEL-PACKAGE).
             assertTrue(s.system.endsWith(prompts.render("shared/guard")))
         }
     }

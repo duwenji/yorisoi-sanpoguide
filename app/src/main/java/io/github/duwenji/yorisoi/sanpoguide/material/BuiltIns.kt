@@ -22,13 +22,13 @@ import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
 import io.github.duwenji.yorisoi.kit.mood.SoundscapeChoice
 import kotlin.coroutines.cancellation.CancellationException
 
-// The producers built into the app (API-004「組み込みの素材提供者」). Each wraps the code that made
+// The producers built into the app (API-MATERIALS「組み込みの素材提供者」). Each wraps the code that made
 // this material before producers existed, so what the user sees and hears stays the same.
 
 private fun ready(type: MaterialType, content: Content, producer: String, credit: Credit? = null, basedOn: List<String> = emptyList()) =
     MaterialResult.Ready(Material(type, content, producer, credit, basedOn = basedOn))
 
-/** The AI names itself as the author of what it writes (API-004 P-3). */
+/** The AI names itself as the author of what it writes (API-MATERIALS P-3). */
 /** Who wrote it: the operator's AI, or the AI service and model of the user's own key. */
 private fun aiCredit(s: GuideSettings) =
     Credit(author = if (s.aiRoute == AiRoute.OPERATOR) GuideSettings.OPERATOR_AI_NAME else "AI（${s.model()}）", license = "generated")

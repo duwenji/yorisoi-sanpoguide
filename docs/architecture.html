@@ -123,7 +123,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <text class="lbl left" x="228" y="80">申請</text>
         <rect class="bx-acc" x="270" y="76" width="220" height="100" rx="10"/><text class="t" x="380" y="104">運営</text><text class="s" x="380" y="126">審査・身元の確認・取り下げ</text><text class="s" x="380" y="144">リストに署名して公開</text><text class="sm" x="380" y="162">yorisoi-console</text>
         <line class="ar" x1="490" y1="110" x2="558" y2="66" marker-end="url(#a0)"/>
-        <text class="lbl left" x="500" y="78">API-002</text>
+        <text class="lbl" x="534" y="64" style="text-anchor:end">API-CHANNEL-LIST</text>
         <rect class="band" x="540" y="12" width="300" height="236" rx="12"/>
         <text class="bl" x="690" y="30">アプリ</text>
         <rect class="bx" x="560" y="40" width="260" height="50" rx="8"/><text class="tm" x="690" y="61">ChannelSync</text><text class="s" x="690" y="79">署名・ハッシュ・形式を確かめる</text>
@@ -495,7 +495,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <!-- check -->
         <line class="ar" x1="220" y1="48" x2="258" y2="48" marker-end="url(#a6)"/>
         <polyline class="ar" points="220,128 240,128 240,64 258,64" marker-end="url(#a6)"/>
-        <rect class="bx" x="260" y="20" width="200" height="72" rx="8"/><text class="tm" x="360" y="42">BuiltInStations</text><text class="sm" x="360" y="62">StationValidator</text><text class="s" x="360" y="80">core-format · API-003</text>
+        <rect class="bx" x="260" y="20" width="200" height="72" rx="8"/><text class="tm" x="360" y="42">BuiltInStations</text><text class="sm" x="360" y="62">StationValidator</text><text class="s" x="360" y="80">API-CHANNEL-PACKAGE</text>
         <!-- repository -->
         <line class="ar" x1="360" y1="92" x2="360" y2="128" marker-end="url(#a6)"/>
         <polyline class="ar" points="220,228 300,228 300,186" marker-end="url(#a6)"/>
@@ -521,7 +521,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <text class="lbl left" x="430" y="270">保存（変えた項目だけ）</text>
       </svg>
       </div>
-      <figcaption>組み込みのチャンネル（標準・歴史探訪・自然観察・グルメの旅・ショッピング・しずかに）は起動時に読み込み、第三者のパッケージと同じ確認を通します。第三者のチャンネルは、散策者が足したリスト（API-002）から取り込みます。<code>ChannelSync</code> がリストの署名（要約）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、<code>StationValidator</code> を通したものだけを端末に保存します。リストは 24 時間ごとに取り直し、取り下げられたチャンネルは消して標準に戻します。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せます。第三者のチャンネルを使う前に、AI の費用の目安（話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限）を出し（<code>station/AiCost</code>）、散策者が「使う」を選ぶまで、そのチャンネルで AI は呼びません。<code>current</code> は、選んでいるチャンネルに散策者の変更（初期値から変えた項目だけ）を重ねたもので、変えられるのは組み込みのチャンネルだけです。プロンプトの枠にはチャンネルの文章が変数として入り、最後に共通の指示 <code>shared/guard</code> が必ず付きます。散歩中に切り替えると、<code>WalkService</code> が記録に区間を足し、一言を予約します。天気の急変・日の入り・施設の案内は、チャンネルに項目がなく止められません。</figcaption>
+      <figcaption>組み込みのチャンネル（標準・歴史探訪・自然観察・グルメの旅・ショッピング・しずかに）は起動時に読み込み、第三者のパッケージと同じ確認を通します。第三者のチャンネルは、散策者が足したリスト（API-CHANNEL-LIST）から取り込みます。<code>ChannelSync</code> がリストの署名（要約）・パッケージの SHA-256・チャンネル提供者の署名を確かめ、<code>StationValidator</code> を通したものだけを端末に保存します。リストは 24 時間ごとに取り直し、取り下げられたチャンネルは消して標準に戻します。開発者モードでは、試用チケットで審査前のチャンネルを 7 日まで試せます。第三者のチャンネルを使う前に、AI の費用の目安（話しかけの頻度・解説の長さ・1 時間の散歩で AI を呼ぶ最大の回数・標準より多いか・1 日の上限）を出し（<code>station/AiCost</code>）、散策者が「使う」を選ぶまで、そのチャンネルで AI は呼びません。<code>current</code> は、選んでいるチャンネルに散策者の変更（初期値から変えた項目だけ）を重ねたもので、変えられるのは組み込みのチャンネルだけです。プロンプトの枠にはチャンネルの文章が変数として入り、最後に共通の指示 <code>shared/guard</code> が必ず付きます。散歩中に切り替えると、<code>WalkService</code> が記録に区間を足し、一言を予約します。天気の急変・日の入り・施設の案内は、チャンネルに項目がなく止められません。</figcaption>
     </figure>
   </section>
 
@@ -616,7 +616,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         </tbody>
       </table>
     </div>
-    <p>チャンネルの形式（API-003）の読み込みと確認、リストの文書（API-002）の確認、素材集の形式と参照の解決・地域の計算（API-004）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない JVM のモジュールにあります。形式・リスト・素材集の確認は yorisoi-platform の <code>core-format</code>、<code>PromptTemplates</code> は <code>core-prompt</code>、プロンプトのファイル・<code>StationPrompts</code>・組み込みのチャンネル・審査の見本は <code>:prompts</code> です。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>prompts/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
+    <p>チャンネルの形式（API-CHANNEL-PACKAGE）の読み込みと確認、リストの文書（API-CHANNEL-LIST）の確認、素材集の形式と参照の解決・地域の計算（API-MATERIALS）、プロンプトのファイルと <code>PromptTemplates</code>・<code>StationPrompts</code>、組み込みのチャンネルは、Android に依存しない JVM のモジュールにあります。形式・リスト・素材集の確認は yorisoi-platform の <code>core-format</code>、<code>PromptTemplates</code> は <code>core-prompt</code>、プロンプトのファイル・<code>StationPrompts</code>・組み込みのチャンネル・審査の見本は <code>:prompts</code> です。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うためです（GitHub Packages に公開）。ファイルは <code>prompts/src/main/resources/sanpoguide/</code> にあり、アプリはクラスパスから読みます。</p>
   </section>
 
   <!-- where to change -->
@@ -631,8 +631,8 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
         <tbody>
           <tr><td>話しかけ・解説の文面を変える</td><td>枠は <code>prompts/src/main/resources/sanpoguide/prompts/</code>（一覧は <code>docs/prompts.md</code>）、役割や話題はチャンネルの <code>sanpoguide/channels/{id}/prompts/</code></td></tr>
           <tr><td>話す条件や優先順位を変える</td><td><code>companion/TalkDecider.kt</code> の <code>rules</code>（ルールの並びとゲート。場面のテストは <code>TalkDeciderTest</code>）。決まったことの実行は <code>walk/WalkService.kt</code> の <code>maybeTalk()</code>。スポットの選び方は <code>companion/SpotChooser.kt</code></td></tr>
-          <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>prompts/src/main/resources/sanpoguide/channels/{id}/</code>（形式は API-003）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
-          <tr><td>チャンネルの形式の確認を変える</td><td><code>yorisoi-platform/core-format/</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-003 も</td></tr>
+          <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>prompts/src/main/resources/sanpoguide/channels/{id}/</code>（形式は API-CHANNEL-PACKAGE）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
+          <tr><td>チャンネルの形式の確認を変える</td><td><code>yorisoi-platform/core-format/</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-CHANNEL-PACKAGE も</td></tr>
           <tr><td>チャンネルの設定画面の項目を変える</td><td><code>ui/SettingsScreen.kt</code> の <code>StationSettings</code>・<code>ui/SettingsViewModel.kt</code>、保存は <code>settings/SettingsRepository.kt</code></td></tr>
           <tr><td>距離・時間・気温などの既定値を変える</td><td><code>settings/Threshold.kt</code></td></tr>
           <tr><td>話しかけの頻度の段階を変える</td><td><code>settings/TalkLevel.kt</code></td></tr>

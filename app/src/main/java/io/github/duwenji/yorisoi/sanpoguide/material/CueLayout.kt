@@ -8,7 +8,7 @@ import io.github.duwenji.yorisoi.core.format.PresentAs
 
 /** One thing a cue shows by itself, in the cue's order. */
 sealed interface CueStep {
-    /** Said in the queue the companion speaks from (API-003 F-13), and kept in the feed. */
+    /** Said in the queue the companion speaks from (API-CHANNEL-PACKAGE F-13), and kept in the feed. */
     data class Speak(val material: Material) : CueStep
 
     /** A line in the feed: a text, or an image. Shown only; it doesn't turn the screen on. */
@@ -20,7 +20,7 @@ sealed interface CueStep {
 
 /**
  * What a cue holds for the user to open by tapping its card or its notification: the sheet's
- * material and an image for the full screen. Neither ever opens by itself (API-003「見せ方」).
+ * material and an image for the full screen. Neither ever opens by itself (API-CHANNEL-PACKAGE「見せ方」).
  */
 data class CueDetail(val id: String, val sheet: List<Material>, val fullscreen: Material?)
 
@@ -52,7 +52,7 @@ data class CueLayout(val steps: List<CueStep>, val detail: CueDetail?) {
     }
 }
 
-/** How walking and standing are told apart for what may be shown (API-003「見せ方」). */
+/** How walking and standing are told apart for what may be shown (API-CHANNEL-PACKAGE「見せ方」). */
 object Pace {
     /** At or above this speed (m/s) the user is walking. */
     const val WALKING_MPS = 0.5f
@@ -66,9 +66,9 @@ object Pace {
 }
 
 /**
- * The line shown with a material (API-003 F-11): an image's author and license, for material
+ * The line shown with a material (API-CHANNEL-PACKAGE F-11): an image's author and license, for material
  * from a collection whose it is, and for the AI's text whose texts it was written from
- * (API-004 `basedOn`). Spoken lines never read it.
+ * (API-MATERIALS `basedOn`). Spoken lines never read it.
  */
 fun creditLine(m: Material): String? {
     val c = m.credit ?: return null
@@ -90,7 +90,7 @@ private fun kindLabel(type: MaterialType) = when (type) {
     else -> "画像"
 }
 
-/** API-003 `credit.license`: an SPDX id is shown as it is. */
+/** API-CHANNEL-PACKAGE `credit.license`: an SPDX id is shown as it is. */
 private fun licenseLabel(license: String): String? = when (license) {
     "PD" -> "パブリックドメイン"
     "permission" -> "許諾を得て掲載"

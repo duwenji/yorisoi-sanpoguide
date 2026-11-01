@@ -17,7 +17,7 @@ import io.github.duwenji.yorisoi.kit.channel.Station
 
 /**
  * What the app asks producers for today, written as candidates in order: the expansion of a
- * channel's shorthand (API-004「省略形の展開」). A channel's own cues (API-003 `source`) will be
+ * channel's shorthand (API-MATERIALS「省略形の展開」). A channel's own cues (API-CHANNEL-PACKAGE `source`) will be
  * asked the same way.
  */
 object Shorthand {

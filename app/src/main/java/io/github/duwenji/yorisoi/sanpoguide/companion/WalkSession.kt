@@ -20,7 +20,7 @@ class WalkSession(
     private val route = mutableListOf<LatLon>()
     val visits = mutableListOf<SpotVisit>()
 
-    /** A channel's cues shown on this walk, by key (API-003 `repeat: oncePerWalk`). */
+    /** A channel's cues shown on this walk, by key (API-CHANNEL-PACKAGE `repeat: oncePerWalk`). */
     val shownCues = mutableSetOf<String>()
 
     /** Spots already talked about during this walk; each is mentioned once per walk. */

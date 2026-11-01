@@ -8,7 +8,7 @@ import io.github.duwenji.yorisoi.core.format.StationPackage
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
 
 /**
- * How a channel's slots go into the app's prompts (API-003 "組み立て方"). The app and the
+ * How a channel's slots go into the app's prompts (API-CHANNEL-PACKAGE "組み立て方"). The app and the
  * channel management system's review tools both build prompts through here, so a reviewer sees
  * what the app would send.
  */

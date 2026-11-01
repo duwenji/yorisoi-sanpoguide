@@ -76,7 +76,7 @@ sealed interface GuideState {
     data object NotAsked : GuideState
     data object Loading : GuideState
     /**
-     * [credit]: who wrote it, and whose texts the AI wrote it from when it used any (API-004 `basedOn`).
+     * [credit]: who wrote it, and whose texts the AI wrote it from when it used any (API-MATERIALS `basedOn`).
      * [byAi]: the AI wrote it, so the user is told it may be wrong (platform ADR-004 H-15).
      */
     data class Ready(val text: String, val credit: String? = null, val byAi: Boolean = false) : GuideState
@@ -129,7 +129,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun closeCue() = app.feed.close()
 
     /**
-     * Whether the user is walking now: the full screen isn't shown then (API-003「見せ方」).
+     * Whether the user is walking now: the full screen isn't shown then (API-CHANNEL-PACKAGE「見せ方」).
      * Outside a walk the location is looked up only once, so while this is watched (a cue's
      * sheet or full screen is open) it asks for its own updates.
      */

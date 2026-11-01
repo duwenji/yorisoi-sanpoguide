@@ -176,7 +176,7 @@ class SanpoApp : Application() {
         )
         prompts = Prompts.fromResources()
         val developerMode = settings.settings.map { it.developerMode }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.developerMode)
-        // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-004 P-6).
+        // Only the coarse region (3-letter geohashes, about 150km) leaves the location (API-MATERIALS P-6).
         val connectivity = getSystemService(ConnectivityManager::class.java)
         channels = ThirdPartyChannels(
             dir = File(filesDir, "channels"),
@@ -251,7 +251,7 @@ class SanpoApp : Application() {
         cues = CuePresenter(producers, ChannelSync.MEDIA_STAGE, log = { message, e -> Log.w("CuePresenter", message, e) })
         cueShow = CueShow(this, feed, speaker)
         appScope.launch {
-            // A channel the user chooses outside a walk shows its cues for being chosen (API-003
+            // A channel the user chooses outside a walk shows its cues for being chosen (API-CHANNEL-PACKAGE
             // `event: select`); mid-walk, the walk shows them after the channel's greeting.
             settings.settings.map { it.stationId }.distinctUntilChanged().drop(1).collect { id ->
                 if (WalkService.walking.value) return@collect
@@ -283,7 +283,7 @@ class SanpoApp : Application() {
     }
 
     /**
-     * Shows the cues of [station] for [event], each after the other (API-003 `event`), outside
+     * Shows the cues of [station] for [event], each after the other (API-CHANNEL-PACKAGE `event`), outside
      * the walk's own speech: at the end of a walk, or when a channel is chosen outside one.
      */
     suspend fun showEventCues(station: Station, event: CueEvent, subject: Subject, shownThisWalk: MutableSet<String>, context: MaterialContext) {

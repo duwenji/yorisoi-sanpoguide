@@ -27,7 +27,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 /** A channel just taken onto the device, and what it asks of the AI. */
 data class PendingUse(val providerId: String, val channelId: String, val cost: AiCost)
 
-/** The providers the user added and the channels they deliver (API-002 設定画面のリスト). */
+/** The providers the user added and the channels they deliver (API-CHANNEL-LIST 設定画面のリスト). */
 class ChannelsViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as SanpoApp
     private val channels = app.channels

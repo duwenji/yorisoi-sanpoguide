@@ -599,7 +599,7 @@ private fun DeviceDataSection(draft: GuideSettings, viewModel: SettingsViewModel
 
 /**
  * The sources and the version; tapping the version seven times turns developer mode on (as Android's
- * own), for publishers trying their channel from a test ticket before review (API-002 試用チケット).
+ * own), for publishers trying their channel from a test ticket before review (API-CHANNEL-LIST 試用チケット).
  */
 @Composable
 private fun AboutSection(viewModel: SettingsViewModel) {

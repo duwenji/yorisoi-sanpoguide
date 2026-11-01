@@ -6,9 +6,9 @@ import io.github.duwenji.yorisoi.core.format.AppProfile
 import io.github.duwenji.yorisoi.core.format.Feature
 
 /**
- * SanpoGuide as the ecosystem sees it (ADR-003 E-6 ①, API-003 G-4): a walking companion that has
+ * SanpoGuide as the ecosystem sees it (ADR-003 E-6 ①, API-CHANNEL-PACKAGE G-4): a walking companion that has
  * every slot, trigger and presentation except recorded sound, which comes with app stage 2
- * (API-003 M-1; ChannelSync.MEDIA_STAGE).
+ * (API-CHANNEL-PACKAGE M-1; ChannelSync.MEDIA_STAGE).
  */
 object SanpoProfile {
     val FEATURES: Set<Feature> = Feature.entries.toSet() - Feature.PRESENT_PLAY - Feature.PRESENT_AMBIENT
