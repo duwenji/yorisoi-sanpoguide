@@ -101,7 +101,7 @@ node tools/play.mjs edit --version-code 5 --track alpha                  # 上�
 node tools/play.mjs edit --track SanpoGuide-CT --discard-drafts          # トラックの下書きを捨てる
 node tools/play.mjs edit --track alpha --halt                            # 配布中のリリースを停止する
 node tools/play.mjs edit --listing --contact --screenshots               # ストアの掲載情報を文書と store/ にそろえる
-node tools/play.mjs data-safety docs/play-data-safety.csv
+node tools/play.mjs data-safety docs/operations/play-data-safety.csv
 ```
 
 - `--version-code` は、Play に上げ済みの版（同じ versionCode の AAB は二度上げられない）を別のトラックに出す。内部テストで確かめた版をクローズドテスト・本番に出すときに使う。`--notes` がなければ、その版がほかのトラックで持つリリースノートを写す

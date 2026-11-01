@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 承認済み。組み込みのチャンネル、第三者のチャンネル、素材の第 1 段（テキスト・画像）は実装済み。素材の第 2 段・第 3 段は未着手 |
-| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md) |
+| 関連 | [TODO.md「チャンネル」](../TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md) |
 
 チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-CHANNEL-PACKAGE「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-CHANNEL-PACKAGE、第三者のチャンネルの取得は API-CHANNEL-LIST で決めてある。
 

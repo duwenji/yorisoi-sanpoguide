@@ -6,7 +6,7 @@
     python tools/analyze_walks.py export.json --walk 1760770000000
 
 Only the standard library. Walks without a detailed record (taken outside developer mode) show
-their distance and time only. The format is described in docs/walk-diagnostics.md.
+their distance and time only. The format is described in docs/design/walk-diagnostics.md.
 """
 
 import argparse

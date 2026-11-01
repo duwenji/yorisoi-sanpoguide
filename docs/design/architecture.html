@@ -480,7 +480,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
     <div class="sec-head">
       <div class="eyebrow">図 6 · チャンネル</div>
       <h2>選んだチャンネルが、解説・話しかけ・話す判断を変える</h2>
-      <p>選んだチャンネルが、アプリの中でどこに効くかを追います（考え方は冒頭の「チャンネルと関係者」、設計は <code>docs/channels.md</code>、形式は <code>yorisoi-platform/docs/channel-package-format.md</code>）。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまりです。</p>
+      <p>選んだチャンネルが、アプリの中でどこに効くかを追います（考え方は冒頭の「チャンネルと関係者」、設計は <code>docs/design/channels.md</code>、形式は <code>yorisoi-platform/docs/channel-package-format.md</code>）。チャンネルの中身は、語り手・話題・話す場面・頻度・解説の長さ・優先する話題・トーン・背景音のひとまとまりです。</p>
     </div>
     <figure>
       <div class="scroll">
@@ -629,7 +629,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
       <table>
         <thead><tr><th>やりたいこと</th><th>最初に開くファイル</th></tr></thead>
         <tbody>
-          <tr><td>話しかけ・解説の文面を変える</td><td>枠は <code>prompts/src/main/resources/sanpoguide/prompts/</code>（一覧は <code>docs/prompts.md</code>）、役割や話題はチャンネルの <code>sanpoguide/channels/{id}/prompts/</code></td></tr>
+          <tr><td>話しかけ・解説の文面を変える</td><td>枠は <code>prompts/src/main/resources/sanpoguide/prompts/</code>（一覧は <code>docs/design/prompts.md</code>）、役割や話題はチャンネルの <code>sanpoguide/channels/{id}/prompts/</code></td></tr>
           <tr><td>話す条件や優先順位を変える</td><td><code>companion/TalkDecider.kt</code> の <code>rules</code>（ルールの並びとゲート。場面のテストは <code>TalkDeciderTest</code>）。決まったことの実行は <code>walk/WalkService.kt</code> の <code>maybeTalk()</code>。スポットの選び方は <code>companion/SpotChooser.kt</code></td></tr>
           <tr><td>組み込みのチャンネルを追加・変更する</td><td><code>prompts/src/main/resources/sanpoguide/channels/{id}/</code>（形式は API-CHANNEL-PACKAGE）と、<code>BuiltInChannels.kt</code> の <code>IDS</code></td></tr>
           <tr><td>チャンネルの形式の確認を変える</td><td><code>yorisoi-platform/core-format/</code>（<code>StationValidator</code>）。形式そのものを変えるときは API-CHANNEL-PACKAGE も</td></tr>
@@ -665,12 +665,12 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 
   <div class="plan">
     <h3>計画中：素材の第 2 段以降</h3>
-    <p>第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）は実装済みです。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/channels.md</code>「素材・きっかけ・見せ方」）。審査は <code>yorisoi-platform/docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
+    <p>第三者のチャンネルの取り込み（図 6）、素材の第 1 段（文字・画像。図 7）は実装済みです。素材の第 2 段（音声）・第 3 段（映像）はまだ実装していません（<code>docs/design/channels.md</code>「素材・きっかけ・見せ方」）。審査は <code>yorisoi-platform/docs/channel-review-policy.md</code> に従い、アプリとは別のチャンネル管理システムで行います。</p>
   </div>
 
   <div class="plan">
     <h3>計画中：位置に紐づく秘密メッセージ</h3>
-    <p>アプリの外にメッセージサーバーを置く予定です。API の契約（<code>yorisoi-platform/docs/secret-messages-api.md</code>）と OpenAPI（<code>yorisoi-platform/docs/api/sanpo-messages.openapi.yaml</code>）はできていますが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていません。進み具合は <code>docs/TODO.md</code> にあります。</p>
+    <p>アプリの外にメッセージサーバーを置く予定です。API の契約（<code>yorisoi-platform/docs/secret-messages-api.md</code>）と OpenAPI（<code>yorisoi-platform/docs/contracts/api/sanpo-messages.openapi.yaml</code>）はできていますが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていません。進み具合は <code>docs/TODO.md</code> にあります。</p>
   </div>
 </main>
 </body>

@@ -1,6 +1,6 @@
 # アプリの公開と更新
 
-散策ガイドを Google Play に公開し、版を上げて出すときの手順。運営がアプリの側で受け持つほかの運用（通報の受け方、組み込みのチャンネルの確認、障害のときの判断など）は、[SanpoGuide 運営の手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/operator.md)を参照する。
+散策ガイドを Google Play に公開し、版を上げて出すときの手順。運営がアプリの側で受け持つほかの運用（通報の受け方、組み込みのチャンネルの確認、障害のときの判断など）は、[SanpoGuide 運営の手引き](https://github.com/duwenji/yorisoi-sanpoguide/blob/main/docs/manual/operator.md)を参照する。
 
 ## Google Play の文書
 
@@ -9,8 +9,8 @@
 | 本書 | 版を上げて AAB を作り、トラックに出す流れ。テスターへの案内と、不具合の版を出したとき |
 | [play-console.md](play-console.md) | Play Console のどこに何を入れるか、入れる答え、審査への出し方 |
 | [play-api.md](play-api.md) | `tools/play.mjs` で API から出すしくみ・準備・使い方 |
-| [privacy-policy.md](privacy-policy.md) | プライバシーポリシー。送る情報を変えたら、データ セーフティと合わせて直す |
-| [TODO「Google Play での公開」](TODO.md#google-play-での公開) | 公開に残っている作業 |
+| [privacy-policy.md](../policies/privacy-policy.md) | プライバシーポリシー。送る情報を変えたら、データ セーフティと合わせて直す |
+| [TODO「Google Play での公開」](../TODO.md#google-play-での公開) | 公開に残っている作業 |
 
 ## 版を出すとき
 

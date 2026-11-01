@@ -309,7 +309,7 @@ private fun TestResult(test: TestState) {
     }
 }
 
-/** The channel in use and, for a built-in one, the user's changes to it (docs/channels.md「散策者のカスタマイズ」). */
+/** The channel in use and, for a built-in one, the user's changes to it (docs/design/channels.md「散策者のカスタマイズ」). */
 @Composable
 private fun ChannelSection(station: Station, viewModel: SettingsViewModel, onOpenChannels: () -> Unit) {
     val stations by viewModel.stations.collectAsStateWithLifecycle()

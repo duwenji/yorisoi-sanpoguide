@@ -4,7 +4,7 @@ import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
 
 /**
- * The app's prompt files, kept as resources under `sanpoguide/prompts/` (see docs/prompts.md).
+ * The app's prompt files, kept as resources under `sanpoguide/prompts/` (see docs/design/prompts.md).
  * They live in this prompt pack (`:prompts`, plain JVM) so the channel
  * management system renders the very prompts the app sends. Paths are listed here so code and
  * files can't drift apart silently; a unit test renders every one of them.

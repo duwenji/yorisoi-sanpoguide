@@ -386,4 +386,4 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 
 ## 計画中: 位置に紐づく秘密メッセージ
 
-アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](TODO.md) にある。
+アプリの外にメッセージサーバーを置く予定。API の契約（yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md)）と OpenAPI（[sanpo-messages.openapi.yaml](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/api/sanpo-messages.openapi.yaml)）はできているが、アプリ側・サーバー側ともまだ実装されていないため、上の図には入れていない。進み具合は [TODO.md](../TODO.md) にある。

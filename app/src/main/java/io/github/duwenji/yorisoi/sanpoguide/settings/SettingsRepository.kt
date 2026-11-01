@@ -29,7 +29,7 @@ data class GuideSettings(
     val apiKeys: Map<Provider, String> = emptyMap(),
     val models: Map<Provider, String> = emptyMap(),
     val customBaseUrl: String = "",
-    /** The channel in use (docs/channels.md); how chatty the companion is comes with it. */
+    /** The channel in use (docs/design/channels.md); how chatty the companion is comes with it. */
     val stationId: String = "standard",
     /** The user's changes to built-in channels, by channel id. */
     val stationOverrides: Map<String, StationOverrides> = emptyMap(),

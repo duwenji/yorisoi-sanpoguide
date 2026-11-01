@@ -6,17 +6,20 @@
 
 | 知りたいこと | 文書 |
 |---|---|
-| アプリの機能と部品のつながり | [構造図](architecture.md) |
-| 主な処理の呼び出しの順番 | [シーケンス図](sequences.md) |
-| チャンネルのアプリ側での動作と実装 | [チャンネルの設計](channels.md) |
-| AI に渡すプロンプトと変更方法 | [プロンプト一覧](prompts.md) |
-| Google Play Console への申告内容 | [Play Console の申告](play-console.md) |
-| 情報の収集・送信と端末内保存 | [プライバシーポリシー](privacy-policy.md) |
-| アプリの公開・更新手順 | [アプリの公開と更新](release.md) |
-| API で Google Play に出すしくみと準備 | [Google Play Developer API で出す](play-api.md) |
+| アプリの機能と部品のつながり | [構造図](design/architecture.md) |
+| 主な処理の呼び出しの順番 | [シーケンス図](design/sequences.md) |
+| チャンネルのアプリ側での動作と実装 | [チャンネルの設計](design/channels.md) |
+| AI に渡すプロンプトと変更方法 | [プロンプト一覧](design/prompts.md) |
+| Google Play Console への申告内容 | [Play Console の申告](operations/play-console.md) |
+| 情報の収集・送信と端末内保存 | [プライバシーポリシー](policies/privacy-policy.md) |
+| アプリの公開・更新手順 | [アプリの公開と更新](operations/release.md) |
+| 散歩の詳しい記録の取り出しと集計 | [散歩の記録を集計する](operations/walk-diagnostics.md)（記録の形式は[散歩の詳しい記録](design/walk-diagnostics.md)） |
+| API で Google Play に出すしくみと準備 | [Google Play Developer API で出す](operations/play-api.md) |
 | アプリ固有の残作業と検討事項 | [TODO](TODO.md) |
 
-利用者別の詳しい操作・運用手順は [SanpoGuide 手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/README.md) を参照してください。
+利用者別の詳しい操作・運用手順は [SanpoGuide 手引き](manual/README.md) を参照してください。
+
+`docs/` の下は、`design/`（設計・処理仕様）、`operations/`（公開と運用の手順）、`policies/`（プライバシーポリシー）、`manual/`（手引き）と `TODO.md` に分けています。
 
 ## エコシステム共通の正本
 
@@ -29,6 +32,6 @@
 | エコシステムの方針 | [platform 文書案内](https://github.com/duwenji/yorisoi-platform/blob/main/docs/README.md)（エコシステム・チャンネル・素材・生成 AI の役割の決まり） |
 | API・データ形式の契約 | [API 契約一覧](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/README.md) |
 | チャンネルの共通審査方針 | [チャンネル審査方針](https://github.com/duwenji/yorisoi-platform/blob/main/docs/policies/channel-review.md) |
-| エコシステム全体の作業 | [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md) |
+| エコシステム全体の作業 | [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/TODO.md) |
 
 実装の現状はコードと設定を確認してください。アプリ固有の説明と共通契約が異なる場合、契約の形式・境界は platform の正本に従い、SanpoGuide での実装方法はこのリポジトリのコードと文書で説明します。
