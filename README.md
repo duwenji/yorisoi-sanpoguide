@@ -20,7 +20,7 @@
 - **散歩の記録**: 散歩ごとの日時・距離・時間・経路・案内したスポットと話した内容に加え、プランのテーマ・目安・立ち寄り先・メモを端末内に保存し、記録画面（右上の時計アイコン）で振り返れる
 - **設定**: 設定画面（右上の歯車）は「AI」「チャンネル」「天気・日の入り・施設の知らせ」「画面と音」「地図」「端末に残すデータ」「スタジオ」「このアプリについて」の欄に分かれる。変えた内容は上部の「保存」で保存し、保存しないで戻るときは確かめる
 
-アプリ固有の設計・運用資料は [docs/ の案内](docs/README.md) から参照できる。使い方と運用の手順は、関係者（散策者・チャンネル提供者・素材提供者・運営）ごとの [SanpoGuide 手引き](https://github.com/duwenji/yorisoi-platform/blob/main/docs/apps/sanpoguide/manual/README.md) を参照する。
+アプリ固有の設計・運用資料は [docs/ の案内](docs/README.md) から参照できる。使い方と運用の手順は、関係者（散策者・チャンネル提供者・素材提供者・運営）ごとの [SanpoGuide 手引き](https://github.com/duwenji/yorisoi-sanpoguide/blob/main/docs/manual/README.md) を参照する。
 
 ## 散歩の友（話しかけ）
 
@@ -73,13 +73,13 @@
 
 API キーが未設定、AI の呼び出しに失敗した、または 1 日の上限に達した場合は、定型文（「〇〇、2回目ですね。」など）で話しかける。
 
-プロンプトと定型文の文言は [docs/prompts.md](docs/prompts.md) にまとめたファイルで管理している。
+プロンプトと定型文の文言は [docs/design/prompts.md](docs/design/prompts.md) にまとめたファイルで管理している。
 
 読み上げ中は、オーディオフォーカス（`AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`）を取る。ほかのアプリで聴いている音楽は、読み上げの間だけ小さくなる。
 
 ## チャンネル
 
-語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/channels.md](docs/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）。メイン画面の題名の位置にあるチャンネル名か、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は platform の[関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
+語り手・話題・話しかける場面と頻度・解説の長さ・優先する話題をまとめて切り替える（設計は [docs/design/channels.md](docs/design/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）。メイン画面の題名の位置にあるチャンネル名か、設定画面の「チャンネル」で選ぶ。散歩の途中でも切り替えられる。関係者（散策者・チャンネル提供者・素材提供者・運営）と呼び方は platform の[関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 | チャンネル | 語り手と話題 | 話しかける場面 | 頻度の既定 | 解説の長さ | 優先する話題 |
 |---|---|---|---|---|---|
@@ -193,7 +193,7 @@ keytool -genkeypair -v -keystore release.jks -alias sanpoguide -keyalg RSA -keys
 
 出力: `app/build/outputs/apk/release/app-release.apk`。`keystore.properties` がない場合は署名なしの `app-release-unsigned.apk` になる。
 
-Google Play に出す手順（版の上げ方、AAB、Play Console の登録、不具合の版を出したとき）は [docs/release.md](docs/release.md) にある。
+Google Play に出す手順（版の上げ方、AAB、Play Console の登録、不具合の版を出したとき）は [docs/operations/release.md](docs/operations/release.md) にある。
 
 ### アプリが求める権限
 
@@ -213,7 +213,7 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 | `material` | 組み込みの素材提供者（`BuiltIns`・`Narration`）、散歩の文脈（`WalkMaterial`）、見せ方の並べ方（`CueLayout`）、素材の画像（`MaterialImages`）。素材提供者の IF・計画・きっかけは platform kit-channel の `material` |
 | `companion` | 散歩の友の発話（状況を集めてプロンプト変数にする。`WalkCompanion`）、話すかどうかの判定（`TalkDecider`）、進行中の散歩の状態（チャンネルの切り替えを含む。`WalkSession`）、画面向けの発言・散歩状況（`CompanionFeed`）、話題にするスポットの選択（`SpotChooser`）、施設の案内（`FacilityAdvisor`）、天気の急変（`WeatherChange`）、散策前のプラン（`WalkPlan`・`PlanSuggestions`） |
 | `history` | 散歩の記録の保存（`HistoryStore`。使ったチャンネルの区間を含む） |
-| `diagnostics` | 開発者モードでの散歩の詳しい記録の中身（`DiagnosticFields`。記録そのものは platform kit-companion の `SessionRecorder`）と書き出し（`WalkExport`）。[docs/walk-diagnostics.md](docs/walk-diagnostics.md) |
+| `diagnostics` | 開発者モードでの散歩の詳しい記録の中身（`DiagnosticFields`。記録そのものは platform kit-companion の `SessionRecorder`）と書き出し（`WalkExport`）。[docs/design/walk-diagnostics.md](docs/design/walk-diagnostics.md) |
 | `settings` | 設定の保存（`SettingsRepository`。選んでいるチャンネルとその変更を含む）、話しかけの頻度の段階（`TalkLevel`）、しきい値（`Threshold`）。API キーの暗号化は platform kit-llm の `KeyCipher` |
 | `station` | 組み込みのチャンネルの読み込み（`BuiltInStations`）、スロットからプロンプトの変数を作る（`StationPromptVars`）、AI の費用の目安（`AiCost`）、アプリのプロファイル（`SanpoProfile`）。チャンネル（`Station`）と、選んでいるチャンネルに散策者の変更を重ねる `StationRepository` は platform の kit-channel |
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`）、よく通る道の前もっての取得（`WayPrefetchWorker`） |
@@ -223,9 +223,9 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 
 スポット・地図・天気・写真は platform の kit-geo、雰囲気と配色・絵は kit-mood、読み上げと背景音は kit-voice にある。
 
-チャンネルの形式（platform の [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/architecture.md](docs/architecture.md)。
+チャンネルの形式（platform の [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認は yorisoi-platform の `core-format`、プロンプトのテンプレートの仕組みは yorisoi-platform の `core-prompt`、SanpoGuide のプロンプトのファイルと組み込みのチャンネルはこのリポジトリの `prompts/`（プロンプト・パック）にある。どれも Android に依存しない JVM のモジュール。チャンネル管理システムも同じものを使うため、GitHub Packages に公開している（コアは yorisoi-platform から `io.github.duwenji.yorisoi:core-format`・`core-prompt`。プロンプト・パック `io.github.duwenji.yorisoi.sanpoguide:prompts` はこのリポジトリから、`gradle.properties` の `sanpoguidePromptsVersion`、タグ `prompts-v<版>`）。構造の図は [docs/design/architecture.md](docs/design/architecture.md)。
 
-AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/prompts.md](docs/prompts.md) を参照。
+AI に送るプロンプトと定型文は、コードではなく `prompts/src/main/resources/sanpoguide/prompts/` のファイル（と、チャンネルの `sanpoguide/channels/{id}/prompts/`）にある。一覧・使う場面・書き方・変数は [docs/design/prompts.md](docs/design/prompts.md) を参照。
 
 AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追加するだけでよい。独自 API の場合は `LlmClient` を実装し、platform kit-llm の `AiGateway.createClient` に分岐を足す。
 
@@ -250,7 +250,7 @@ AI サービスを追加する場合、OpenAI 互換なら `Provider` に1行追
 - スポットの写真を取得するときは、スポットの Wikidata の ID または Commons のファイル名を Wikimedia に送る。緯度経度は送らない。
 - 保存する散歩は最新 500 件まで。記録画面のゴミ箱アイコンですべて削除できる。
 - 1 分未満で、スポットの案内もなかった散歩は保存しない。
-- 開発者モードで始めた散歩は、位置・話しかけの判定・発言・AI に送ったプロンプトと答え・スポット検索と天気の取得の結果も、別のファイル（`diagnostics/`、最新 30 件）に残す。記録の画面から JSON に書き出せるのは開発者モードのときだけで、保存先は散策者が選ぶ。アプリからは送らない（[docs/walk-diagnostics.md](docs/walk-diagnostics.md)）。
+- 開発者モードで始めた散歩は、位置・話しかけの判定・発言・AI に送ったプロンプトと答え・スポット検索と天気の取得の結果も、別のファイル（`diagnostics/`、最新 30 件）に残す。記録の画面から JSON に書き出せるのは開発者モードのときだけで、保存先は散策者が選ぶ。アプリからは送らない（[docs/design/walk-diagnostics.md](docs/design/walk-diagnostics.md)）。
 
 ## 外部サービス
 

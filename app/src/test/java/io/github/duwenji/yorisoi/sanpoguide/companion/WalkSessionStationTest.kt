@@ -7,7 +7,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Switching channels mid-walk (docs/channels.md「選択と切り替え」「記録」). */
+/** Switching channels mid-walk (docs/design/channels.md「選択と切り替え」「記録」). */
 class WalkSessionStationTest {
     private val start = 1_000_000L
     private fun session() = WalkSession(startedAt = start).apply { startStation("builtin:standard@1") }

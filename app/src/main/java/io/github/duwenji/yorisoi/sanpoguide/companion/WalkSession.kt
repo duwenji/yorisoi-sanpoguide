@@ -50,7 +50,7 @@ class WalkSession(
     /** Recent lines, so the model can avoid repeating itself. */
     val recentLines = ArrayDeque<String>()
 
-    /** The channels used on this walk, in order (docs/channels.md「記録」). */
+    /** The channels used on this walk, in order (docs/design/channels.md「記録」). */
     val stations = mutableListOf<StationSegment>()
 
     /** When the user last switched channels mid-walk; 0 if they haven't. */

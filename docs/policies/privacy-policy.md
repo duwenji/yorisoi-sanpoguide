@@ -1,3 +1,7 @@
+---
+redirect_from: ["/privacy-policy.html"]
+---
+
 # 散策ガイド プライバシーポリシー
 
 | 項目 | 内容 |

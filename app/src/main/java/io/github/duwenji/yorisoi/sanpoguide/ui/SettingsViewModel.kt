@@ -101,7 +101,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     /** The chosen channel as the draft would have it, with the user's changes applied. */
     fun draftStation(settings: GuideSettings): Station = stationRepo.select(settings.channelChoice)
 
-    // The chosen channel's settings (docs/channels.md「散策者のカスタマイズ」). Setting a value back to
+    // The chosen channel's settings (docs/design/channels.md「散策者のカスタマイズ」). Setting a value back to
     // the channel's own drops the change, so a later default still reaches it.
     fun setTalkLevel(level: TalkLevel) = editStation { _, o -> o.copy(talkLevel = level.level) }
     fun setEvent(kind: TalkEventKind, on: Boolean) = editStation { st, o -> o.copy(events = if (on) st.events + kind else st.events - kind) }

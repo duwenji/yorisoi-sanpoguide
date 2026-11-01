@@ -7,7 +7,7 @@ Google Play Console に入れる答えと、その入れ方。Play Console の�
 | 文書 | 受け持つこと |
 |---|---|
 | 本書 | Play Console のどこに何を入れるか（[手順](#手順)）と、入れる答え（[登録するデータのまとめ](#登録するデータのまとめ)） |
-| [privacy-policy.md](privacy-policy.md) | プライバシーポリシー。アプリが送る情報・権限を変えたら、本書の[データ セーフティ](#データ-セーフティ)と合わせて直す |
+| [privacy-policy.md](../policies/privacy-policy.md) | プライバシーポリシー。アプリが送る情報・権限を変えたら、本書の[データ セーフティ](#データ-セーフティ)と合わせて直す |
 | [release.md](release.md) | 版を上げて AAB を作り、トラックに出す流れ |
 | [play-api.md](play-api.md) | `tools/play.mjs` で API から出すしくみ・準備・使い方 |
 
@@ -33,8 +33,8 @@ API（`tools/play.mjs`、[play-api.md](play-api.md)）でも送れるのは、AA
 
 ### 送る情報を変えたとき
 
-1. [privacy-policy.md](privacy-policy.md) を直してマージする（GitHub Pages に出る）。アプリの更新より先に公開する
-2. 本書の[データ セーフティ](#データ-セーフティ)を直し、Play Console に入れる。ストアの説明文に書いてあることなら、[詳しい説明](#詳しい説明)と [Pages のトップ](index.html) も直す
+1. [privacy-policy.md](../policies/privacy-policy.md) を直してマージする（GitHub Pages に出る）。アプリの更新より先に公開する
+2. 本書の[データ セーフティ](#データ-セーフティ)を直し、Play Console に入れる。ストアの説明文に書いてあることなら、[詳しい説明](#詳しい説明)と [Pages のトップ](../index.html) も直す
 3. 新しい版と同じ審査に出す。別々に出すと、申告とアプリの動きが食い違う期間ができる
 
 ### データ セーフティの入れ方
@@ -69,7 +69,7 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 |---|---|
 | パッケージ名 | `io.github.duwenji.yorisoi.sanpoguide` |
 | 署名 | Play App Signing。`release.jks` をアップロード鍵にする |
-| プライバシーポリシー | https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy （GitHub Pages、main の `/docs`） |
+| プライバシーポリシー | https://duwenji.github.io/yorisoi-sanpoguide/policies/privacy-policy （GitHub Pages、main の `/docs`） |
 | 広告 | 含まない |
 | 広告 ID | 使用しない。マニフェストに `com.google.android.gms.permission.AD_ID` はない（使っている Google のライブラリは play-services-location と play-services-code-scanner だけ）。広告・解析の SDK を足したら申告を見直す |
 | デベロッパー名 | `to.fumiyoshi`（ストアで公開される） |
@@ -92,13 +92,13 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 | アプリ名 | 30 文字 | `散策ガイド`。「AI」「無料」などの宣伝語を足さない（キーワードの詰め込みになる） |
 | 簡単な説明 | 80 文字 | [下の文](#簡単な説明) |
 | 詳しい説明 | 4,000 文字 | [下の文](#詳しい説明) |
-| アプリのアイコン | 512×512、32 ビット PNG、1MB 以下 | [`store/icon-512.png`](../store/icon-512.png)。アプリのアイコン（`ic_walk`）の歩く人を、緑の地に白い丸で囲む |
-| フィーチャー グラフィック | 1024×500、JPEG か 24 ビット PNG（透過なし）、15MB 以下 | [`store/feature-1024x500.png`](../store/feature-1024x500.png)。アイコン・アプリ名・簡単な紹介と、塔のある景色を歩く人の絵 |
+| アプリのアイコン | 512×512、32 ビット PNG、1MB 以下 | [`store/icon-512.png`](../../store/icon-512.png)。アプリのアイコン（`ic_walk`）の歩く人を、緑の地に白い丸で囲む |
+| フィーチャー グラフィック | 1024×500、JPEG か 24 ビット PNG（透過なし）、15MB 以下 | [`store/feature-1024x500.png`](../../store/feature-1024x500.png)。アイコン・アプリ名・簡単な紹介と、塔のある景色を歩く人の絵 |
 | スマートフォンのスクリーンショット | 2〜8 枚、辺は 320〜3840px、縦横比 2:1 まで、JPEG か 24 ビット PNG | [下の 5 枚](#スクリーンショット) |
 | タブレット・Chromebook・Android XR のスクリーンショット | 任意 | 出さない（スマートフォン向け） |
 | 動画 | 任意（YouTube の URL） | 出さない |
 
-説明文には、星・絵文字・「No.1」などの誇張を使わない。運営の AI には 1 日の回数の上限があること、自分の API キーを使うときはその利用料が各サービスから散策者に請求されることは必ず書く。位置を外部に送ることは[データ セーフティ](#データ-セーフティ)の申告と合わせる。機能・送る情報・対応する AI サービスを変えたら、説明文と [Pages のトップ](index.html) を合わせて直す。
+説明文には、星・絵文字・「No.1」などの誇張を使わない。運営の AI には 1 日の回数の上限があること、自分の API キーを使うときはその利用料が各サービスから散策者に請求されることは必ず書く。位置を外部に送ることは[データ セーフティ](#データ-セーフティ)の申告と合わせる。機能・送る情報・対応する AI サービスを変えたら、説明文と [Pages のトップ](../index.html) を合わせて直す。
 
 `tools/play.mjs` の `--listing` は、下の 2 つの見出しのすぐ下の `text` のコードブロックを送る。
 
@@ -149,7 +149,7 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 
 #### スクリーンショット
 
-[`store/screenshots/`](../store/screenshots/) の 5 枚を、番号の順に入れる。どれも散策中で、エラーの出ていない画面。
+[`store/screenshots/`](../../store/screenshots/) の 5 枚を、番号の順に入れる。どれも散策中で、エラーの出ていない画面。
 
 1. `01-walking.png`: 歴史探訪のチャンネルで、近づいたスポットを案内し、そこまでのルートを地図に描いたところ
 2. `02-spot-detail.png`: 「解説を読む」で開いた、スポットの AI 解説と Wikimedia Commons の写真
@@ -166,7 +166,7 @@ API では、`tools/play.mjs edit … --commit` が 1〜3 にあたる。Play Co
 - 散歩の記録の画面は、試しの散歩の一覧しか出ないので入れない
 - 撮った PNG は透過を外して 24 ビットにする（`magick 画像 -background white -alpha remove -alpha off PNG24:画像`）
 
-アイコンとフィーチャー グラフィックは [`store/src/`](../store/src/) の SVG から `sh store/src/build.sh` で作る。Play に出す画像と動画（アイコン・フィーチャー グラフィック・スクリーンショット・[フォアグラウンドサービスの申告](#フォアグラウンドサービスの申告)の動画）は、すべて [`store/`](../store/) に置く。
+アイコンとフィーチャー グラフィックは [`store/src/`](../../store/src/) の SVG から `sh store/src/build.sh` で作る。Play に出す画像と動画（アイコン・フィーチャー グラフィック・スクリーンショット・[フォアグラウンドサービスの申告](#フォアグラウンドサービスの申告)の動画）は、すべて [`store/`](../../store/) に置く。
 
 ### データ セーフティ
 
@@ -178,7 +178,7 @@ Google の定義では、端末から外に送るものは、送り先が運営�
 | 送るデータはすべて転送時に暗号化されるか | はい（通信はすべて HTTPS） |
 | アプリが対応しているアカウントの作成方法 | なし（ログインなし） |
 | アプリ外で作成したアカウントでログインできるか | いいえ（API キーは AI サービスに送る鍵で、本アプリへのログインではない） |
-| データの削除をリクエストできるか | 「はい」。データ削除用の URL は https://duwenji.github.io/yorisoi-sanpoguide/privacy-policy#6-スタジオ 。スタジオの一言は設定の「一言」から期限の前に消せ、ブロックは解ける。ほかに運営が持つのは中継の回数の記録（7 日で消える）と、スタジオの合計の数・重複を防ぐ組（期限か 30 日で消える） |
+| データの削除をリクエストできるか | 「はい」。データ削除用の URL は https://duwenji.github.io/yorisoi-sanpoguide/policies/privacy-policy#6-スタジオ 。スタジオの一言は設定の「一言」から期限の前に消せ、ブロックは解ける。ほかに運営が持つのは中継の回数の記録（7 日で消える）と、スタジオの合計の数・重複を防ぐ組（期限か 30 日で消える） |
 
 #### 収集するデータ
 
@@ -202,4 +202,4 @@ Google の定義では、端末から外に送るものは、送り先が運営�
 | バックグラウンドの位置情報の権限 | 求めない（`ACCESS_BACKGROUND_LOCATION` なし。散策者が画面で「散策をはじめる」を押したときに始める） |
 | 説明 | 散策者が「散策をはじめる」を押してから「散策を終える」を押すまで、画面を閉じても現在地を追い、近づいたスポットの解説と、歩いた距離・経路の記録をする。散策中は通知を出し続け、通知の「終了」からも終えられる |
 | 散策者への影響 | 位置を追うのをやめると、画面を閉じている間のスポットの案内と、散歩の記録が途切れる |
-| 動画 | [`store/videos/foreground-service-demo.mp4`](../store/videos/foreground-service-demo.mp4)。「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れ。URL は jsDelivr から配信したもの https://cdn.jsdelivr.net/gh/duwenji/yorisoi-sanpoguide@fa274fd/store/videos/foreground-service-demo.mp4 を入れる（`video/mp4` で返るので、ブラウザでそのまま再生できる。GitHub のファイルのページは再生せず、ダウンロードになる）。`@` の後ろは動画を入れたコミット。`@main` にすると CDN に最大 7 日古い版が残るので、コミットで固定する。撮り直したら同じファイル名で置き換え、その後のコミットに URL を直して Play Console で入れ直す |
+| 動画 | [`store/videos/foreground-service-demo.mp4`](../../store/videos/foreground-service-demo.mp4)。「散策をはじめる」→ 通知が出る → 画面を閉じる → スポットに近づくと案内が出る → 「散策を終える」の流れ。URL は jsDelivr から配信したもの https://cdn.jsdelivr.net/gh/duwenji/yorisoi-sanpoguide@fa274fd/store/videos/foreground-service-demo.mp4 を入れる（`video/mp4` で返るので、ブラウザでそのまま再生できる。GitHub のファイルのページは再生せず、ダウンロードになる）。`@` の後ろは動画を入れたコミット。`@main` にすると CDN に最大 7 日古い版が残るので、コミットで固定する。撮り直したら同じファイル名で置き換え、その後のコミットに URL を直して Play Console で入れ直す |

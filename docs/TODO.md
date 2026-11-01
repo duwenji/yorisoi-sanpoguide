@@ -1,6 +1,6 @@
 # TODO
 
-SanpoGuide で残っている作業と、決めること。できている機能は [README](../README.md)、構造は [architecture.md](architecture.md) にある。エコシステム全体の作業（第三者のチャンネルの審査、秘密メッセージの契約、サーバーの要否・収益化など）は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md) にある。
+SanpoGuide で残っている作業と、決めること。できている機能は [README](../README.md)、構造は [architecture.md](design/architecture.md) にある。エコシステム全体の作業（第三者のチャンネルの審査、秘密メッセージの契約、サーバーの要否・収益化など）は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/TODO.md) にある。
 
 ## 優先度の目安
 
@@ -26,9 +26,9 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## Google Play での公開
 
-内部テストに 1.7.0 (12) を出している。出し方は [release.md](release.md)。
+内部テストに 1.7.0 (12) を出している。出し方は [release.md](operations/release.md)。
 
-- [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告を入れる（答えは [play-console.md](play-console.md)。申告の動画を撮る）
+- [ ] Play Console のデータセーフティ欄と、フォアグラウンドサービス（位置情報）の申告を入れる（答えは [play-console.md](operations/play-console.md)。申告の動画を撮る）
 - [ ] ストアの設定で決めること: 外部マーケティング（Google が Play の外で宣伝してよいか）
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト。有料なのでクローズドテストのテスターも購入が要る。プロモーション コードを配るか決める（有料のアプリに使えるか、作れる数を Play Console の「プロモーション」で確かめる）
 
@@ -42,7 +42,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## 実際に歩いての確認
 
-天気の急変・日の入り・施設の話しかけは、条件がそろわずエミュレータでは流れていない。開発者モードで歩くと散歩ごとの詳しい記録が残るので、書き出して `tools/analyze_walks.py` で集計し、見直しの根拠にする（[walk-diagnostics.md](walk-diagnostics.md)）。
+天気の急変・日の入り・施設の話しかけは、条件がそろわずエミュレータでは流れていない。開発者モードで歩くと散歩ごとの詳しい記録が残るので、書き出して `tools/analyze_walks.py` で集計し、見直しの根拠にする（[walk-diagnostics.md](design/walk-diagnostics.md)）。
 
 - [ ] 安全・施設の案内が実際に流れるか。しきい値の既定値（今は仮）を見直す。話しかけの頻度ごとに既定値を変えるかも検討
 - [ ] 雷の予告の通知を、強い雨にも出すか
@@ -65,7 +65,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## チャンネル
 
-設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md)・[platform MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
+設計は [channels.md](design/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md)・[platform MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 - [ ] 試用チケットで、素材集・基準を使うチャンネルを通しで確かめる（チャンネル提供者の鍵ファイルが届いてから）。カメラで QR を写す確認は実機で
 - [ ] 通知からの切り替え（channels.md の未決事項 No.1。歩いてから決める）
@@ -82,7 +82,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - 公開: その場所を訪れた人なら誰でも見つけられる（宝探し、イベント）
 - チャンネルと組み合わせた、店舗やイベントの隠しコンテンツ
 
-自分宛てだけならサーバーなしで作れる（`HistoryStore` と同じく端末内に保存）。先にここだけ切り出して着手できる。他人宛て・グループ・公開のサーバー API は yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md) で決めた。接続先は URL で設定し、API に準拠していればサーバーの実装方法・置き場所は問わない。準拠テスト・参照実装のサーバーと、位置の偽装・不適切な投稿への対策は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#位置に紐づく秘密メッセージ) にある。
+自分宛てだけならサーバーなしで作れる（`HistoryStore` と同じく端末内に保存）。先にここだけ切り出して着手できる。他人宛て・グループ・公開のサーバー API は yorisoi-platform の [API-SECRET-MESSAGES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-SECRET-MESSAGES.md) で決めた。接続先は URL で設定し、API に準拠していればサーバーの実装方法・置き場所は問わない。準拠テスト・参照実装のサーバーと、位置の偽装・不適切な投稿への対策は [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/TODO.md#位置に紐づく秘密メッセージ) にある。
 
 - [ ] メッセージを置く（現在地、または地図上の地点を指定）
 - [ ] 開ける条件（半径◯m 以内、日時・期間、特定の相手、合言葉）
@@ -113,4 +113,4 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - **安全**: 歩きながら画面を見させない。音声中心の案内を基本にする
 - **電池・通信量**: 画像・音声の取得と再生が増えるため、散策モードでの消費を計測する
 
-サーバーの要否・収益化・公開サーバーの負荷は、エコシステム全体で決める（[yorisoi-platform の TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md#共通の検討事項)）。
+サーバーの要否・収益化・公開サーバーの負荷は、エコシステム全体で決める（[yorisoi-platform の TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/TODO.md#共通の検討事項)）。
