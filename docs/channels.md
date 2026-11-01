@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 承認済み。組み込みのチャンネル、第三者のチャンネル、素材の第 1 段（テキスト・画像）は実装済み。素材の第 2 段・第 3 段は未着手 |
-| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform ADR-CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNELS.md) |
+| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md) |
 
 チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-CHANNEL-PACKAGE「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-CHANNEL-PACKAGE、第三者のチャンネルの取得は API-CHANNEL-LIST で決めてある。
 
@@ -62,7 +62,7 @@
 - 保存するのは、初期値から変えた項目だけ（`Threshold` と同じ方式）。アプリの更新で初期値が変わったとき、変えていない項目には新しい初期値が使われる。保存のキーは `station_{id}_{項目}`（項目は `talk_level`・`mood_tone`・`events`・`guide_length`・`sound`・`prefer`。集合は `channel.json` の綴りをカンマでつなぐ。`OverrideCodec`）。初期値と同じ値は `Station.normalize` で落とす
 - 話す場面をすべてオフにした状態も「変更」として保存する（空の集合。項目がない状態とは区別する）
 - 散策者が優先にした種類は、チャンネルが除く種類（`spots.skip`）に入っていても除かない
-- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。ADR-CHANNELS の未決事項 No.2）
+- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。CHANNELS の未決事項 No.2）
 - 背景音のオン・オフ、音量、イヤホンのときだけ、画面を雰囲気に合わせるかは、チャンネルではなく全体の設定（端末と安全に関わるため）
 - 選んでいるチャンネルの初期値は「標準」
 
@@ -141,7 +141,7 @@ API-CHANNEL-PACKAGE にすべての種類を定め、アプリは次の段で対
 - 話す処理: `talk.events` をすべて偽にしても、天気の急変・日の入り・施設の案内が話されること（V-08。`TalkDeciderTest`）
 - 審査の見本の組み立て（`ReviewSamples`）と、送るプロンプトそのもの（`prompt-golden.txt`）を、全組み込みチャンネルで CI が確かめる
 
-### 組み込みのチャンネルを変えたとき（platform ADR-AI-ROLES H-13）
+### 組み込みのチャンネルを変えたとき（platform AI-ROLES H-13）
 
 組み込みのチャンネルは運営の審査を通らない。第三者のチャンネルと同じ基準で確かめるため、`prompts/src/main/resources/sanpoguide/channels/` を変えた PR では、次を手で行い、結果を PR に書く。AI を呼ぶので CI では回さない（費用がかかり、結果も毎回変わるため）。
 

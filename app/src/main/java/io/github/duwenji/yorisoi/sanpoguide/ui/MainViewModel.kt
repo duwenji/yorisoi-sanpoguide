@@ -77,7 +77,7 @@ sealed interface GuideState {
     data object Loading : GuideState
     /**
      * [credit]: who wrote it, and whose texts the AI wrote it from when it used any (API-MATERIALS `basedOn`).
-     * [byAi]: the AI wrote it, so the user is told it may be wrong (platform ADR-004 H-15).
+     * [byAi]: the AI wrote it, so the user is told it may be wrong (platform AI-ROLES H-15).
      */
     data class Ready(val text: String, val credit: String? = null, val byAi: Boolean = false) : GuideState
     data class Failed(val message: String) : GuideState
@@ -104,7 +104,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val location: StateFlow<Location?> = app.spots.location
     val walking: StateFlow<Boolean> = WalkService.walking
     val settings: StateFlow<GuideSettings> = app.settings.settings
-    /** The operator's AI: today's calls as the relay last reported them (ADR-AI-RELAY R-11). */
+    /** The operator's AI: today's calls as the relay last reported them (API-AI-RELAY R-11). */
     val relayQuota: StateFlow<RelayQuota?> = app.relay?.quota ?: MutableStateFlow(null)
 
     val mood: StateFlow<Mood> = app.mood.mood

@@ -50,7 +50,7 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
     fun refresh() = act { channels.refreshNow() }
 
     private val _pendingUse = MutableStateFlow<PendingUse?>(null)
-    /** A channel taken onto the device, waiting for the user to accept what it asks of the AI (platform ADR-004 H-9). */
+    /** A channel taken onto the device, waiting for the user to accept what it asks of the AI (platform AI-ROLES H-9). */
     val pendingUse: StateFlow<PendingUse?> = _pendingUse.asStateFlow()
 
     /**
@@ -71,7 +71,7 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
         _pendingUse.value = PendingUse(providerId, channelId, AiCost.of(station, app.stations.byId(BuiltInStations.STANDARD), operatorAi, limit))
     }
 
-    /** Who answers for an installed channel, for a report (platform ADR-004 H-11). */
+    /** Who answers for an installed channel, for a report (platform AI-ROLES H-11). */
     fun reportTarget(providerId: String, channelId: String): ReportTarget? =
         app.stations.list.value.firstOrNull { it.id == "$providerId/$channelId" }?.let(AppReport.report::target)
 

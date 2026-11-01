@@ -265,7 +265,7 @@ class TalkDeciderTest {
             listOf("weather", "greeting", "spot", "point", "sunset", "facility", "rest", "milestone"),
             TalkDecider.rules.map { it.name },
         )
-        // ADR-003 E-6: what the profile lists as events a channel can't stop (channel-package-format.md F-4).
+        // ECOSYSTEM E-6: what the profile lists as events a channel can't stop (channel-package-format.md F-4).
         assertEquals(setOf("weather", "sunset", "facility"), TalkDecider.rules.filter { it.safety }.map { it.name }.toSet())
     }
 

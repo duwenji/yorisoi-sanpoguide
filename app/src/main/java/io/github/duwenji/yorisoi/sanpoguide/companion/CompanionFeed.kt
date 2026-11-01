@@ -23,9 +23,9 @@ data class Utterance(
     val image: Material? = null,
     val credit: String? = null,
     val detail: CueDetail? = null,
-    /** The channel in use when it was said, for a report (platform ADR-004 H-11). */
+    /** The channel in use when it was said, for a report (platform AI-ROLES H-11). */
     val channel: ReportTarget? = null,
-    /** A studio or a note read out, people's own words and not the companion's (platform ADR-MATERIALS D-38). */
+    /** A studio or a note read out, people's own words and not the companion's (platform MATERIALS D-38). */
     val local: Reading? = null,
 )
 

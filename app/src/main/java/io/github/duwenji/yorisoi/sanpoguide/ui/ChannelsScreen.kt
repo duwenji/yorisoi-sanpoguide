@@ -103,7 +103,7 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
     pendingUse?.let { CostDialog(it.cost, onUse = viewModel::confirmUse, onCancel = viewModel::cancelUse) }
 }
 
-/** What the channel asks of the AI, before it is used (platform ADR-004 H-9). */
+/** What the channel asks of the AI, before it is used (platform AI-ROLES H-9). */
 @Composable
 private fun CostDialog(cost: AiCost, onUse: () -> Unit, onCancel: () -> Unit) {
     AlertDialog(

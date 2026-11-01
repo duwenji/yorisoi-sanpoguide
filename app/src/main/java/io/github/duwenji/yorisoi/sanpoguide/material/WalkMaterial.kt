@@ -13,7 +13,7 @@ import io.github.duwenji.yorisoi.kit.voice.Soundscape
 import io.github.duwenji.yorisoi.sanpoguide.companion.TalkEvent
 import io.github.duwenji.yorisoi.sanpoguide.companion.WalkSession
 
-// What this app adds to kit-channel's material (platform ADR-ECOSYSTEM-PLATFORM E-16): the spot
+// What this app adds to kit-channel's material (platform ECOSYSTEM E-16): the spot
 // with its tags, the walk's events, the forms of material it makes, and the walk its built-in
 // producers read.
 

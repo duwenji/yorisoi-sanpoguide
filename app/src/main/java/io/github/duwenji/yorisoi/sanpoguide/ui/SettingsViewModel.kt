@@ -51,7 +51,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val aiCallsToday: StateFlow<Int> = (application as SanpoApp).aiUsage.count
 
     private val relay = (application as SanpoApp).relay
-    /** Whether this build can use the operator's AI (ADR-AI-RELAY). */
+    /** Whether this build can use the operator's AI (API-AI-RELAY). */
     val operatorAiAvailable: Boolean = relay != null
     /** The operator's AI: today's calls as the relay last reported them. */
     val relayQuota: StateFlow<RelayQuota?> = relay?.quota ?: MutableStateFlow(null)

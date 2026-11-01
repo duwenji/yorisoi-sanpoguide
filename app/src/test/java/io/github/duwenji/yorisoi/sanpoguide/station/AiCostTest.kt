@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import io.github.duwenji.yorisoi.kit.channel.StationOverrides
 
-/** What a channel asks of the AI, shown before it is used (platform ADR-004 H-9, stakeholders.md W-3). */
+/** What a channel asks of the AI, shown before it is used (platform AI-ROLES H-9, stakeholders.md W-3). */
 class AiCostTest {
     private val stations = BuiltInStations.load()
     private val standard = stations.first { it.id == BuiltInStations.STANDARD }

@@ -173,7 +173,7 @@ private fun AiSection(draft: GuideSettings, viewModel: SettingsViewModel) {
 }
 
 /**
- * How the AI is reached (platform ADR-AI-RELAY R-1, R-11): the operator's AI or the user's own key.
+ * How the AI is reached (platform API-AI-RELAY R-1, R-11): the operator's AI or the user's own key.
  * A build without a relay shows nothing: only the own key, as before.
  */
 @Composable
@@ -215,7 +215,7 @@ private fun RouteOption(selected: Boolean, title: String, detail: String, onClic
     }
 }
 
-/** The service, key, model and daily limit for the user's own key (platform ADR-004 H-9). */
+/** The service, key, model and daily limit for the user's own key (platform AI-ROLES H-9). */
 @Composable
 private fun OwnKeySettings(draft: GuideSettings, viewModel: SettingsViewModel) {
     val provider = draft.provider
@@ -330,7 +330,7 @@ private fun ChannelSection(station: Station, viewModel: SettingsViewModel, onOpe
         }
         // Built-in channels only until a list runs in production: lists and test tickets are for developer mode.
         if (developerMode) OutlinedButton(onClick = onOpenChannels) { Text("チャンネル・リストと試用チケット") }
-        // A third party's channel is as its publisher made it (ADR-001): nothing to adjust here.
+        // A third party's channel is as its publisher made it (CHANNELS): nothing to adjust here.
         if (station.isBuiltIn) StationSettings(station, viewModel)
     }
 }

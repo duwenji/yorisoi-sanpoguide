@@ -26,7 +26,7 @@
 |---|---|
 | エコシステムの目的とリポジトリの関係 | [エコシステム概要](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/yorisoi-ecosystem.md) |
 | 関係者の呼び方と共通用語 | [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md) |
-| エコシステムの意思決定 | [ADR 一覧](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/README.md) |
+| エコシステムの方針 | [platform 文書案内](https://github.com/duwenji/yorisoi-platform/blob/main/docs/README.md)（エコシステム・チャンネル・素材・生成 AI の役割の決まり） |
 | API・データ形式の契約 | [API 契約一覧](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/README.md) |
 | チャンネルの共通審査方針 | [チャンネル審査方針](https://github.com/duwenji/yorisoi-platform/blob/main/docs/policies/channel-review.md) |
 | エコシステム全体の作業 | [エコシステム TODO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/work/ecosystem-todo.md) |

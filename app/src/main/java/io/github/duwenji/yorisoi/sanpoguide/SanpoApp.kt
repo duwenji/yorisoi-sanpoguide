@@ -107,10 +107,10 @@ class SanpoApp : Application() {
     /** Third parties' channels from the providers the user added. */
     lateinit var channels: ThirdPartyChannels
         private set
-    /** Today's AI calls against the user's limit (platform ADR-004 H-9). */
+    /** Today's AI calls against the user's limit (platform AI-ROLES H-9). */
     lateinit var aiUsage: AiUsage
         private set
-    /** The operator's AI (platform ADR-AI-RELAY); null in a build without a relay. */
+    /** The operator's AI (platform API-AI-RELAY); null in a build without a relay. */
     var relay: RelayClient? = null
         private set
     lateinit var guides: GuideRepository
@@ -130,7 +130,7 @@ class SanpoApp : Application() {
         private set
     lateinit var companion: WalkCompanion
         private set
-    /** The material the walk and the screens use, from the producers (ADR-002). */
+    /** The material the walk and the screens use, from the producers (MATERIALS). */
     lateinit var narration: Narration
         private set
 
@@ -193,7 +193,7 @@ class SanpoApp : Application() {
         }
         val choice = settings.settings.map { it.channelChoice }.stateIn(appScope, SharingStarted.Eagerly, settings.settings.value.channelChoice)
         stations = StationRepository(BuiltInStations.load(), BuiltInStations.STANDARD, choice, appScope, channels.stations)
-        // Each line remembers the channel it was said on, for a report (platform ADR-004 H-11).
+        // Each line remembers the channel it was said on, for a report (platform AI-ROLES H-11).
         feed.channel = { AppReport.report.target(stations.current.value) }
         channels.refreshIfDue()
         appScope.launch {

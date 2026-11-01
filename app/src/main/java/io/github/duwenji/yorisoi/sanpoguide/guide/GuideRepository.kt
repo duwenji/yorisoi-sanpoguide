@@ -22,7 +22,7 @@ import io.github.duwenji.yorisoi.sanpoguide.station.guideSystemVars
 /**
  * The AI service: narrations for spots, cached so each spot is generated (and billed) once, and
  * free-form lines for the companion. The producers in `material/` decide what stands in without it.
- * The operator's AI goes through [relay] (null in a build without one; platform ADR-AI-RELAY).
+ * The operator's AI goes through [relay] (null in a build without one; platform API-AI-RELAY).
  */
 class GuideRepository(
     private val settingsRepo: SettingsRepository,
@@ -34,8 +34,8 @@ class GuideRepository(
     private val gateway = AiGateway({ settingsRepo.settings.value.connection }, usage, relay)
 
     /**
-     * Whether today's calls reached the limit: the user's on their own key (platform ADR-004 H-9), the
-     * relay's on the operator's AI (ADR-AI-RELAY R-2); cached narrations still come.
+     * Whether today's calls reached the limit: the user's on their own key (platform AI-ROLES H-9), the
+     * relay's on the operator's AI (API-AI-RELAY R-2); cached narrations still come.
      */
     fun limitReached(): Boolean = gateway.limitReached()
 
@@ -76,7 +76,7 @@ class GuideRepository(
 
     /**
      * Free-form generation with the configured service; null when no AI is configured or today's
-     * limit is reached, and empty when the reply can't be read out (platform ADR-004 H-6 ③).
+     * limit is reached, and empty when the reply can't be read out (platform AI-ROLES H-6 ③).
      */
     suspend fun chat(system: String, user: String): String? {
         val text = try {
