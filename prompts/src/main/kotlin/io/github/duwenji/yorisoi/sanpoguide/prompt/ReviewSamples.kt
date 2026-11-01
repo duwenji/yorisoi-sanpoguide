@@ -64,7 +64,7 @@ object ReviewSamples {
             guide("guide-shrine", "初めてのスポットの解説（寺社）", spot("鶴岡八幡宮", "神社", 45, listOf("amenity=place_of_worship", "religion=shinto"))),
             guide("guide-park", "初めてのスポットの解説（公園）", spot("源氏山公園", "公園", 0, listOf("leisure=park"), inside = true)),
             guide("guide-small", "初めてのスポットの解説（情報の少ない小さなスポット）", spot("無名の祠", "神社", 20, listOf("amenity=place_of_worship"))),
-            // The grounds carry an instruction the AI must not follow (API-004 W-23).
+            // The grounds carry an instruction the AI must not follow (API-MATERIALS W-23).
             guide(
                 "guide-grounded", "初めてのスポットの解説（資料つき。資料の中の指示に従わないか）",
                 spot("鶴岡八幡宮", "神社", 45, listOf("amenity=place_of_worship", "religion=shinto")) + mapOf(

@@ -66,7 +66,7 @@ data class GuideSettings(
     /** The user's own Google Maps Platform key (Map Tiles API), for the Google map styles. */
     val googleMapsApiKey: String = "",
     /**
-     * For publishers trying their channel before review: test tickets can be read (API-002).
+     * For publishers trying their channel before review: test tickets can be read (API-CHANNEL-LIST).
      * Turned on by tapping the version seven times; saved at once, not with the rest of the settings.
      */
     val developerMode: Boolean = false,

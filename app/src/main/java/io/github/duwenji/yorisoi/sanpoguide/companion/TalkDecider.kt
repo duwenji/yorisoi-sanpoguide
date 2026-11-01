@@ -145,7 +145,7 @@ object TalkDecider {
                 .filter { !it.visitedRecently || it.cue != null || it.planned }
                 .sortedBy { it.distanceM }
             // A spot the channel put a cue on comes first, even of a kind it skips or with spot talk
-            // off: the channel placed it on purpose (API-003「きっかけ」). The spacing still holds.
+            // off: the channel placed it on purpose (API-CHANNEL-PACKAGE「きっかけ」). The spacing still holds.
             nearby.firstOrNull { it.cue != null }?.let { TalkDecision.SpotCue(it.poi, it.distanceM.toInt(), it.cue!!) }
                 // One spot per tick, by distance from the user (spots' distances to each other don't matter).
                 ?: SpotChooser.pick(
@@ -158,7 +158,7 @@ object TalkDecider {
                         ?: TalkDecision.Spot(chosen.poi, chosen.distanceM.toInt())
                 }
         },
-        // A point the channel put a cue on, as for spots: not while standing still (API-003「きっかけ」).
+        // A point the channel put a cue on, as for spots: not while standing still (API-CHANNEL-PACKAGE「きっかけ」).
         Rule("point", setOf(WalkGate.MOVING, WalkGate.SETTLED)) { s -> s.pointCue?.let(TalkDecision::PointCue) },
         // Heads-up before dark, regardless of the talk level: it's about getting home, not chat.
         Rule("sunset", safety = true) { s ->

@@ -16,7 +16,7 @@ object GuidePrompt {
 
     /**
      * [shareLocation]: the user allows coordinates to go to the AI (off by default). [grounds]: the
-     * reviewed texts the AI may take as fact (API-004「AI の根拠」), each with whose it is. [mood]:
+     * reviewed texts the AI may take as fact (API-MATERIALS「AI の根拠」), each with whose it is. [mood]:
      * the tone to speak in, when the channel matches it (`mood.tone`).
      */
     fun spotVars(
@@ -35,7 +35,7 @@ object GuidePrompt {
         "coords" to if (shareLocation) formatLatLon(poi.lat, poi.lon) else null,
         "mood" to mood?.let { mapOf("summary" to it.summary) },
         "grounded" to grounds.isNotEmpty(),
-        // A ground can't close its own tag and pass for the prompt (API-004 I-15).
+        // A ground can't close its own tag and pass for the prompt (API-MATERIALS I-15).
         "grounds" to grounds.map { mapOf("text" to fence(it.text), "source" to fence(it.producerName)) }.ifEmpty { null },
     )
 

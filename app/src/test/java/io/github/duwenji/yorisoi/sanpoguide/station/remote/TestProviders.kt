@@ -48,7 +48,7 @@ private fun zip(files: Map<String, ByteArray>): ByteArray {
     return out.toByteArray()
 }
 
-/** A channel provider as the channel management system signs (API-002): a root key and one signing key. */
+/** A channel provider as the channel management system signs (API-CHANNEL-LIST): a root key and one signing key. */
 internal class TestProvider {
     private val root = ed25519()
     private val signing = ed25519()
@@ -73,7 +73,7 @@ internal class TestProvider {
         seq: Int, channels: JSONArray, revoked: JSONArray, issuedAt: Instant, expiresAt: Instant,
         collections: JSONArray? = null, revokedCollections: JSONArray? = null,
     ): String {
-        // What every entry must carry (API-002), unless the test says otherwise.
+        // What every entry must carry (API-CHANNEL-LIST), unless the test says otherwise.
         for (i in 0 until channels.length()) channels.getJSONObject(i).apply {
             if (!has("media")) put("media", JSONArray())
             if (!has("resourcesSize")) put("resourcesSize", 0)
@@ -96,7 +96,7 @@ internal class TestProvider {
     }
 }
 
-/** A publisher signing its package (API-003 F-6), or a producer its collection (API-004). */
+/** A publisher signing its package (API-CHANNEL-PACKAGE F-6), or a producer its collection (API-MATERIALS). */
 internal class TestPublisher {
     private val key = ed25519()
     val accountId: String = AccountIds.of(key.raw())

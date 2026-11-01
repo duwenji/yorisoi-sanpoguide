@@ -54,7 +54,7 @@ fun MaterialImage(m: Material, modifier: Modifier = Modifier, contentScale: Cont
     image?.let { Image(it.asImageBitmap(), contentDescription = m.alt, contentScale = contentScale, modifier = modifier) }
 }
 
-/** A material's credit (API-003 F-11); a tap opens its source, when it has one. */
+/** A material's credit (API-CHANNEL-PACKAGE F-11); a tap opens its source, when it has one. */
 @Composable
 fun MaterialCredit(m: Material, color: Color = MaterialTheme.colorScheme.onSurfaceVariant, modifier: Modifier = Modifier) {
     val line = creditLine(m) ?: return
@@ -67,7 +67,7 @@ fun MaterialCredit(m: Material, color: Color = MaterialTheme.colorScheme.onSurfa
 }
 
 /**
- * The sheet of a cue (API-003 `sheet`), opened only by the user's tap: its material in order,
+ * The sheet of a cue (API-CHANNEL-PACKAGE `sheet`), opened only by the user's tap: its material in order,
  * and its full-screen image, which opens only while standing.
  */
 @Composable
@@ -95,7 +95,7 @@ fun CueSheet(detail: CueDetail, moving: Boolean, onFullscreen: (Material) -> Uni
     }
 }
 
-/** A cue's image over the whole screen (API-003 `fullscreen`). Walking off closes it. */
+/** A cue's image over the whole screen (API-CHANNEL-PACKAGE `fullscreen`). Walking off closes it. */
 @Composable
 fun FullscreenImage(m: Material, moving: Boolean, onClose: () -> Unit) {
     LaunchedEffect(moving) { if (moving) onClose() }

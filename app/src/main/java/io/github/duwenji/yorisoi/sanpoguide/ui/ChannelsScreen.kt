@@ -47,7 +47,7 @@ import java.time.format.DateTimeFormatter
 
 private val TIME = DateTimeFormatter.ofPattern("M/d HH:mm").withZone(ZoneId.systemDefault())
 
-/** The channel providers and what they deliver (API-002 設定画面のリスト). */
+/** The channel providers and what they deliver (API-CHANNEL-LIST 設定画面のリスト). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
@@ -93,7 +93,7 @@ fun ChannelsScreen(viewModel: ChannelsViewModel, onClose: () -> Unit) {
             providers.forEach { ProviderCard(it, viewModel, enabled = !busy) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { adding = true }, enabled = !busy) { Text("チャンネル・リストを足す") }
-                // Never during a walk (API-002 取得の時期).
+                // Never during a walk (API-CHANNEL-LIST 取得の時期).
                 OutlinedButton(onClick = viewModel::refresh, enabled = !busy && !walking && providers.isNotEmpty()) { Text("今すぐ確かめる") }
             }
             if (developerMode) TrialSection(trials, viewModel, enabled = !busy)
@@ -199,7 +199,7 @@ private fun ChannelRow(providerId: String, view: ListedView, viewModel: Channels
     }
 }
 
-/** Developer mode: a publisher's own channel before review, from a test ticket's QR code (API-002 試用チケット). */
+/** Developer mode: a publisher's own channel before review, from a test ticket's QR code (API-CHANNEL-LIST 試用チケット). */
 @Composable
 private fun TrialSection(trials: List<TrialChannel>, viewModel: ChannelsViewModel, enabled: Boolean) {
     val context = LocalContext.current

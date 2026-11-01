@@ -26,7 +26,7 @@ data class PoiSubject(val poi: Poi, override val distanceM: Int?) : Subject.Spot
     override val category: String get() = poi.category
 }
 
-/** An event of the walk (API-003 `trigger.type: event`): the companion's lines are about it. */
+/** An event of the walk (API-CHANNEL-PACKAGE `trigger.type: event`): the companion's lines are about it. */
 data class EventSubject(val event: TalkEvent) : Subject
 
 /** A picture the app fetched (a Commons photo). */
@@ -35,7 +35,7 @@ data class BitmapContent(val bitmap: Bitmap) : Content
 /** A background sound the app synthesizes. */
 data class AmbientContent(val sound: Soundscape) : Content
 
-/** A picture the app draws (API-004 `content=render`). */
+/** A picture the app draws (API-MATERIALS `content=render`). */
 data class SceneContent(val mood: Mood) : Content
 
 /** The walk as the built-in producers read it. */

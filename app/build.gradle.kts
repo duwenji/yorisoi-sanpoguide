@@ -112,9 +112,9 @@ dependencies {
     // The studios and notes near the walk, as built-in producers for the channel's cues (platform kit-local-materials).
     implementation(libs.yorisoi.kit.local.materials)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
-    // and later API-001.
+    // and later API-SECRET-MESSAGES.
     implementation(libs.tink.android)
-    // Test tickets' QR codes (API-002): Google's scanner UI, so the app needs no camera permission.
+    // Test tickets' QR codes (API-CHANNEL-LIST): Google's scanner UI, so the app needs no camera permission.
     implementation(libs.play.services.code.scanner)
     // The operator's AI: proves to the relay that this is the app from Play (API-AI-RELAY AR-3).
 

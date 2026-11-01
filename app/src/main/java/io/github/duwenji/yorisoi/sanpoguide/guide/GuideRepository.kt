@@ -50,7 +50,7 @@ class GuideRepository(
 
     /**
      * The AI's narration of [poi] on [channel], whose slots and guide length shape it, written from
-     * [grounds] when there are any (API-004「AI の根拠」), in the tone of [mood] when given. Needs
+     * [grounds] when there are any (API-MATERIALS「AI の根拠」), in the tone of [mood] when given. Needs
      * an AI set up.
      */
     suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station, grounds: List<Ground> = emptyList(), mood: Mood? = null): String {

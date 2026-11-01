@@ -22,7 +22,7 @@ import io.github.duwenji.yorisoi.sanpoguide.ui.MainActivity
 /**
  * Shows a channel's cue: spoken lines, cards in the feed and a notification, in
  * the cue's order. Its sheet and full-screen image go with the last line it puts in the feed (the
- * one the folded card shows) and with its notification, to be opened only by a tap (API-003
+ * one the folded card shows) and with its notification, to be opened only by a tap (API-CHANNEL-PACKAGE
  *「見せ方」); a cue that puts no line in the feed gets one that says so.
  */
 class CueShow(private val context: Context, private val feed: CompanionFeed, private val speaker: Speaker) {
