@@ -21,6 +21,8 @@ import io.github.duwenji.yorisoi.kit.geo.SpotPhotos
 import io.github.duwenji.yorisoi.kit.geo.SpotRepository
 import io.github.duwenji.yorisoi.kit.geo.SpotTiles
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuideRepository
+import io.github.duwenji.yorisoi.kit.local.NoteProducer
+import io.github.duwenji.yorisoi.kit.local.StudioProducer
 import io.github.duwenji.yorisoi.kit.llm.AiUsage
 import io.github.duwenji.yorisoi.kit.llm.OperatorAi
 import io.github.duwenji.yorisoi.kit.llm.RelayClient
@@ -70,7 +72,7 @@ import io.github.duwenji.yorisoi.kit.geo.map.WayTalk
 import kotlinx.coroutines.withContext
 import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
 import io.github.duwenji.yorisoi.sanpoguide.settings.SettingsRepository
-import io.github.duwenji.yorisoi.sanpoguide.studio.StudioHub
+import io.github.duwenji.yorisoi.sanpoguide.local.LocalHub
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
@@ -115,8 +117,8 @@ class SanpoApp : Application() {
         private set
     lateinit var speaker: Speaker
         private set
-    /** Notes and placements near the walk (platform REQ-STUDIO, kit-studio). */
-    lateinit var studio: StudioHub
+    /** The studios and notes near the walk (platform kit-local-materials). */
+    lateinit var local: LocalHub
         private set
     lateinit var history: HistoryStore
         private set
@@ -215,7 +217,7 @@ class SanpoApp : Application() {
             )
         }
         speaker = Speaker(this)
-        studio = StudioHub(this, relay, BuildConfig.STUDIO_URL, speaker.speaking)
+        local = LocalHub(this, relay, BuildConfig.LOCAL_MATERIALS_URL, speaker.speaking)
         photos = SpotPhotos(this)
         history = HistoryStore(this)
         ways = FrequentWayStore(File(filesDir, "ways.json"), WAY_FINDER) { Log.w("FrequentWayStore", "Could not keep the ways", it) }
@@ -235,6 +237,9 @@ class SanpoApp : Application() {
                 CommonsPhotoProducer(photos, settings),
                 AmbientProducer(),
                 MoodSceneProducer(),
+                // The studios and notes of the walk in progress (platform API-MATERIALS「組み込みの素材提供者」).
+                StudioProducer { local.feed.value },
+                NoteProducer { local.feed.value },
             ),
             log = { message, e ->
                 Log.w("Producers", message, e)

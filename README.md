@@ -16,7 +16,7 @@
 - **背景音**: 散策中に、雰囲気に合わせた雨音・波・風・鳥の声・虫の音・遠くの鐘を流す（既定はオフ。下記）
 - **スポットの写真**: 解説の画面に、Wikimedia Commons の写真を作者・ライセンスとともに表示する（写真が登録されているスポットのみ。既定は Wi-Fi 接続時だけ取得）
 - **よく通る道**: 3 回通った道を自動でよく通る道にし（記録の 1 件から自分で作ることもできる）、散歩していないときに Wi-Fi でその道のスポットを前もって取っておく。24 時間以内に話したスポットは続けて話さない。記録の画面の「よく通る道」で一覧・名前の変更・削除ができる
-- **スタジオ**: 設定でオンにすると、散策中、その場所を歩いた人が残した一言と、運営が認めた店・地域のお知らせを、話しかけの合間に読み上げる。散策中は地図のマイクから、自分の一言（60 文字まで。声は端末の中で文字にし、声は送らない）を置ける。いいね・ブロック・通報ができ、設定の「スタジオ」で自分の一言とブロックを見られる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)）
+- **スタジオと一言**: 設定でオンにすると、散策中、運営が認めた店・地域のお知らせ（スタジオ）と、その場所を歩いた人が残した一言を、チャンネルのきっかけ（話しかけの合間など）で読み上げる。散策中は地図のマイクから、自分の一言（60 文字まで。声は端末の中で文字にし、声は送らない）を置ける。いいね・ブロック・通報ができ、設定の「一言」で自分の一言とブロックを見られる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)・[REQ-NOTES](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-NOTES.md)）
 - **散歩の記録**: 散歩ごとの日時・距離・時間・経路・案内したスポットと話した内容に加え、プランのテーマ・目安・立ち寄り先・メモを端末内に保存し、記録画面（右上の時計アイコン）で振り返れる
 - **設定**: 設定画面（右上の歯車）は「AI」「チャンネル」「天気・日の入り・施設の知らせ」「画面と音」「地図」「端末に残すデータ」「スタジオ」「このアプリについて」の欄に分かれる。変えた内容は上部の「保存」で保存し、保存しないで戻るときは確かめる
 
@@ -218,7 +218,7 @@ Google Play に出す手順（版の上げ方、AAB、Play Console の登録、�
 | `station` | 組み込みのチャンネルの読み込み（`BuiltInStations`）、スロットからプロンプトの変数を作る（`StationPromptVars`）、AI の費用の目安（`AiCost`）、アプリのプロファイル（`SanpoProfile`）。チャンネル（`Station`）と、選んでいるチャンネルに散策者の変更を重ねる `StationRepository` は platform の kit-channel |
 | `walk` | 散策モードのフォアグラウンドサービス。位置の追跡と「いつ何を話すか」の判断（`WalkService`）、きっかけを読み上げ・カード・通知に出す（`CueShow`）、よく通る道の前もっての取得（`WayPrefetchWorker`） |
 | `report` | 問題を知らせるメールを開く（`AppReport`） |
-| `studio` | スタジオの窓口（`StudioHub`。設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック）。部品は platform kit-studio |
+| `local` | その場の素材（スタジオ・一言）の窓口（`LocalHub`。設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック）。部品は platform kit-local-materials |
 | `ui` | Compose の画面（メイン・記録・設定・チャンネル・プラン）、発言カード、チャンネルの選択（`StationPicker`）、スタジオの画面（`StudioViews`）、ViewModel |
 
 スポット・地図・天気・写真は platform の kit-geo、雰囲気と配色・絵は kit-mood、読み上げと背景音は kit-voice にある。

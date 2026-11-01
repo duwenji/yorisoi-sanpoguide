@@ -4,15 +4,15 @@ import android.app.Application
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.duwenji.yorisoi.kit.studio.Block
-import io.github.duwenji.yorisoi.kit.studio.MyNote
-import io.github.duwenji.yorisoi.kit.studio.NoteRecognizer
-import io.github.duwenji.yorisoi.kit.studio.NoteTtl
-import io.github.duwenji.yorisoi.kit.studio.Reading
-import io.github.duwenji.yorisoi.kit.studio.ReportReason
-import io.github.duwenji.yorisoi.kit.studio.StudioException
-import io.github.duwenji.yorisoi.kit.studio.StudioSettings
-import io.github.duwenji.yorisoi.kit.studio.Terms
+import io.github.duwenji.yorisoi.kit.local.Block
+import io.github.duwenji.yorisoi.kit.local.MyNote
+import io.github.duwenji.yorisoi.kit.local.NoteRecognizer
+import io.github.duwenji.yorisoi.kit.local.NoteTtl
+import io.github.duwenji.yorisoi.kit.local.Reading
+import io.github.duwenji.yorisoi.kit.local.ReportReason
+import io.github.duwenji.yorisoi.kit.local.LocalException
+import io.github.duwenji.yorisoi.kit.local.LocalSettings
+import io.github.duwenji.yorisoi.kit.local.Terms
 import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 sealed interface NoteStep {
     data object Idle : NoteStep
     /** The note terms to agree to first. */
-    data class Terms(val terms: io.github.duwenji.yorisoi.kit.studio.Terms) : NoteStep
+    data class Terms(val terms: io.github.duwenji.yorisoi.kit.local.Terms) : NoteStep
     data object Listening : NoteStep
     /** What was heard, to check before it is sent. */
     data class Confirm(val text: String, val spotName: String?) : NoteStep
@@ -34,13 +34,13 @@ sealed interface NoteStep {
 
 /**
  * The studio on the screens (platform kit-studio README「画面」): placing a note, what the user does
- * with a note or placement read out, and the studio's settings, own notes and blocks.
+ * with a note or studio read out, and the studio's settings, own notes and blocks.
  */
-class StudioViewModel(application: Application) : AndroidViewModel(application) {
+class LocalViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as SanpoApp
-    private val hub = app.studio
+    private val hub = app.local
 
-    val settings: StateFlow<StudioSettings> = hub.settings.settings
+    val settings: StateFlow<LocalSettings> = hub.settings.settings
     val available: Boolean get() = hub.available
     val canPlace: Boolean get() = hub.canPlace
 
@@ -55,7 +55,7 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun tell(text: String) = Toast.makeText(app, text, Toast.LENGTH_SHORT).show()
 
-    private fun failure(e: Exception): String = (e as? StudioException)?.message ?: "スタジオに接続できませんでした"
+    private fun failure(e: Exception): String = (e as? LocalException)?.message ?: "スタジオに接続できませんでした"
 
     // ---- placing a note ----
 
@@ -129,10 +129,10 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
         tell("いいねを送ります（散策の終わりに）")
     }
 
-    /** Opens a placement: its audio again, counted as opened (API-LOCAL-MATERIALS `opened`). */
+    /** Opens a studio: its audio again, counted as opened (API-LOCAL-MATERIALS `opened`). */
     fun open(reading: Reading) {
         hub.opened(reading)
-        val audio = (reading as? Reading.OfPlacement)?.audio ?: return
+        val audio = (reading as? Reading.OfStudio)?.audio ?: return
         viewModelScope.launch { hub.player.play(audio) }
     }
 
@@ -158,7 +158,7 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setListenNotes(on: Boolean) = hub.settings.update { it.copy(listenNotes = on, explained = it.explained || on) }
 
-    fun setListenPlacements(on: Boolean) = hub.settings.update { it.copy(listenPlacements = on, explained = it.explained || on) }
+    fun setListenStudios(on: Boolean) = hub.settings.update { it.copy(listenStudios = on, explained = it.explained || on) }
 
     fun loadMine() = viewModelScope.launch {
         try {
