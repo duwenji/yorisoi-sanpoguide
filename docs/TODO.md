@@ -32,7 +32,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] ストアの設定で決めること: 外部マーケティング（Google が Play の外で宣伝してよいか）
 - [ ] 個人のデベロッパーアカウントなら、本番の前に 12 人以上・14 日以上のクローズドテスト。有料なのでクローズドテストのテスターも購入が要る。プロモーション コードを配るか決める（有料のアプリに使えるか、作れる数を Play Console の「プロモーション」で確かめる）
 
-運営の AI（platform ADR-AI-RELAY）とスポットのタイル（platform ADR-SPOT-TILES）を本番に切り替えるときは、次をそろえる。今はリリース版も開発用の中継（1 日 30 回・月 5 USD、Play Integrity の確認なし）と開発用のタイルの配信を使う
+運営の AI（platform API-AI-RELAY）とスポットのタイル（platform API-SPOT-TILES）を本番に切り替えるときは、次をそろえる。今はリリース版も開発用の中継（1 日 30 回・月 5 USD、Play Integrity の確認なし）と開発用のタイルの配信を使う
 
 - [ ] 本番の中継とタイルの配信の配備（yorisoi-console の手順）と、`app/build.gradle.kts` の `AI_RELAY_URL`・`SPOT_TILES_URL`
 - [ ] Play Integrity: Play Console のアプリに Google Cloud のプロジェクトをつなぎ、その番号を `PLAY_CLOUD_PROJECT_NUMBER` に入れる。サービス アカウントの鍵を本番の中継に入れる
@@ -49,7 +49,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] 雰囲気: 場所の種類の推定が合っているか（とくに「史跡」: 石碑などの `historic` が多い場所では、寺社の近くでも史跡と判定されやすい）。AI のトーンの変わり方
 - [ ] 背景音: 実機のイヤホン（有線・Bluetooth）での音質・音量・切り替えのフェード、イヤホンを外したときの停止、他のアプリで音楽を再生したときの停止。電池の消費（22,050Hz・モノラルの合成を 50ms ごと）
 - [ ] チャンネル: 各チャンネルの語り口、優先する話題の加点（+2）、きっかけの出方。グルメの旅・ショッピングの店の検索
-- [ ] スポットの出どころを集計し（詳しい記録の `spot_search` の `source`・`tiles`・`overpass`）、運営のタイルで空白や待ちが減ったか、Overpass に回る割合を確かめる（platform ADR-SPOT-TILES T-4）。Overpass の予備のサーバーの証明書が Android 11 で信頼されない件も
+- [ ] スポットの出どころを集計し（詳しい記録の `spot_search` の `source`・`tiles`・`overpass`）、運営のタイルで空白や待ちが減ったか、Overpass に回る割合を確かめる。Overpass の予備のサーバーの証明書が Android 11 で信頼されない件も
 
 ## よく通る道（platform REQ-FREQUENT-WAYS）
 
@@ -65,7 +65,7 @@ SanpoGuide で残っている作業と、決めること。できている機能
 
 ## チャンネル
 
-設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNELS.md)・[platform ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
+設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md)・[platform MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 - [ ] 試用チケットで、素材集・基準を使うチャンネルを通しで確かめる（チャンネル提供者の鍵ファイルが届いてから）。カメラで QR を写す確認は実機で
 - [ ] 通知からの切り替え（channels.md の未決事項 No.1。歩いてから決める）

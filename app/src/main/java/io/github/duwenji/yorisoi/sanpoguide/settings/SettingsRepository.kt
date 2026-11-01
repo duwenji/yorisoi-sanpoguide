@@ -58,8 +58,8 @@ data class GuideSettings(
     /** Whether the ways walked again and again become frequent ways by themselves (platform REQ-FREQUENT-WAYS F-17). */
     val findWays: Boolean = true,
     /**
-     * How many times a day the user's own key may be called; null for no limit (platform ADR-004 H-9).
-     * Channels talk within it. The operator's AI keeps the relay's limit instead (ADR-AI-RELAY R-2).
+     * How many times a day the user's own key may be called; null for no limit (platform AI-ROLES H-9).
+     * Channels talk within it. The operator's AI keeps the relay's limit instead (API-AI-RELAY R-2).
      */
     val dailyAiLimit: Int? = 100,
     val mapStyle: MapStyle = MapStyle.GSI_STANDARD,
@@ -100,7 +100,7 @@ data class GuideSettings(
         const val OPERATOR_AI_NAME = AiConnection.OPERATOR_AI_NAME
 
         /**
-         * The route when none is saved (ADR-AI-RELAY R-4): someone who already put in a key keeps it
+         * The route when none is saved (API-AI-RELAY R-4): someone who already put in a key keeps it
          * after the update; everyone else starts on the operator's AI where this build has one.
          */
         fun defaultRoute(hasOwnKey: Boolean, operatorAvailable: Boolean = operatorAiAvailable): AiRoute =

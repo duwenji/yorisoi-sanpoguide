@@ -641,7 +641,7 @@ sequenceDiagram
 
 ## 図 10 · その場の素材: 区画ごとに取り、チャンネルの idle のきっかけで読む
 
-設定で「スタジオを聞く」「一言を聞く」をオンにしているとき、散策中に近くのスタジオ（店や地域のお知らせ）と一言を、チャンネルのきっかけで読み上げる（platform [ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md) D-45〜D-48・[kit-local-materials](https://github.com/duwenji/yorisoi-platform/blob/main/kit-local-materials/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
+設定で「スタジオを聞く」「一言を聞く」をオンにしているとき、散策中に近くのスタジオ（店や地域のお知らせ）と一言を、チャンネルのきっかけで読み上げる（platform [MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md) D-45〜D-48・[kit-local-materials](https://github.com/duwenji/yorisoi-platform/blob/main/kit-local-materials/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
 
 ```mermaid
 sequenceDiagram

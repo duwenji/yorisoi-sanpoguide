@@ -508,7 +508,7 @@ class WalkService : LifecycleService() {
 
     private fun speakLine(text: String, spotName: String? = null) = speakLine(Utterance(System.currentTimeMillis(), text, spotName))
 
-    /** A line from a producer, with its credit, so the AI's lines show they are the AI's (platform ADR-004 H-15). */
+    /** A line from a producer, with its credit, so the AI's lines show they are the AI's (platform AI-ROLES H-15). */
     private fun speakLine(line: Material) =
         speakLine(Utterance(System.currentTimeMillis(), CueShow.textOf(line).orEmpty(), credit = creditLine(line)))
 

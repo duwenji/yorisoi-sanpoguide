@@ -11,7 +11,7 @@ import io.github.duwenji.yorisoi.sanpoguide.report.AppReport
 import io.github.duwenji.yorisoi.kit.channel.report.ReportTarget
 
 /**
- * Opens a draft email to whoever answers for the channel (platform ADR-004 H-11), about one line
+ * Opens a draft email to whoever answers for the channel (platform AI-ROLES H-11), about one line
  * ([said]: when and what) or the channel as a whole. The user writes it and sends it, or not.
  */
 @Composable
@@ -26,5 +26,5 @@ fun ReportLink(target: ReportTarget, said: Pair<Long, String>?, label: String) {
     }) { Text(label) }
 }
 
-/** Shown with the AI's narration and its settings: what it says may be wrong (platform ADR-004 H-15). */
+/** Shown with the AI's narration and its settings: what it says may be wrong (platform AI-ROLES H-15). */
 const val AI_MAY_BE_WRONG = "AI の発言には誤りがありえます。事実は、現地の案内板や公式の情報で確かめてください"

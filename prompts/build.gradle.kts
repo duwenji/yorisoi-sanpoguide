@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // SanpoGuide's prompt pack: the app's prompt files, its built-in channels, how a
 // channel's slots go into its prompts and the review samples. Plain JVM so the channel
-// management system renders exactly the prompts the app sends (ADR-003 E-18).
+// management system renders exactly the prompts the app sends (ECOSYSTEM E-18).
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `maven-publish`

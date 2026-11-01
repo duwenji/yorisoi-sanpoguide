@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import io.github.duwenji.yorisoi.kit.llm.AiRoute
 
-/** The operator's AI and the user's own key (platform ADR-AI-RELAY R-1, R-4). */
+/** The operator's AI and the user's own key (platform API-AI-RELAY R-1, R-4). */
 class AiRouteTest {
     @Test
     fun `someone with a key keeps it after the update, everyone else starts on the operator's AI`() {
