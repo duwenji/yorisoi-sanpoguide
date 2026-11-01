@@ -324,7 +324,7 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 | `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
 | `diagnostics` | 開発者モードでの散歩の詳しい記録（位置・判定・発言・AI・Overpass・天気）と書き出し（記録そのものは `yorisoi-platform/kit-companion` の `SessionRecorder`）（[walk-diagnostics.md](walk-diagnostics.md)） | WalkExport, DiagnosticFields, TimingInterceptor | 217 |
 | `report`    | 問題を知らせるメールを開く（宛先と下書きは `yorisoi-platform/kit-channel`）                                                                                                                                                                                                                                                                                        | AppReport |    22 |
-| `studio`    | スタジオと一言の窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（部品は `yorisoi-platform/kit-studio`） |
+| `studio`    | その場の素材（スタジオ・一言）の窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（部品は `yorisoi-platform/kit-studio`） |
 | (root)        | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ                                                                                                                                                                                                                                                                | SanpoApp                                                                                                                                                                 |   212 |
 
 共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
@@ -375,7 +375,7 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 | 使わない返事の条件を変える                                 | `yorisoi-platform/kit-llm` の `OutputCheck.kt`                                                                                                                                                                        |
 | AI の費用の目安を変える                                    | `station/AiCost.kt`（計算）・`ui/ChannelsScreen.kt` の `CostDialog`（表示）                                                                                                                                       |
 | 問題を知らせるメールの宛先・文面を変える                   | `yorisoi-platform/kit-channel` の `report/Report.kt`（メールを開くのは `report/AppReport.kt`、入口は `ui/ReportLink.kt`）                                                                                                                                                                     |
-| スタジオと一言を読み上げる条件を変える | `walk/WalkService.kt` の `maybeStudio`（間隔は `STUDIO_GAP_MS`）。取得と 1 時間の上限は `yorisoi-platform/kit-studio` の `StudioFeed.kt` |
+| その場の素材（スタジオ・一言）を読み上げる条件を変える | `walk/WalkService.kt` の `maybeStudio`（間隔は `STUDIO_GAP_MS`）。取得と 1 時間の上限は `yorisoi-platform/kit-studio` の `StudioFeed.kt` |
 | 一言を置く流れ・スタジオの設定画面を変える | `ui/StudioViews.kt`・`ui/StudioViewModel.kt`、サーバーとのやり取りは `studio/StudioHub.kt` |
 
 ## 計画中: 素材の第 2 段以降
