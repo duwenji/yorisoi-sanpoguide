@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 承認済み。組み込みのチャンネル、第三者のチャンネル、素材の第 1 段（テキスト・画像）は実装済み。素材の第 2 段・第 3 段は未着手 |
-| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform ADR-CHANNEL-CURATION](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md) |
+| 関連 | [TODO.md「チャンネル」](TODO.md#チャンネル)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、[platform API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)、[platform ADR-CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNELS.md) |
 
 チャンネルは、語り手・話題・話す場面・話す量・雰囲気をまとめて切り替え、同じ散歩を違う体験にする機能。第三者のチャンネルは、素材（テキスト・画像・音声・映像）を決まったきっかけ・見せ方で出すこともできる（API-CHANNEL-PACKAGE「素材・きっかけ・見せ方」）。本書は、アプリの中での作り方（組み込みのチャンネル、散策者のカスタマイズ、散歩中の切り替え、記録、コードの構成）を決める。チャンネルの中身の形式は API-CHANNEL-PACKAGE、第三者のチャンネルの取得は API-CHANNEL-LIST で決めてある。
 
@@ -62,7 +62,7 @@
 - 保存するのは、初期値から変えた項目だけ（`Threshold` と同じ方式）。アプリの更新で初期値が変わったとき、変えていない項目には新しい初期値が使われる。保存のキーは `station_{id}_{項目}`（項目は `talk_level`・`mood_tone`・`events`・`guide_length`・`sound`・`prefer`。集合は `channel.json` の綴りをカンマでつなぐ。`OverrideCodec`）。初期値と同じ値は `Station.normalize` で落とす
 - 話す場面をすべてオフにした状態も「変更」として保存する（空の集合。項目がない状態とは区別する）
 - 散策者が優先にした種類は、チャンネルが除く種類（`spots.skip`）に入っていても除かない
-- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。ADR-CHANNEL-CURATION の未決事項 No.2）
+- 第三者のチャンネルは、カスタマイズできない（チャンネル提供者に任せる。ADR-CHANNELS の未決事項 No.2）
 - 背景音のオン・オフ、音量、イヤホンのときだけ、画面を雰囲気に合わせるかは、チャンネルではなく全体の設定（端末と安全に関わるため）
 - 選んでいるチャンネルの初期値は「標準」
 
@@ -109,7 +109,7 @@ API-CHANNEL-PACKAGE にすべての種類を定め、アプリは次の段で対
 - 見せ方の安全の決まり（API-CHANNEL-PACKAGE F-8）は、見せ方ごとの部品（読み上げ・カード・通知・解説の画面・全画面・再生）の側で強制する。きっかけの側では判定しない（どこから呼ばれても守られるようにするため）
 - 「歩いている」は位置の速さ（0.5m/s 以上、1 分以内の位置）で判定する（`Pace`）。散歩の外では位置を一度しか取らないため、解説の画面か全画面を開いている間だけ、画面の側で位置の更新を受ける
 - 素材の取得はチャンネルを選んだときに、回線の種類を問わず行う。その後の更新（新しい版の素材集、取り損ねた素材）は従量制でない回線のときだけ。取得が済むまでは、取得していない素材を指す候補を飛ばして次の候補を使う
-- 基準（`selectors`）の素材集は、従量制でない回線のときだけ、チャンネルを選んだとき・起動時・散歩の開始時に、今いる地域とその隣の地域・地域を持たないものを取得する（API-MATERIAL-PRODUCER P-6）
+- 基準（`selectors`）の素材集は、従量制でない回線のときだけ、チャンネルを選んだとき・起動時・散歩の開始時に、今いる地域とその隣の地域・地域を持たないものを取得する（API-MATERIALS P-6）
 - 素材の保存先はアプリの内部の領域（`filesDir/channels/` の `col/{SHA-256}.zip`・`res/{SHA-256}`）。どのチャンネルも使わなくなった素材は、チャンネルを消したとき・リストを取得したときにすぐ消す。基準の素材集は、離れた地域に移ると消す
 - `repeat` の `oncePerDay`・`once` の記録は端末に残す（`cues.json`。キーは「チャンネルID#きっかけID」で、チャンネルの版が上がっても引き継ぐ）
 - 散歩の外でチャンネルを選んだときも、`select` のきっかけを出す。散歩中に選んだときは、切り替えの一言の後に出す
@@ -129,7 +129,7 @@ API-CHANNEL-PACKAGE にすべての種類を定め、アプリは次の段で対
 |---|---|
 | yorisoi-platform の `core-format`（JVM、Android に依存しない） | `channel.json` の読み込み（`StationManifest`）、API-CHANNEL-PACKAGE の確認（`StationValidator`）、署名の確認、エラーコード、素材提供者の記述・方針（`ProducerDescriptor`・`ProducerPolicy`）。チャンネル管理システムの機械審査でも、同じものを使う |
 | `:prompts` の `sanpoguide/channels/{id}/` | 組み込みのチャンネル（API-CHANNEL-PACKAGE の構成。`signature.json` なし）と `BuiltInChannels` |
-| yorisoi-platform の `kit-channel`（JVM） | `Station`（設定値とスロットの読み込み）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`ResourceChannels`（組み込みのチャンネルを resources から読む。`BuiltInChannels` はこれを使う）、`ChannelMaterials`（第三者のチャンネルの素材）、`remote/`（第三者のチャンネルの取り込み: `ChannelSync`・`ThirdPartyChannels`）、`material/`（素材提供者の IF `Producer`、候補を順に試す `Producers`（API-MATERIAL-PRODUCER I-7）、素材の計画 `MaterialPlan`・`SelectorPlan`、きっかけ `Cues`、AI の根拠 `Grounding`）、`report/`（通報） |
+| yorisoi-platform の `kit-channel`（JVM） | `Station`（設定値とスロットの読み込み）、`StationRepository`（選んでいるチャンネル・カスタマイズ）、`ResourceChannels`（組み込みのチャンネルを resources から読む。`BuiltInChannels` はこれを使う）、`ChannelMaterials`（第三者のチャンネルの素材）、`remote/`（第三者のチャンネルの取り込み: `ChannelSync`・`ThirdPartyChannels`）、`material/`（素材提供者の IF `Producer`、候補を順に試す `Producers`（API-MATERIALS I-7）、素材の計画 `MaterialPlan`・`SelectorPlan`、きっかけ `Cues`、AI の根拠 `Grounding`）、`report/`（通報） |
 | `app` の `station/` | `BuiltInStations`（`BuiltInChannels` を `Station` にする）、`StationPromptVars`（スロットからプロンプトの変数を作る）、`AiCost`（費用の目安）、`StationLabels` |
 | `app` の `material/` | 組み込みの素材提供者（`BuiltIns.kt`）、散歩と画面が使う入り口 `Narration`、散歩の文脈 `WalkMaterial`、見せ方の並べ方 `CueLayout` |
 

@@ -259,7 +259,7 @@ flowchart LR
 
 ## 図 7 · 素材ときっかけ: チャンネルが決めた場面で、決めた素材を出す
 
-チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)・[platform API-MATERIAL-PRODUCER](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
+チャンネルは、きっかけ（スポット・地点・出来事）と見せ方を決め、素材（文字・画像）を出せる（[platform ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md)、[platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)・[platform API-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIALS.md)）。素材は、組み込みの素材提供者（AI の解説・話しかけ、定型文、Wikimedia の写真、背景音、雰囲気の絵）・チャンネルに同梱の素材・リストに載った素材集から、共通の IF（`Producer`）で取り出す。
 
 ```mermaid
 flowchart LR
@@ -299,12 +299,12 @@ platform の [REQ-FREQUENT-WAYS](https://github.com/duwenji/yorisoi-platform/blo
 
 ### スタジオ
 
-platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md) の SanpoGuide 側。部品は kit-studio（[API-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-STUDIO.md)）。運営の AI の中継が使えるときだけ動く（中継のトークンを使う）。
+platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md) の SanpoGuide 側。部品は kit-studio（[API-LOCAL-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-LOCAL-MATERIALS.md)）。運営の AI の中継が使えるときだけ動く（中継のトークンを使う）。
 
-- 散歩を始めると `StudioHub.startWalk()` が `StudioFeed` を作り、位置ごとに周辺の区画の一言・掲載を取る（5 分おき）。散歩を終えると、聞いた・開いた・いいねをまとめて送る
-- 話すことがないとき（`TalkDecision.Nothing`）に、前の発言から 1 分空いていれば、`WalkService.maybeStudio` が一言・掲載を 1 つ読み上げる。掲載に音声があれば `ClipPlayer` で続けて流す。発言カードに「一言」「掲載」と出し、開くと、いいね・ブロック・通報・音声をもう一度
+- 散歩を始めると `StudioHub.startWalk()` が `StudioFeed` を作り、位置ごとに周辺の区画の一言・スタジオを取る（5 分おき）。散歩を終えると、聞いた・開いた・いいねをまとめて送る
+- 話すことがないとき（`TalkDecision.Nothing`）に、前の発言から 1 分空いていれば、`WalkService.maybeStudio` が一言・スタジオを 1 つ読み上げる。スタジオに音声があれば `ClipPlayer` で続けて流す。発言カードに「一言」「スタジオ」と出し、開くと、いいね・ブロック・通報・音声をもう一度
 - 散歩中は地図の右下のマイクから一言を置く（`NoteFlow`）。初めては利用規約への同意、聞き取りは端末の中だけ（`NoteRecognizer`）、送る前に文を確かめる
-- 設定の「スタジオ」（`StudioSettingsPart`）で、一言・掲載を聞くかどうか、自分の一言（聞いた数のおおよそ・消す）、ブロックの一覧
+- 設定の「スタジオ」（`StudioSettingsPart`）で、一言・スタジオを聞くかどうか、自分の一言（聞いた数のおおよそ・消す）、ブロックの一覧
 
 ## パッケージ一覧
 
@@ -321,10 +321,10 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 | `settings`  | 設定の保存（選んでいるチャンネルと、その変更を含む）、話しかけの頻度の段階、しきい値                                                                                                                                                                                                                | SettingsRepository, OverrideCodec, TalkLevel, Threshold                                                                                                                  |   361 |
 | `history`   | 散歩の記録（端末内 JSON、最新 500 件。チャンネルの区間を含む）と再訪の判定                                                                                                                                                                                                                                                | HistoryStore（WalkJson）                                                                                                                                                 |   190 |
 | `station`   | チャンネル（[channels.md](channels.md)）。組み込みのチャンネルの読み込み、プロンプトの変数、画面の表示名、AI の費用の目安、アプリが出せる範囲（チャンネルそのもの・選んでいるチャンネル・第三者のチャンネルの取り込みは `yorisoi-platform/kit-channel`） | BuiltInStations, StationPromptVars, StationLabels, AiCost, SanpoProfile | 126 |
-| `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
+| `material`  | 組み込みの素材提供者、散歩の素材の窓口、散歩が足す題材・素材・文脈（`PoiSubject`・`EventSubject`・`WalkSituation` ほか）、見せ方の並べ方、画像の縮小。素材提供者の共通の IF・きっかけの判定と素材への変換・基準で選ぶ素材提供者・AI の根拠は `yorisoi-platform/kit-channel`（[platform ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md)）                                                 | BuiltIns, Narration, WalkMaterial, CueLayout, MaterialImages | 419 |
 | `diagnostics` | 開発者モードでの散歩の詳しい記録（位置・判定・発言・AI・Overpass・天気）と書き出し（記録そのものは `yorisoi-platform/kit-companion` の `SessionRecorder`）（[walk-diagnostics.md](walk-diagnostics.md)） | WalkExport, DiagnosticFields, TimingInterceptor | 217 |
 | `report`    | 問題を知らせるメールを開く（宛先と下書きは `yorisoi-platform/kit-channel`）                                                                                                                                                                                                                                                                                        | AppReport |    22 |
-| `studio`    | スタジオ（場所に残る一言と提供者の掲載）の窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（部品は `yorisoi-platform/kit-studio`） |
+| `studio`    | その場の素材（スタジオ・一言）の窓口: 設定・端末の記録・散歩ごとの取得・一言を置く・通報・ブロック（部品は `yorisoi-platform/kit-studio`） |
 | (root)        | 共有部品の生成、通知チャンネルの登録、散歩の外でのきっかけ                                                                                                                                                                                                                                                                | SanpoApp                                                                                                                                                                 |   212 |
 
 共通の部品（別のリポジトリ [yorisoi-platform](https://github.com/duwenji/yorisoi-platform)。公開した版を `gradle/libs.versions.toml` の `yorisoi` で固定して使う。[platform ADR-ECOSYSTEM-PLATFORM](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-ECOSYSTEM-PLATFORM.md)）と SanpoGuide のプロンプト・パック:
@@ -339,10 +339,10 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 | `yorisoi-platform/kit-companion`（JVM） | `…kit.companion`                                      | 「いま何を話すか」のエンジン: ルールの並びを、アプリのゲート（間隔・とどまっているか など）に従って上から評価する                                                    | TalkEngine, TalkRule, TalkGates                                                                                              |    42 |
 | `yorisoi-platform/kit-channel`（JVM）   | `…kit.channel`                                        | チャンネル: 散策者の変更を重ねた設定値とスロット、チャンネルの一覧と使っているチャンネル、組み込みのチャンネルの読み込み、第三者のチャンネルの素材、第三者のチャンネルの取り込み（`remote`）、素材の計画と素材提供者（`material`）、通報（`report`） | Station, StationRepository, ResourceChannels, ChannelMaterials, remote/ChannelSync, remote/ThirdPartyChannels, material/Producer, material/Cues, material/Grounding, report/Report | 2,140 |
 | `yorisoi-platform/kit-mood`             | `…kit.mood`                                           | 雰囲気のモデル、場所の種類の推定、現在の雰囲気、配色と絵、背景音の選び方                                                                                             | Mood, MoodSource, PlaceGuess, MoodTheme, MoodScene, SoundscapeChoice                                                         |   622 |
-| `yorisoi-platform/kit-studio`           | `…kit.studio`                                         | スタジオ: API-STUDIO のクライアント、散歩中の取得と読み上げの順番、聞いた・いいねの記録、掲載の音声、端末の中での聞き取り |
+| `yorisoi-platform/kit-studio`           | `…kit.studio`                                         | スタジオ: API-LOCAL-MATERIALS のクライアント、散歩中の取得と読み上げの順番、聞いた・いいねの記録、スタジオの音声、端末の中での聞き取り |
 | `:prompts`（JVM）                       | `io.github.duwenji.yorisoi.sanpoguide.prompt`          | SanpoGuide のプロンプトのファイルと組み込みのチャンネル、スロットの差し込み、審査の見本                                                                              | Prompts, StationPrompts, BuiltInChannels, ReviewSamples                                                                      |   290 |
 
-チャンネルの形式（platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIAL-PRODUCER](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIAL-PRODUCER.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
+チャンネルの形式（platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)）の読み込みと確認（第三者のパッケージの ZIP の展開とチャンネル提供者の署名の確認を含む）、リストの文書（発見の文書・鍵セット・リスト・試用チケット。platform [API-CHANNEL-LIST](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-LIST.md)）の確認、素材集の形式と参照の解決・地域の計算（platform [API-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-MATERIALS.md)）、プロンプトのファイルと `PromptTemplates`、チャンネルのスロットからプロンプトを組み立てる `StationPrompts`、組み込みのチャンネルは、Android に依存しない JVM のモジュールにある。形式・リスト・素材集の確認は `yorisoi-platform/core-format`、`PromptTemplates` は `yorisoi-platform/core-prompt`、プロンプトのファイル・`StationPrompts`・組み込みのチャンネル・審査の見本は SanpoGuide のプロンプト・パック `:prompts`。チャンネル管理システムの審査用の道具でも、同じ確認と同じプロンプトを使うため（GitHub Packages に `io.github.duwenji.yorisoi:core-format`・`core-prompt` と `io.github.duwenji.yorisoi.sanpoguide:prompts` として公開する）。ファイルは `prompts/src/main/resources/sanpoguide/` にあり、アプリはクラスパスから読む。
 
 ## 変更の入口: こうしたいときはここを開く
 
@@ -375,7 +375,7 @@ platform の [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/
 | 使わない返事の条件を変える                                 | `yorisoi-platform/kit-llm` の `OutputCheck.kt`                                                                                                                                                                        |
 | AI の費用の目安を変える                                    | `station/AiCost.kt`（計算）・`ui/ChannelsScreen.kt` の `CostDialog`（表示）                                                                                                                                       |
 | 問題を知らせるメールの宛先・文面を変える                   | `yorisoi-platform/kit-channel` の `report/Report.kt`（メールを開くのは `report/AppReport.kt`、入口は `ui/ReportLink.kt`）                                                                                                                                                                     |
-| スタジオの一言・掲載を読み上げる条件を変える | `walk/WalkService.kt` の `maybeStudio`（間隔は `STUDIO_GAP_MS`）。取得と 1 時間の上限は `yorisoi-platform/kit-studio` の `StudioFeed.kt` |
+| その場の素材（スタジオ・一言）を読み上げる条件を変える | `walk/WalkService.kt` の `maybeStudio`（間隔は `STUDIO_GAP_MS`）。取得と 1 時間の上限は `yorisoi-platform/kit-studio` の `StudioFeed.kt` |
 | 一言を置く流れ・スタジオの設定画面を変える | `ui/StudioViews.kt`・`ui/StudioViewModel.kt`、サーバーとのやり取りは `studio/StudioHub.kt` |
 
 ## 計画中: 素材の第 2 段以降

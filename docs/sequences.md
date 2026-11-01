@@ -66,7 +66,7 @@
 | P36 | 出力 | 読み上げ（`kit-voice` の `Speaker`）・発言カード（`CompanionFeed.add`）・通知 | 3, 4, 5, 6, 8, 9, 10 |
 | P37 | StudioHub | `studio/StudioHub.kt`（スタジオの窓口） | 10 |
 | P38 | StudioFeed | `yorisoi-platform/kit-studio` の `StudioFeed`（散歩 1 回分の取得・選び方・反応） | 10 |
-| P39 | スタジオ | 運営のスタジオの API（yorisoi-console の `YorisoiStudio`。platform API-STUDIO） | 10 |
+| P39 | スタジオ | 運営のスタジオの API（yorisoi-console の `YorisoiStudio`。platform API-LOCAL-MATERIALS） | 10 |
 | P40 | ClipPlayer | `yorisoi-platform/kit-studio` の `ClipPlayer`（お知らせの音声。読み上げが終わってから流す） | 10 |
 
 P26 と P36 はどちらも `CompanionFeed` を使うが、P26 は地図とカードの上の数字に出す状態、P36 は発言（カード 1 枚ずつ）として分けている。
@@ -641,7 +641,7 @@ sequenceDiagram
 
 ## 図 10 · スタジオ: 区画ごとに取り、話すことがないときに読む
 
-設定で「一言を聞く」「お知らせを聞く」をオンにしているとき、散策中に近くの一言とお知らせ（掲載）を読み上げる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)・[kit-studio](https://github.com/duwenji/yorisoi-platform/blob/main/kit-studio/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
+設定で「一言を聞く」「お知らせを聞く」をオンにしているとき、散策中に近くの一言とお知らせ（スタジオ）を読み上げる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)・[kit-studio](https://github.com/duwenji/yorisoi-platform/blob/main/kit-studio/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
 
 ```mermaid
 sequenceDiagram
@@ -696,7 +696,7 @@ sequenceDiagram
 | 10-12 | P12 → P36 | `Utterance.studio` に入れてカードに出し、出どころを言ってから読む。カードを開くと、いいね・ブロック・通報（`StudioViewModel`）。 | `Reading.spoken`・`ui/StudioViews.kt` |
 | 10-13 | P12 → P40 | 読み上げが終わるのを待って、お知らせの音声を流す。音声は 10-7 のあとに前もって取り、SHA-256 を確かめてキャッシュに置いたもの。 | `ClipPlayer.play()`・`ClipCache` |
 | 10-14 | P12 → P38 | サービスが止まっても送れるよう、`appScope` で終える。 | `StudioFeed.finish()` |
-| 10-15 | P38 → P39 | 聞いた・開いた・いいねをまとめて送る（API-STUDIO ST-5）。 | `StudioClient.reactions()` |
+| 10-15 | P38 → P39 | 聞いた・開いた・いいねをまとめて送る（API-LOCAL-MATERIALS ST-5）。 | `StudioClient.reactions()` |
 | 10-16 | P12 → P37 | フィードを外す。 | `StudioHub.endWalk()` |
 
 - 一言を置く（マイク → 利用規約の同意 → 端末の中での聞き取り → 確認 → `POST /v1/studio/notes`）は画面だけで完結し、`WalkService` を通らない（`ui/StudioViewModel.kt`）

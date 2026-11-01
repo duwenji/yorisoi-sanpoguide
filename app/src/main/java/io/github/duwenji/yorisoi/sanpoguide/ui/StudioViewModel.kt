@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Where placing a note is (platform REQ-STUDIO F-1, D-24). */
+/** Where placing a note is (platform REQ-NOTES F-1, D-24). */
 sealed interface NoteStep {
     data object Idle : NoteStep
     /** The note terms to agree to first. */
@@ -129,7 +129,7 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
         tell("いいねを送ります（散策の終わりに）")
     }
 
-    /** Opens a placement: its audio again, counted as opened (API-STUDIO `opened`). */
+    /** Opens a placement: its audio again, counted as opened (API-LOCAL-MATERIALS `opened`). */
     fun open(reading: Reading) {
         hub.opened(reading)
         val audio = (reading as? Reading.OfPlacement)?.audio ?: return
@@ -195,6 +195,6 @@ class StudioViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     companion object {
-        const val TERMS_URL = "https://github.com/duwenji/yorisoi-platform/blob/main/docs/policies/studio-note-terms.md"
+        const val TERMS_URL = "https://github.com/duwenji/yorisoi-platform/blob/main/docs/policies/notes-terms.md"
     }
 }

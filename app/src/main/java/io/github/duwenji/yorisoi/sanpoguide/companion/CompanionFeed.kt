@@ -25,7 +25,7 @@ data class Utterance(
     val detail: CueDetail? = null,
     /** The channel in use when it was said, for a report (platform ADR-004 H-11). */
     val channel: ReportTarget? = null,
-    /** A note or placement of the studio read out, not the companion's own words (platform ADR-STUDIO S-1). */
+    /** A note or placement of the studio read out, not the companion's own words (platform ADR-MATERIALS D-38). */
     val studio: Reading? = null,
 )
 

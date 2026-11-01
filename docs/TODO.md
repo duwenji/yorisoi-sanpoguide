@@ -61,12 +61,12 @@ SanpoGuide で残っている作業と、決めること。できている機能
 1.8.0 (13) に入っている。開発用のスタジオにつながる。
 
 - [ ] 内部テストへの送信（Play のデータ セーフティとコンテンツのレーティングは [play-console.md](play-console.md) のとおりに入れ直す）
-- [ ] 実機での確認: マイクから声で一言を置く（屋外・風の中での聞き取り。REQ-STUDIO U-4）、聞き取り中にやめる、お知らせの音声の再生と読み上げとの順番、散歩の終わりのいいね・聞いた数の送信
+- [ ] 実機での確認: マイクから声で一言を置く（屋外・風の中での聞き取り。REQ-NOTES U-4）、聞き取り中にやめる、お知らせの音声の再生と読み上げとの順番、散歩の終わりのいいね・聞いた数の送信
 - [ ] 本番のスタジオに切り替えるときの `STUDIO_URL`（本番の中継と同じ時期）
 
 ## チャンネル
 
-設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNEL-CURATION](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNEL-CURATION.md)・[platform ADR-MATERIAL-PRODUCERS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIAL-PRODUCERS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
+設計は [channels.md](channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform ADR-CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-CHANNELS.md)・[platform ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
 
 - [ ] 試用チケットで、素材集・基準を使うチャンネルを通しで確かめる（チャンネル提供者の鍵ファイルが届いてから）。カメラで QR を写す確認は実機で
 - [ ] 通知からの切り替え（channels.md の未決事項 No.1。歩いてから決める）
