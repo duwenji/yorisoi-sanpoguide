@@ -140,7 +140,7 @@ fun MainScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val liveWalk by viewModel.liveWalk.collectAsStateWithLifecycle()
     val lines by viewModel.companionLines.collectAsStateWithLifecycle()
-    val studio: StudioViewModel = viewModel()
+    val studio: LocalViewModel = viewModel()
     NoteFlow(studio)
     val location by viewModel.location.collectAsStateWithLifecycle()
     val spots by viewModel.spots.collectAsStateWithLifecycle()

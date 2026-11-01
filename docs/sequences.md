@@ -58,16 +58,16 @@
 | P28 | WeatherClient | `yorisoi-platform/kit-geo` の `WeatherClient`（Open-Meteo） | 3 |
 | P29 | Narration | `material/Narration.kt`（散歩と画面が使う素材の窓口） | 3, 4, 6, 9 |
 | P30 | Producers | `yorisoi-platform/kit-channel` の `material/Producer.kt` の `Producers`（候補を順に試す） | 3, 4, 6 |
-| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`）・チャンネルに同梱（kit-channel の `ResourceProducer`）・素材集（kit-channel の `ChannelMaterials`・`SelectorProducer`） | 5 |
+| P31 | 素材提供者 | 組み込み（`material/BuiltIns.kt`、スタジオと一言は kit-local-materials の `StudioProducer`・`NoteProducer`）・チャンネルに同梱（kit-channel の `ResourceProducer`）・素材集（kit-channel の `ChannelMaterials`・`SelectorProducer`） | 5, 10 |
 | P32 | GuideRepository | `guide/GuideRepository.kt`（AI の解説とキャッシュ・自由な生成） | 4, 6 |
 | P33 | SpotPhotos | `yorisoi-platform/kit-geo` の `SpotPhotos` | 6 |
-| P34 | CueFinder | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5 |
-| P35 | CuePresenter | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CuePresenter`（きっかけを素材にする） | 4, 5 |
+| P34 | CueFinder | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CueFinder`（きっかけの当たり判定と回数） | 5, 10 |
+| P35 | CuePresenter | `yorisoi-platform/kit-channel` の `material/Cues.kt` の `CuePresenter`（きっかけを素材にする） | 4, 5, 10 |
 | P36 | 出力 | 読み上げ（`kit-voice` の `Speaker`）・発言カード（`CompanionFeed.add`）・通知 | 3, 4, 5, 6, 8, 9, 10 |
-| P37 | StudioHub | `studio/StudioHub.kt`（スタジオの窓口） | 10 |
-| P38 | StudioFeed | `yorisoi-platform/kit-studio` の `StudioFeed`（散歩 1 回分の取得・選び方・反応） | 10 |
-| P39 | スタジオ | 運営のスタジオの API（yorisoi-console の `YorisoiStudio`。platform API-LOCAL-MATERIALS） | 10 |
-| P40 | ClipPlayer | `yorisoi-platform/kit-studio` の `ClipPlayer`（お知らせの音声。読み上げが終わってから流す） | 10 |
+| P37 | LocalHub | `local/LocalHub.kt`（その場の素材の窓口） | 10 |
+| P38 | LocalFeed | `yorisoi-platform/kit-local-materials` の `LocalFeed`（散歩 1 回分の取得・種類ごとの選び方・反応） | 10 |
+| P39 | その場の素材の配信 | 運営の配信の API（yorisoi-console の `YorisoiLocalMaterials`。platform API-LOCAL-MATERIALS） | 10 |
+| P40 | ClipPlayer | `yorisoi-platform/kit-local-materials` の `ClipPlayer`（スタジオの音声。読み上げが終わってから流す） | 10 |
 
 P26 と P36 はどちらも `CompanionFeed` を使うが、P26 は地図とカードの上の数字に出す状態、P36 は発言（カード 1 枚ずつ）として分けている。
 
@@ -117,7 +117,7 @@ sequenceDiagram
 | 1-9 | P21 → P21 | 発見の文書: ルート鍵から計算したリスト ID が、散策者が登録した ID と一致するか、鍵のセットの署名、`seq` が戻っていないか。リスト: 要約の署名が有効な署名鍵か、本文の大きさと SHA-256 が要約と一致するか、期限（発行から 14 日以内・期限前）、`seq` が戻っていないか。通ったら `apply()` で、取り下げられたチャンネルを消してお知らせを出し、新しい版は従量制でない回線のときだけ取る。失敗したら理由をリストの `error` に残し、前のリストを期限まで使う。最後に、近くの素材集の取得（従量制でない回線のとき）・期限切れのお知らせ・試用の期限切れの削除をする。 | `ProviderDocuments.discovery()`・`channelList()`（core-format）・`ChannelSync.apply()`・`fetchNearby()` |
 | 1-10 | P21 → P20 | 成功しても失敗しても、使えるチャンネル・リストの表示・お知らせ・試用のチャンネルを流し直す。 | `ThirdPartyChannels.exec()` の `finally` |
 | 1-11 | P20 → P19 | `stations` が変わると `list` と `current` が計算し直される。端末に保存した第三者のチャンネルを選んでいた場合は、ここで標準から替わる。 | `StationRepository.list`・`current` |
-| 1-12 | P17 → P17 | 残りの共有部品を作る: チャンネルを替えてお店の種類が変わったらスポットを検索し直す見張り、`AiUsage`、`GuideRepository`、`Speaker`、`SpotPhotos`、`HistoryStore`、`ActiveWalkPlanStore`、`MoodSource`、`WalkCompanion`、組み込みの素材提供者 6 つを持つ `Producers`、`Narration`、`CueFinder`（`cues.json`）、`CuePresenter`（素材の第 1 段まで）、`CueShow`。散歩の外でチャンネルを選んだときに `select` のきっかけを出す見張り（図 5）も始める。 | `SanpoApp.onCreate()` |
+| 1-12 | P17 → P17 | 残りの共有部品を作る: チャンネルを替えてお店の種類が変わったらスポットを検索し直す見張り、`AiUsage`、`GuideRepository`、`Speaker`、`SpotPhotos`、`HistoryStore`、`ActiveWalkPlanStore`、`MoodSource`、`WalkCompanion`、組み込みの素材提供者 8 つ（スタジオ・一言を含む）を持つ `Producers`、`Narration`、`CueFinder`（`cues.json`）、`CuePresenter`（素材の第 1 段まで）、`CueShow`。散歩の外でチャンネルを選んだときに `select` のきっかけを出す見張り（図 5）も始める。 | `SanpoApp.onCreate()` |
 | 1-13 | P17 → P24 | 散歩の記録を `appScope` で読み込む。待たない。 | `HistoryStore.load()` |
 | 1-14 | P17 → P02 | 通知チャンネルを登録する: `cue`（チャンネルの案内・高）、`walk`（散策モード・低）、`spot`（スポット案内・高）、`weather_alert`（雷雨の予報・高、音とバイブあり）。 | `NotificationManager.createNotificationChannel()` |
 
@@ -639,64 +639,69 @@ sequenceDiagram
 
 - 終わったあとに生成が終わった文は、`speakLine()` が捨てる（常駐の通知を出し直さないため）。まとめの一言だけは、この図のとおり `appScope` から出す。
 
-## 図 10 · スタジオ: 区画ごとに取り、話すことがないときに読む
+## 図 10 · その場の素材: 区画ごとに取り、チャンネルの idle のきっかけで読む
 
-設定で「一言を聞く」「お知らせを聞く」をオンにしているとき、散策中に近くの一言とお知らせ（スタジオ）を読み上げる（platform [REQ-STUDIO](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-STUDIO.md)・[kit-studio](https://github.com/duwenji/yorisoi-platform/blob/main/kit-studio/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
+設定で「スタジオを聞く」「一言を聞く」をオンにしているとき、散策中に近くのスタジオ（店や地域のお知らせ）と一言を、チャンネルのきっかけで読み上げる（platform [ADR-MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/decisions/ADR-MATERIALS.md) D-45〜D-48・[kit-local-materials](https://github.com/duwenji/yorisoi-platform/blob/main/kit-local-materials/README.md)）。運営の AI の中継がないビルドでは、10-1 で何もしない。
 
 ```mermaid
 sequenceDiagram
   participant WS as P12 WalkService
-  participant Hub as P37 StudioHub
-  participant SF as P38 StudioFeed
-  participant ST as P39 スタジオ
+  participant Hub as P37 LocalHub
+  participant LF as P38 LocalFeed
+  participant ST as P39 その場の素材の配信
   participant TD as P15 TalkDecider
+  participant CU as P34・P35 CueFinder・CuePresenter
   participant Out as P36 出力
   participant CP as P40 ClipPlayer
 
   WS->>Hub: 10-1 startWalk()
-  Hub-->>WS: 10-2 StudioFeed
-  WS-)SF: 10-3 start()（前の散歩で送れなかった反応を送る）
-  SF->>ST: 10-4 POST /v1/studio/reactions
+  Hub-->>WS: 10-2 LocalFeed
+  WS-)LF: 10-3 start()（前の散歩で送れなかった反応を送る）
+  LF->>ST: 10-4 POST /v1/local/reactions
   loop 位置が変わるたび
-    WS->>SF: 10-5 onLocation(lat, lon)
+    WS->>LF: 10-5 onLocation(lat, lon)
     opt 区画が変わった・5 分たった
-      SF->>ST: 10-6 GET /v1/studio/cells（周りの 9 区画）
-      ST-->>SF: 10-7 一言・お知らせ
+      LF->>ST: 10-6 GET /v1/local/cells（周りの 9 区画）
+      ST-->>LF: 10-7 スタジオ・一言
     end
   end
   WS->>TD: 10-8 decide()
   TD-->>WS: 10-9 Nothing
   opt 前の発言から 1 分空いた
-    WS->>SF: 10-10 next()
-    SF-->>WS: 10-11 Reading（近く・上限の中・まだ聞いていない）
-    WS->>Out: 10-12 カード・読み上げ（「一言」「お知らせ」の印つき）
-    opt お知らせに音声がある
-      WS-)CP: 10-13 play(audio)
+    WS->>CU: 10-10 events(station.cueMedia, IDLE)・present()
+    CU->>LF: 10-11 nextStudio(分類) / nextNote()（StudioProducer・NoteProducer）
+    LF-->>CU: 10-12 Reading（近く・上限の中・まだ聞いていない）
+    CU-->>WS: 10-13 LocalReading（前置き・出どころ・原文）
+    WS->>Out: 10-14 カード・読み上げ（「一言」「お知らせ」の印つき）
+    opt スタジオに音声がある
+      WS-)CP: 10-15 play(audio)
     end
   end
   Note over WS: 散策の終了（図 9）
-  WS-)SF: 10-14 finish()（appScope）
-  SF->>ST: 10-15 POST /v1/studio/reactions（聞いた・開いた・いいね）
-  WS->>Hub: 10-16 endWalk()
+  WS-)LF: 10-16 finish()（appScope）
+  LF->>ST: 10-17 POST /v1/local/reactions（聞いた・開いた・いいね）
+  WS->>Hub: 10-18 endWalk()
 ```
 
 | 番号 | 送り手 → 受け手 | 処理 | コード |
 |---|---|---|---|
-| 10-1 | P12 → P37 | 散策の開始で、散歩 1 回分のフィードを作る。中継がなければ null。 | `WalkService.onStartCommand()`・`StudioHub.startWalk()` |
-| 10-2 | P37 → P12 | `StudioFeed`。画面の操作（いいね・開いた）も同じフィードに積む。 | `StudioHub.feed` |
-| 10-3 | P12 → P38 | 前の散歩の終わりに送れなかった反応を先に送る。 | `StudioFeed.start()` |
-| 10-4 | P38 → P39 | 反応をまとめて送る。送れなければ端末に残す。 | `StudioClient.reactions()`・`StudioMemory` |
-| 10-5 | P12 → P38 | 位置ごとに渡す。失敗してもログだけで散歩は続ける。 | `StudioFeed.onLocation()` |
-| 10-6 | P38 → P39 | 今の区画（geohash6）と周り 8 つを、区画が変わったときか 5 分ごとに取る。聞く設定がどちらもオフなら取らない。中継のトークンを付ける。 | `StudioClient.cells()` |
-| 10-7 | P39 → P38 | 一言とお知らせ。置いた人を表す値は入らない（自分のものは `mine`）。 | `CellList` |
+| 10-1 | P12 → P37 | 散策の開始で、散歩 1 回分のフィードを作る。中継がなければ null。 | `WalkService.onStartCommand()`・`LocalHub.startWalk()` |
+| 10-2 | P37 → P12 | `LocalFeed`。画面の操作（いいね・開いた）と素材提供者も同じフィードを使う。 | `LocalHub.feed` |
+| 10-3 | P12 → P38 | 前の散歩の終わりに送れなかった反応を先に送る。 | `LocalFeed.start()` |
+| 10-4 | P38 → P39 | 反応をまとめて送る。送れなければ端末に残す。 | `LocalClient.reactions()`・`LocalMemory` |
+| 10-5 | P12 → P38 | 位置ごとに渡す。失敗してもログだけで散歩は続ける。 | `LocalFeed.onLocation()` |
+| 10-6 | P38 → P39 | 今の区画（geohash6）と周り 8 つを、区画が変わったときか 5 分ごとに取る。聞く設定がどちらもオフなら取らない。中継のトークンを付ける。 | `LocalClient.cells()` |
+| 10-7 | P39 → P38 | スタジオ（分類つき）と一言。置いた人を表す値は入らない（自分のものは `mine`）。 | `CellList` |
 | 10-8 | P12 → P15 | いつもどおり話すことを決める（図 3）。 | `TalkDecider.decide()` |
 | 10-9 | P15 → P12 | 話すことがない。 | `TalkDecision.Nothing` |
-| 10-10 | P12 → P38 | 前の発言から `STUDIO_GAP_MS`（1 分）空いていれば、1 つ頼む。 | `WalkService.maybeStudio()` |
-| 10-11 | P38 → P12 | 今いる区画（geohash6）の中で期間と時間帯に入っているお知らせ（1 時間に 2 件・同じものは 1 日 1 回）を先に、なければ今の geohash7 と周り 8 つにある一言（自分のものと聞いたものを除く。1 時間に 10 件）。読んだものを「聞いた」に積む。 | `StudioFeed.next()` |
-| 10-12 | P12 → P36 | `Utterance.studio` に入れてカードに出し、出どころを言ってから読む。カードを開くと、いいね・ブロック・通報（`StudioViewModel`）。 | `Reading.spoken`・`ui/StudioViews.kt` |
-| 10-13 | P12 → P40 | 読み上げが終わるのを待って、お知らせの音声を流す。音声は 10-7 のあとに前もって取り、SHA-256 を確かめてキャッシュに置いたもの。 | `ClipPlayer.play()`・`ClipCache` |
-| 10-14 | P12 → P38 | サービスが止まっても送れるよう、`appScope` で終える。 | `StudioFeed.finish()` |
-| 10-15 | P38 → P39 | 聞いた・開いた・いいねをまとめて送る（API-LOCAL-MATERIALS ST-5）。 | `StudioClient.reactions()` |
-| 10-16 | P12 → P37 | フィードを外す。 | `StudioHub.endWalk()` |
+| 10-10 | P12 → P34・P35 | 前の発言から `LOCAL_GAP_MS`（1 分）空いていれば、今のチャンネルの `idle` のきっかけを上から試す。チャンネルが書いていなければ、省略形でスタジオ、一言の順。`shorthands` で止めた種類は出ない。 | `WalkService.idleCues()`・`Station.cueMedia` |
+| 10-11 | P35 → P38 | 素材提供者が、チャンネルの分類で、今いる区画のスタジオ（期間と時間帯の中・1 時間に 2 件・同じものは 1 日 1 回）か、今の geohash7 と周り 8 つの一言（自分のものと聞いたものを除く・1 時間に 10 件）を 1 つ頼む。 | `StudioProducer`・`NoteProducer`・`LocalFeed.nextStudio()`・`nextNote()` |
+| 10-12 | P38 → P35 | 読んだものを「聞いた」に積む。 | `Reading` |
+| 10-13 | P35 → P12 | チャンネルの前置き、出どころの紹介、原文の順の文と、もとのスタジオ・一言。 | `LocalReading` |
+| 10-14 | P12 → P36 | `Utterance.local` に入れてカードに出し、読み上げる。カードを開くと、いいね・ブロック・通報（`LocalViewModel`）。 | `WalkService.speakLocal()`・`ui/LocalViews.kt` |
+| 10-15 | P12 → P40 | 読み上げが終わるのを待って、スタジオの音声を流す。音声は 10-7 のあとに前もって取り、SHA-256 を確かめてキャッシュに置いたもの。 | `ClipPlayer.play()`・`ClipCache` |
+| 10-16 | P12 → P38 | サービスが止まっても送れるよう、`appScope` で終える。 | `LocalFeed.finish()` |
+| 10-17 | P38 → P39 | 聞いた・開いた・いいねをまとめて送る（API-LOCAL-MATERIALS ST-5）。 | `LocalClient.reactions()` |
+| 10-18 | P12 → P37 | フィードを外す。 | `LocalHub.endWalk()` |
 
-- 一言を置く（マイク → 利用規約の同意 → 端末の中での聞き取り → 確認 → `POST /v1/studio/notes`）は画面だけで完結し、`WalkService` を通らない（`ui/StudioViewModel.kt`）
+- 一言を置く（マイク → 利用規約の同意 → 端末の中での聞き取り → 確認 → `POST /v1/local/notes`）は画面だけで完結し、`WalkService` を通らない（`ui/LocalViewModel.kt`）

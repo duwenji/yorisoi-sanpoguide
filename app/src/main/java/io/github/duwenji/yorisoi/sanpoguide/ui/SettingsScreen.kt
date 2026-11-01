@@ -138,7 +138,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onClose: () -> Unit, onOpenChan
             ScreenAndSoundSection(draft, station, viewModel)
             MapSection(draft, viewModel)
             DeviceDataSection(draft, viewModel)
-            Section("スタジオ") { StudioSettingsPart(viewModel()) }
+            Section("スタジオ（店や地域のお知らせ）") { StudioSettingsPart(viewModel()) }
+            Section("一言") { NotesSettingsPart(viewModel()) }
             AboutSection(viewModel)
         }
     }

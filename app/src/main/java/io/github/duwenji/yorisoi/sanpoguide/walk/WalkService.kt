@@ -45,8 +45,9 @@ import io.github.duwenji.yorisoi.kit.channel.material.Shown
 import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.material.creditLine
 import io.github.duwenji.yorisoi.kit.voice.AmbientPlayer
-import io.github.duwenji.yorisoi.kit.studio.Reading
-import io.github.duwenji.yorisoi.kit.studio.StudioFeed
+import io.github.duwenji.yorisoi.kit.local.LocalFeed
+import io.github.duwenji.yorisoi.kit.local.LocalReading
+import io.github.duwenji.yorisoi.kit.local.Reading
 import io.github.duwenji.yorisoi.kit.channel.Station
 import io.github.duwenji.yorisoi.core.format.CueEvent
 import io.github.duwenji.yorisoi.core.format.TalkEventKind
@@ -85,8 +86,8 @@ class WalkService : LifecycleService() {
     private var weatherFetchedAt = 0L
     private var greeted = false
     private var ambient: AmbientPlayer? = null
-    /** The studio's notes and placements near this walk (platform kit-studio); null without the studio. */
-    private var studio: StudioFeed? = null
+    /** The studios and notes near this walk (platform kit-local-materials); null without the operator's relay. */
+    private var local: LocalFeed? = null
 
     /** One line at a time; events that arrive while the companion is talking wait for the next tick. */
     private val talking = Mutex()
@@ -132,7 +133,7 @@ class WalkService : LifecycleService() {
             session = s
             if (app.settings.settings.value.developerMode) startDiagnostics(s)
             app.feed.startWalk(s)
-            studio = app.studio.startWalk()?.also { feed -> lifecycleScope.launch { feed.start() } }
+            local = app.local.startWalk()?.also { feed -> lifecycleScope.launch { feed.start() } }
             startLocationUpdates()
             startTicker()
             startAmbient()
@@ -147,9 +148,9 @@ class WalkService : LifecycleService() {
         ambient?.release()
         ambient = null
         session?.let(::finishWalk)
-        studio?.let { feed -> app.appScope.launch { feed.finish() } }
-        studio = null
-        app.studio.endWalk()
+        local?.let { feed -> app.appScope.launch { feed.finish() } }
+        local = null
+        app.local.endWalk()
         session = null
         _walking.value = false
         super.onDestroy()
@@ -272,13 +273,13 @@ class WalkService : LifecycleService() {
                 // `fallback` when kept spots from nearby are shown instead.
                 app.diagnostics.event("spot_search_failed", "error" to e.toString(), "source" to app.spots.source?.name?.lowercase())
             }
-            studio?.let { feed ->
+            local?.let { feed ->
                 try {
                     feed.onLocation(location.latitude, location.longitude)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    Log.w(TAG, "Studio fetch failed", e)
+                    Log.w(TAG, "Local materials fetch failed", e)
                 }
             }
             maybeTalk()
@@ -355,22 +356,33 @@ class WalkService : LifecycleService() {
                 s.lastMilestoneDistanceM = s.distanceM
                 saveProgress(s)
             }
-            TalkDecision.Nothing -> maybeStudio(s, now)
+            TalkDecision.Nothing -> idleCues(s, now)
         }
     }
 
     /**
-     * Between the companion's lines, a note or placement of the studio near the user, if any
-     * (platform REQ-STUDIO D-10, D-21): never right after a line, and a placement's audio after its words.
+     * Between the companion's lines, never right after one: the channel's idle cues in turn, its
+     * shorthand ones too (a studio first, then a note; platform API-MATERIALS「省略形の展開」),
+     * showing the first that comes to something.
      */
-    private suspend fun maybeStudio(s: WalkSession, now: Long) {
-        val feed = studio ?: return
-        if (now - s.lastSpokeAt < STUDIO_GAP_MS) return
-        val reading = feed.next() ?: return
-        app.diagnostics.event("studio", "kind" to if (reading is Reading.OfNote) "note" else "placement")
-        talk { speakLine(Utterance(System.currentTimeMillis(), reading.spoken, studio = reading)) }
-        val audio = (reading as? Reading.OfPlacement)?.audio ?: return
-        lifecycleScope.launch { app.studio.player.play(audio) }
+    private suspend fun idleCues(s: WalkSession, now: Long) {
+        if (now - s.lastSpokeAt < LOCAL_GAP_MS) return
+        val station = app.stations.current.value
+        for (fire in app.cueFinder.events(station.id, station.cueMedia, CueEvent.IDLE, Subject.None, s.shownCues, now)) {
+            val shown = present(s, fire, station)
+            if (shown.isEmpty()) continue
+            show(s, fire, shown, spotName = null)
+            return
+        }
+    }
+
+    /** People's own words from a cue, read out as they are with the source first, then a studio's audio (API-MATERIALS P-8). */
+    private suspend fun speakLocal(reading: LocalReading) {
+        val r = reading.reading
+        app.diagnostics.event("local", "kind" to if (r is Reading.OfNote) "note" else "studio")
+        talk { speakLine(Utterance(System.currentTimeMillis(), reading.text, local = r)) }
+        val audio = (r as? Reading.OfStudio)?.audio ?: return
+        lifecycleScope.launch { app.local.player.play(audio) }
     }
 
     /**
@@ -468,7 +480,10 @@ class WalkService : LifecycleService() {
         val now = System.currentTimeMillis()
         app.diagnostics.event("cue", "cue" to fire.key, "spot" to spotName, "items" to shown.size)
         app.cueFinder.record(fire, s.shownCues, now)
-        app.cueShow.show(CueLayout.of("${fire.key}@$now", shown), app.stations.current.value.name, spotName, ::speakLine)
+        val local = shown.flatMap { it.items }.mapNotNull { it.content as? LocalReading }
+        val rest = shown.map { it.copy(items = it.items.filter { m -> m.content !is LocalReading }) }.filter { it.items.isNotEmpty() }
+        local.forEach { lifecycleScope.launch { speakLocal(it) } }
+        if (rest.isNotEmpty()) app.cueShow.show(CueLayout.of("${fire.key}@$now", rest), app.stations.current.value.name, spotName, ::speakLine)
     }
 
     /** The cues of the current channel for [event], each after the other. */
@@ -650,8 +665,8 @@ class WalkService : LifecycleService() {
         // Below walking pace (m/s) the reported heading is noise.
         private const val MIN_HEADING_SPEED = 0.5f
         private const val MIN_SAVED_WALK_MS = 60_000L
-        // The studio waits this long after the companion's last line (kit-studio README 未決事項 3).
-        private const val STUDIO_GAP_MS = 60_000L
+        // People's own words wait this long after the companion's last line.
+        private const val LOCAL_GAP_MS = 60_000L
         // Measured from the user, not around each spot.
         const val ANNOUNCE_RADIUS_M = TalkDecider.ANNOUNCE_RADIUS_M
 

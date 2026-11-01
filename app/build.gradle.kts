@@ -32,9 +32,9 @@ android {
         // The operator's spot tiles (platform API-SPOT-TILES ST-1): every build uses the development
         // ones until production's are deployed.
         buildConfigField("String", "SPOT_TILES_URL", "\"https://ds73vvo5wv45e.cloudfront.net/\"")
-        // The studio (platform API-LOCAL-MATERIALS ST-1): every build uses the development studio until
-        // production's is deployed.
-        buildConfigField("String", "STUDIO_URL", "\"https://x568icz881.execute-api.ap-northeast-1.amazonaws.com/api/\"")
+        // The local materials, studios and notes (platform API-LOCAL-MATERIALS ST-1): every build uses the
+        // development ones until production's are deployed.
+        buildConfigField("String", "LOCAL_MATERIALS_URL", "\"https://nngy8570o8.execute-api.ap-northeast-1.amazonaws.com/api/\"")
     }
 
     signingConfigs {
@@ -109,8 +109,8 @@ dependencies {
     implementation(libs.yorisoi.kit.ui)
     implementation(libs.yorisoi.kit.companion)
     implementation(libs.yorisoi.kit.channel)
-    // The studio: notes and placements near the walk (platform REQ-STUDIO, kit-studio).
-    implementation(libs.yorisoi.kit.studio)
+    // The studios and notes near the walk, as built-in producers for the channel's cues (platform kit-local-materials).
+    implementation(libs.yorisoi.kit.local.materials)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // and later API-001.
     implementation(libs.tink.android)

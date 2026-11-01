@@ -6,7 +6,7 @@ import io.github.duwenji.yorisoi.kit.geo.LatLon
 import io.github.duwenji.yorisoi.sanpoguide.material.CueDetail
 import io.github.duwenji.yorisoi.kit.channel.material.Material
 import io.github.duwenji.yorisoi.kit.channel.report.ReportTarget
-import io.github.duwenji.yorisoi.kit.studio.Reading
+import io.github.duwenji.yorisoi.kit.local.Reading
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,8 +25,8 @@ data class Utterance(
     val detail: CueDetail? = null,
     /** The channel in use when it was said, for a report (platform ADR-004 H-11). */
     val channel: ReportTarget? = null,
-    /** A note or placement of the studio read out, not the companion's own words (platform ADR-MATERIALS D-38). */
-    val studio: Reading? = null,
+    /** A studio or a note read out, people's own words and not the companion's (platform ADR-MATERIALS D-38). */
+    val local: Reading? = null,
 )
 
 /** Live walk figures for the UI; null while not walking. */
