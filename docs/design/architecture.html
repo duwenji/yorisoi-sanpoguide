@@ -655,7 +655,7 @@ td.files{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
           <tr><td>AI を呼ぶ回数の上限を変える</td><td><code>yorisoi-platform/kit-llm</code> の <code>AiUsage.kt</code>（数え方）・<code>settings/SettingsRepository.kt</code> の <code>dailyAiLimit</code>（既定値）・<code>ui/SettingsScreen.kt</code>（選択肢）</td></tr>
           <tr><td>使わない返事の条件を変える</td><td><code>yorisoi-platform/kit-llm</code> の <code>OutputCheck.kt</code></td></tr>
           <tr><td>AI の費用の目安を変える</td><td><code>station/AiCost.kt</code>（計算）・<code>ui/ChannelsScreen.kt</code> の <code>CostDialog</code>（表示）</td></tr>
-          <tr><td>スタジオの一言・お知らせを読み上げる条件を変える</td><td><code>walk/WalkService.kt</code> の <code>maybeStudio</code>（間隔は <code>STUDIO_GAP_MS</code>）。取得と 1 時間の上限は <code>yorisoi-platform/kit-studio</code> の <code>StudioFeed.kt</code></td></tr>
+          <tr><td>スタジオと一言を読み上げる条件を変える</td><td><code>walk/WalkService.kt</code> の <code>maybeStudio</code>（間隔は <code>STUDIO_GAP_MS</code>）。取得と 1 時間の上限は <code>yorisoi-platform/kit-studio</code> の <code>StudioFeed.kt</code></td></tr>
           <tr><td>一言を置く流れ・スタジオの設定画面を変える</td><td><code>ui/StudioViews.kt</code>・<code>ui/StudioViewModel.kt</code>、サーバーとのやり取りは <code>studio/StudioHub.kt</code></td></tr>
           <tr><td>問題を知らせるメールの宛先・文面を変える</td><td><code>report/Report.kt</code>（入口は <code>ui/ReportLink.kt</code>）</td></tr>
         </tbody>

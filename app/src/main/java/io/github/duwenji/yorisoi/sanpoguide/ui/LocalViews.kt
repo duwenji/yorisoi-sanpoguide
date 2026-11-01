@@ -116,7 +116,7 @@ fun StudioLineActions(reading: Reading, viewModel: LocalViewModel) {
         AlertDialog(
             onDismissRequest = { blocking = false },
             title = { Text("この人をブロックしますか") },
-            text = { Text("この一言を置いた人の一言は、これから届かなくなります。相手には知らされません。設定の「スタジオ」で解けます。") },
+            text = { Text("この一言を置いた人の一言は、これから届かなくなります。相手には知らされません。設定の「一言」で解けます。") },
             confirmButton = { TextButton(onClick = { viewModel.block(reading); blocking = false }) { Text("ブロックする") } },
             dismissButton = { TextButton(onClick = { blocking = false }) { Text("やめる") } },
         )
