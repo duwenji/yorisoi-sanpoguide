@@ -4,7 +4,7 @@
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 対象     | SanpoGuide（散策ガイド）の Android アプリ                                                                                                                                     |
 | 読む人   | 散策者・チャンネル提供者・素材提供者・運営                                                                                                                                    |
-| 置き場所 | 4 者にまたがる手順なので yorisoi-platform に置く。アプリの設計は [yorisoi-sanpoguide の docs](https://github.com/duwenji/yorisoi-sanpoguide/tree/main/docs)                    |
+| 置き場所 | SanpoGuide 固有の手順なので yorisoi-sanpoguide に置く。アプリの設計は [yorisoi-sanpoguide の docs](https://github.com/duwenji/yorisoi-sanpoguide/tree/main/docs)                    |
 | 関連     | 管理システムの[利用ガイド](https://github.com/duwenji/yorisoi-console/blob/main/docs/manual/README.md)、platform の[関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md) |
 
 **SanpoGuide 固有の手引きです。** yorisoi エコシステム共通の方針・契約は [docs の入口](https://github.com/duwenji/yorisoi-platform/blob/main/docs/README.md) を参照してください。
@@ -15,10 +15,10 @@
 
 | あなたは                                           | 読むもの                                | 主にすること                                                             |
 | -------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------ |
-| **散策者**（アプリで散歩する人）             | [散策者の手引き](walker.md)              | はじめの設定、散策、チャンネルの選び方と変え方、記録、スタジオの一言とお知らせ、問題を知らせる |
+| **散策者**（アプリで散歩する人）             | [散策者の手引き](walker.md)              | はじめの設定、散策、チャンネルの選び方と変え方、記録、スタジオと一言、問題を知らせる |
 | **チャンネル提供者**（チャンネルを作る人）   | [チャンネル提供者の手引き](publisher.md) | 試用チケットで自分のチャンネルを試す、アプリでの見え方、公開後の確かめ方 |
 | **素材提供者**（素材集を作る人）             | [素材提供者の手引き](producer.md)        | 素材がアプリで出る条件と見え方、試し方                                   |
-| **運営**（審査・配信・アプリの公開をする人） | [運営の手引き](operator.md)              | 問い合わせ・通報の受け方、組み込みのチャンネルの確認、障害のときの判断   |
+| **運営**（審査・配信をする人。当面はアプリ開発者を兼ね、アプリも公開する） | [運営の手引き](operator.md)              | 問い合わせ・通報の受け方、組み込みのチャンネルの確認、障害のときの判断   |
 
 ## 関係者とアプリの関係
 
@@ -27,7 +27,7 @@ flowchart LR
   CP["チャンネル提供者"] -- "申請" --> OPS["運営<br/>（管理システムで審査・署名）"]
   MP["素材提供者"] -- "申請" --> OPS
   OPS -- "承認済みチャンネル・リスト" --> APP["SanpoGuide アプリ"]
-  DEV["運営（アプリの開発者）"] -- "組み込みのチャンネル・アプリの版<br/>（Google Play）" --> APP
+  DEV["アプリ開発者（当面は運営が兼ねる）"] -- "組み込みのチャンネル・アプリの版<br/>（Google Play）" --> APP
   APP --> W["散策者"]
   W -. "問題を知らせる（メール）" .-> OPS
   W <-- "一言を置く・聞く・通報、スタジオを聞く" --> ST["運営の配信<br/>（区画ごとの素材）"]
@@ -47,7 +47,7 @@ flowchart LR
 | Google Play        | 内部テストに公開。本番の準備中（[TODO](https://github.com/duwenji/yorisoi-sanpoguide/blob/main/docs/TODO.md#google-play-での公開)）                                      |
 | 第三者チャンネル   | 本番のリストはまだない。設定の「チャンネル・リストと試用チケット」は**開発者モードのときだけ**出る                                                              |
 | 素材               | 文字と画像（第 1 段）まで。音声・映像は未対応                                                                                                                         |
-| スタジオ           | 一言とお知らせを聞く・一言を置く。開発用のスタジオにつながる                                                                                              |
+| スタジオ・一言     | スタジオと一言を聞く・一言を置く。開発用のスタジオにつながる                                                                                              |
 | 管理システム       | 開発用だけ稼働。運営の AI の中継とスポットのタイルの配信も開発用（運営の画面 https://d32w19p7au8cu2.cloudfront.net、公開 URL https://d32t2reyxml47d.cloudfront.net、リスト ID `sc1363urrzsrhjuxasgz5pnxkcf5mcieqhv`） |
 
 ## 用語
