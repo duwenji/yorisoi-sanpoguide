@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide
 
+import io.github.duwenji.yorisoi.sanpoguide.companion.Surroundings
 import io.github.duwenji.yorisoi.sanpoguide.material.walkContext
 import android.app.Application
 import android.app.NotificationChannel
@@ -224,14 +225,16 @@ class SanpoApp : Application() {
         WayPrefetchWorker.scheduleDaily(this)
         activeWalkPlan = ActiveWalkPlanStore(File(filesDir, "active_walk_plan.json"))
         mood = MoodSource(spots, feed.weather, appScope)
+        val surroundings = Surroundings({ spots.spots.value }, { spots.location.value }, { feed.talkedAbout.value }, { stations.current.value })
         companion = WalkCompanion(
             guides, history, prompts,
             mood = { mood.mood.value.takeIf { stations.current.value.moodTone } },
             shareLocation = { settings.settings.value.shareLocationWithAi },
+            nearby = { surroundings.now() },
         )
         val producers = Producers(
             listOf(
-                AiGuideProducer(guides, settings),
+                AiGuideProducer(guides, settings, surroundings),
                 AiCompanionProducer(companion, settings),
                 FallbackTextProducer(prompts, companion),
                 CommonsPhotoProducer(photos, settings),

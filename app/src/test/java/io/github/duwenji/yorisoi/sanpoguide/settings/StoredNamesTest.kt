@@ -44,13 +44,14 @@ class StoredNamesTest {
     @Test
     fun `channel overrides store channel_json spellings`() {
         // `station_{id}_events`, `_guide_length`, `_sound`, `_prefer` (OverrideCodec)
-        assertEquals(listOf("spot", "revisit", "milestone", "rest", "start", "finish"), TalkEventKind.entries.map { it.json })
+        assertEquals(listOf("spot", "revisit", "milestone", "rest", "start", "finish", "preview", "chat", "song"), TalkEventKind.entries.map { it.json })
         assertEquals(listOf("short", "normal", "long"), GuideLength.entries.map { it.json })
         assertEquals(listOf("auto", "rain", "waves", "wind", "birds", "insects", "temple"), SoundChoice.entries.map { it.json })
         assertEquals(
             listOf(
                 "shrine", "temple", "church", "worship", "historic", "museum", "gallery", "viewpoint", "artwork", "attraction",
-                "park", "garden", "beach", "water", "nature", "restaurant", "cafe", "sweets", "food_shop", "market", "crafts", "shop",
+                "park", "garden", "beach", "water", "nature", "station", "bridge", "slope", "library", "theatre",
+                "restaurant", "cafe", "sweets", "food_shop", "market", "crafts", "shop",
             ).sorted(),
             SpotKind.entries.map { it.json }.sorted(),
         )

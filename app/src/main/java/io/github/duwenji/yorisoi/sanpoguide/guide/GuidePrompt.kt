@@ -1,6 +1,9 @@
 package io.github.duwenji.yorisoi.sanpoguide.guide
 
+import io.github.duwenji.yorisoi.kit.geo.NearbyHighlight
 import io.github.duwenji.yorisoi.kit.geo.Poi
+import io.github.duwenji.yorisoi.kit.geo.SpotFacts
+import io.github.duwenji.yorisoi.sanpoguide.companion.Surroundings
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.kit.channel.material.Ground
 import java.util.Locale
@@ -17,7 +20,8 @@ object GuidePrompt {
     /**
      * [shareLocation]: the user allows coordinates to go to the AI (off by default). [grounds]: the
      * reviewed texts the AI may take as fact (API-MATERIALS「AI の根拠」), each with whose it is. [mood]:
-     * the tone to speak in, when the channel matches it (`mood.tone`).
+     * the tone to speak in, when the channel matches it (`mood.tone`). [nearby]: the spots around
+     * (platform REQ-NEARBY-TALK F-8), of which only the names and kinds go in.
      */
     fun spotVars(
         poi: Poi,
@@ -25,6 +29,7 @@ object GuidePrompt {
         shareLocation: Boolean = false,
         grounds: List<Ground> = emptyList(),
         mood: Mood? = null,
+        nearby: List<NearbyHighlight> = emptyList(),
     ): Map<String, Any?> = mapOf(
         "name" to poi.name,
         "category" to poi.category,
@@ -37,7 +42,15 @@ object GuidePrompt {
         "grounded" to grounds.isNotEmpty(),
         // A ground can't close its own tag and pass for the prompt (API-MATERIALS I-15).
         "grounds" to grounds.map { mapOf("text" to fence(it.text), "source" to fence(it.producerName)) }.ifEmpty { null },
+        "facts" to facts(poi)?.let { mapOf("lines" to it) },
+        "nearby" to Surroundings.guideVars(nearby.filter { it.poi.id != poi.id }),
     )
+
+    /** What the map's data says of the spot, as the spot's sheet shows it (kit-geo SpotFacts); null when nothing. */
+    internal fun facts(poi: Poi): List<String>? {
+        val f = SpotFacts.of(poi.tags)
+        return (listOfNotNull(f.reading?.let { "読み: $it" }) + f.details.map { "${it.label}: ${it.value}" }).ifEmpty { null }
+    }
 
     private fun fence(text: String) = text.replace('<', '＜').replace('>', '＞')
 

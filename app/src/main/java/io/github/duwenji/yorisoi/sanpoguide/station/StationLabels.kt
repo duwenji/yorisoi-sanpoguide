@@ -13,6 +13,9 @@ object StationLabels {
         TalkEventKind.REST -> "休憩の声かけ"
         TalkEventKind.START -> "開始のあいさつ"
         TalkEventKind.FINISH -> "終了の振り返り"
+        TalkEventKind.PREVIEW -> "少し先の見どころの予告"
+        TalkEventKind.CHAT -> "話すことがないときの雑談"
+        TalkEventKind.SONG -> "季節の歌"
     }
 
     fun of(length: GuideLength): String = when (length) {

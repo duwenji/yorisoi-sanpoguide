@@ -26,6 +26,10 @@
     location      位置（設定で位置情報を AI に送らないとき・散歩の外では null）
       here          現在地の緯度経度（例: 35.32580, 139.55620）
       route         今回歩いた経路（最大20点に間引いた緯度経度を「 → 」でつないだもの、古い順）。1点だけなら null
+    nearby        周り（約1km以内）の、まだ話していない見どころ（yorisoi-platform REQ-NEARBY-TALK F-9）。
+                  開始・区切り・休憩・日の入りのときだけ。ないときは null
+      spots         各要素は name（名称）・category（種別）・distance_m（距離。50m単位）・compass（8方位）・
+                    side（進む向きから見て 前方・右手・左手・後ろ。止まっているときは null）
 }}
 # いまの状況
 - 日時: {{now}}（{{time_of_day}}、{{season}}）
@@ -50,6 +54,13 @@
 - 今回歩いた経路（緯度,経度、古い順）: {{route}}
 {{/route}}
 {{/location}}
+{{#nearby}}
+
+# 周りの見どころ（約1km以内、まだ話していないもの）
+{{#spots}}
+- {{name}}（{{category}}）: 約{{distance_m}}m、{{compass}}{{#side}}・{{side}}{{/side}}
+{{/spots}}
+{{/nearby}}
 
 # これまでの散歩
 {{^last_walk}}

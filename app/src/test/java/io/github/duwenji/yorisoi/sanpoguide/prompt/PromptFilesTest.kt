@@ -20,7 +20,7 @@ class PromptFilesTest {
     private val root = File("../prompts/src/main/resources/sanpoguide/prompts")
     private val prompts = PromptTemplates { name -> File(root, "$name.md").readText() }
 
-    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社", "grounded" to false, "grounds" to null)
+    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社", "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null)
 
     /** System prompts take the channel's slots; the standard channel's are the realistic sample. */
     private val standard = BuiltInStations.load { id -> DirectoryStationFiles(File("../prompts/src/main/resources/sanpoguide/channels/$id")) }
@@ -56,6 +56,8 @@ class PromptFilesTest {
                 "tags" to listOf("amenity=place_of_worship", "religion=shinto"),
                 "coords" to "35.32580, 139.55620",
                 "mood" to mapOf("summary" to "秋の昼、雨、寺社の近く"),
+                "facts" to mapOf("lines" to listOf("宗教: 神道", "創建: 1063年")),
+                "nearby" to mapOf("spots" to listOf(mapOf("name" to "宝戒寺", "category" to "寺院"))),
             ),
             spot + mapOf("distance_m" to 0, "inside" to true, "tags" to listOf("leisure=park"), "coords" to null, "mood" to null),
             spot + mapOf("distance_m" to null, "inside" to false, "tags" to emptyList<String>(), "coords" to null, "mood" to null),
@@ -82,6 +84,12 @@ class PromptFilesTest {
                     "here" to "35.32580, 139.55620",
                     "route" to "35.31940,139.55050 → 35.32270,139.55340 → 35.32580,139.55620",
                 ),
+                "nearby" to mapOf(
+                    "spots" to listOf(
+                        mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 400, "compass" to "北東", "side" to "右手"),
+                        mapOf("name" to "鎌倉駅", "category" to "駅", "distance_m" to 800, "compass" to "南", "side" to null),
+                    ),
+                ),
             ),
             mapOf(
                 "now" to "9月28日（月）14:10", "time_of_day" to "昼", "season" to "秋",
@@ -90,11 +98,12 @@ class PromptFilesTest {
                 "walk" to mapOf("minutes" to 0, "km" to "0.0", "spots" to null),
                 "last_walk" to null, "recent" to null,
                 "location" to mapOf("here" to "35.31940, 139.55050", "route" to null),
+                "nearby" to null,
             ),
             mapOf(
                 "now" to "9月28日（月）8:00", "time_of_day" to "朝", "season" to "秋",
                 "plan" to null, "weather" to null, "mood" to null, "walk" to null, "last_walk" to null, "recent" to null,
-                "location" to null,
+                "location" to null, "nearby" to null,
             ),
         ),
         Prompts.event(Prompts.Event.START) to listOf(emptyMap()),

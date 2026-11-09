@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.material
 
+import io.github.duwenji.yorisoi.sanpoguide.companion.Surroundings
 import io.github.duwenji.yorisoi.kit.channel.material.MaterialRequest
 import io.github.duwenji.yorisoi.kit.channel.material.Content
 import io.github.duwenji.yorisoi.kit.channel.material.Credit
@@ -43,8 +44,12 @@ private inline fun failing(tag: String, block: () -> MaterialResult): MaterialRe
     MaterialResult.Unavailable(Reason.FAILED, e.message)
 }
 
-/** Spot narration by the AI. */
-class AiGuideProducer(private val guides: GuideRepository, private val settings: SettingsRepository) : Producer {
+/** Spot narration by the AI, told of the spots around ([surroundings]). */
+class AiGuideProducer(
+    private val guides: GuideRepository,
+    private val settings: SettingsRepository,
+    private val surroundings: Surroundings? = null,
+) : Producer {
     override val descriptor = BuiltInProducers.AI_GUIDE
 
     override suspend fun produce(request: MaterialRequest): MaterialResult {
@@ -55,7 +60,11 @@ class AiGuideProducer(private val guides: GuideRepository, private val settings:
             // Over the limit, a narration made before still comes from the cache; a new one doesn't.
             val text = try {
                 val station = request.context.station
-                guides.guideFor(spot.poi, spot.distanceM, station, request.grounding, request.context.walk?.mood?.takeIf { station.moodTone })
+                guides.guideFor(
+                    spot.poi, spot.distanceM, station, request.grounding,
+                    request.context.walk?.mood?.takeIf { station.moodTone },
+                    surroundings?.now(except = spot.poi.id).orEmpty(),
+                )
             } catch (e: IllegalStateException) {
                 if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e
             }

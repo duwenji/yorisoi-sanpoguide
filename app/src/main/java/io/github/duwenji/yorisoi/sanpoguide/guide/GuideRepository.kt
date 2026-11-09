@@ -6,6 +6,7 @@ import io.github.duwenji.yorisoi.kit.llm.LlmClient
 import io.github.duwenji.yorisoi.kit.llm.OutputCheck
 import io.github.duwenji.yorisoi.kit.llm.Purpose
 import io.github.duwenji.yorisoi.kit.llm.RelayClient
+import io.github.duwenji.yorisoi.kit.geo.NearbyHighlight
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.kit.mood.Mood
 import io.github.duwenji.yorisoi.core.prompt.PromptTemplates
@@ -51,9 +52,17 @@ class GuideRepository(
     /**
      * The AI's narration of [poi] on [channel], whose slots and guide length shape it, written from
      * [grounds] when there are any (API-MATERIALS「AI の根拠」), in the tone of [mood] when given. Needs
-     * an AI set up.
+     * an AI set up. [nearby] are the spots around (platform REQ-NEARBY-TALK F-8); like the mood, they
+     * don't make it again: the guide says only how it is linked to them, not where they are.
      */
-    suspend fun guideFor(poi: Poi, distanceM: Int?, channel: Station, grounds: List<Ground> = emptyList(), mood: Mood? = null): String {
+    suspend fun guideFor(
+        poi: Poi,
+        distanceM: Int?,
+        channel: Station,
+        grounds: List<Ground> = emptyList(),
+        mood: Mood? = null,
+        nearby: List<NearbyHighlight> = emptyList(),
+    ): String {
         val settings = settingsRepo.settings.value
         check(settings.isConfigured) { "No AI service is set up" }
         val share = settings.shareLocationWithAi
@@ -67,7 +76,7 @@ class GuideRepository(
         val text = gateway.generate(
             Purpose.GUIDE,
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
-            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds, mood)),
+            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds, mood, nearby)),
         )
         OutputCheck.violation(text)?.let { error("The narration has $it") }
         cache[cacheKey] = text

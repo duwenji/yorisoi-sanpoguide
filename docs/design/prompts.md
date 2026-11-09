@@ -14,10 +14,10 @@ prompts/
 │   └── guard.md                 守ること（個人情報を尋ねない・危険な場所に誘わない など。どのチャンネルでも外せない）
 ├── guide/                     スポット解説
 │   ├── system.md                システムプロンプトの枠（役割・内容の重点・長さはチャンネルから）
-│   └── user.md                  依頼（スポット名・種別・距離・OSM タグ・雰囲気。設定でオンなら緯度経度も。根拠があれば資料）
+│   └── user.md                  依頼（スポット名・種別・距離・OSM タグ・地図データの情報・雰囲気・周りの見どころの名前と種別。設定でオンなら緯度経度も。根拠があれば資料）
 ├── companion/                 散歩の友の話しかけ
 │   ├── system.md                システムプロンプトの枠（役割・話題の選び方はチャンネルから）
-│   ├── situation.md             いまの状況（日時・天気・雰囲気・今回と過去の散歩・最近の発言。設定でオンなら現在地と経路も）
+│   ├── situation.md             いまの状況（日時・天気・雰囲気・今回と過去の散歩・最近の発言・周りの見どころ。設定でオンなら現在地と経路も）
 │   ├── station_event.md         チャンネルごとの、出来事への追加の指示（チャンネルにあるときだけ）
 │   └── events/                  出来事ごとの指示
 │       ├── start.md               散歩の開始
@@ -65,6 +65,8 @@ AI に送るのは「システムプロンプト」と「ユーザープロン�
 `guide/system` と `companion/system` は枠で、役割・内容の重点・話題の選び方・解説の長さは、選んでいるチャンネルから変数で入る（platform [API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md) のスロット）。チャンネルの文章は `sanpoguide/channels/{id}/prompts/` にあり、ないスロットには標準のチャンネル（`sanpoguide/channels/standard/`）の文章が入る。スロットの差し込み方と、出来事のプロンプトのつなぎ方は `StationPrompts` にある。話し方・事実の扱い・守ることは、どのチャンネルでも同じ。
 
 今までの文面を変えたいときは、枠の部分なら `prompts/` を、役割や話題なら `sanpoguide/channels/standard/prompts/` を直す。標準のチャンネルで組み立てたシステムプロンプトがチャンネル導入前と同じであることを `StationAssetsTest` が確かめているので、意図して文面を変えたときは、基準のファイル（`app/src/test/resources/prompt-baseline/`）も直す。
+
+周りの見どころ（platform [REQ-NEARBY-TALK](https://github.com/duwenji/yorisoi-platform/blob/main/docs/requirements/REQ-NEARBY-TALK.md) F-6〜F-9）は `companion/Surroundings.kt` が選ぶ（kit-geo `NearbyHighlights`。約 1km 以内から最大 6 件、今回の散歩で話したものを除き、チャンネルの `spots.prefer`・`skip` に従う）。スポット解説には名前と種別だけを渡す。解説はスポットごとに使い回すので、来た向きで変わる距離と方角は入れない。話しかけには距離（50m 単位）・方角（8 方位）・進む向きから見た側も渡す。渡すのは開始・区切り・休憩・日の入りのときだけで、再訪・施設・天気の急変・終了では話の対象が決まっているので渡さない。
 
 「いつ話しかけるか」（間隔・優先順位・休憩の判定）はプロンプトではなく、コード（`WalkService`）と、選んでいるチャンネルの「話しかけの頻度」（`TalkLevel`）・「話しかける場面」で決まる。施設をどの条件で案内するかは `FacilityAdvisor`、天気の急変の判定は `WeatherChangeDetector` で決まる。
 

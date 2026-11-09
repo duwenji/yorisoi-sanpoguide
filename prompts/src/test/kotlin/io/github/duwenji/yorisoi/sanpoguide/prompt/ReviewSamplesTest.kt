@@ -26,7 +26,7 @@ class ReviewSamplesTest {
     fun `a companion line is the situation, the event and the channel's instructions`() {
         val situation = mapOf(
             "now" to "10月4日（土）8:30", "time_of_day" to "朝", "season" to "秋", "weather" to null, "mood" to null,
-            "walk" to null, "last_walk" to null, "recent" to null, "location" to null, "plan" to null,
+            "walk" to null, "last_walk" to null, "recent" to null, "location" to null, "plan" to null, "nearby" to null,
         )
         val plain = StationPrompts.companionUser(prompts, situation, Prompts.Event.START, emptyMap(), null)
         assertEquals(prompts.render(Prompts.Talk.SITUATION, situation) + "\n\n" + prompts.render(Prompts.event(Prompts.Event.START)), plain)
@@ -48,7 +48,7 @@ class ReviewSamplesTest {
     fun `the standard channel has every scene of the review policy`() {
         val samples = ReviewSamples.build(standard, standard, prompts)
         assertEquals(
-            listOf("guide-shrine", "guide-park", "guide-small", "guide-grounded", "start-morning-sunny", "start-evening-rain", "revisit", "rest", "milestone", "finish"),
+            listOf("guide-shrine", "guide-park", "guide-small", "guide-nearby", "guide-grounded", "start-morning-sunny", "start-evening-rain", "revisit", "rest", "milestone", "finish"),
             samples.map { it.id },
         )
         samples.forEach { s ->
@@ -65,7 +65,7 @@ class ReviewSamplesTest {
     fun `scenes follow the channel's own settings and slots`() {
         val quiet = packages.getValue("quiet")
         val ids = ReviewSamples.build(quiet, standard, prompts).map { it.id }
-        assertEquals(listOf("guide-shrine", "guide-park", "guide-small", "guide-grounded", "start-morning-sunny", "start-evening-rain", "finish"), ids)
+        assertEquals(listOf("guide-shrine", "guide-park", "guide-small", "guide-nearby", "guide-grounded", "start-morning-sunny", "start-evening-rain", "finish"), ids)
 
         val history = packages.getValue("history")
         val shrine = ReviewSamples.build(history, standard, prompts).first { it.id == "guide-shrine" }
