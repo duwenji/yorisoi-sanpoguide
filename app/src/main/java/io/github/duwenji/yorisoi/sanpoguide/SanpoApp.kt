@@ -1,5 +1,7 @@
 package io.github.duwenji.yorisoi.sanpoguide
 
+import io.github.duwenji.yorisoi.kit.songs.SongPlayer
+import io.github.duwenji.yorisoi.kit.songs.SongLibrary
 import io.github.duwenji.yorisoi.sanpoguide.companion.Surroundings
 import io.github.duwenji.yorisoi.sanpoguide.material.walkContext
 import android.app.Application
@@ -118,6 +120,12 @@ class SanpoApp : Application() {
         private set
     lateinit var speaker: Speaker
         private set
+
+    /** The season's songs kept on the device, and their player (platform API-SONGS). */
+    lateinit var songs: SongLibrary
+        private set
+    lateinit var songPlayer: SongPlayer
+        private set
     /** The studios and notes near the walk (platform kit-local-materials). */
     lateinit var local: LocalHub
         private set
@@ -218,6 +226,8 @@ class SanpoApp : Application() {
             )
         }
         speaker = Speaker(this)
+        songs = SongLibrary(File(filesDir, "songs"), BuildConfig.SPOT_TILES_URL, "SanpoGuide/${BuildConfig.VERSION_NAME}")
+        songPlayer = SongPlayer(this)
         local = LocalHub(this, relay, BuildConfig.LOCAL_MATERIALS_URL, speaker.speaking)
         photos = SpotPhotos(this)
         history = HistoryStore(this)

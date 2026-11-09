@@ -111,6 +111,7 @@ dependencies {
     implementation(libs.yorisoi.kit.channel)
     // The studios and notes near the walk, as built-in producers for the channel's cues (platform kit-local-materials).
     implementation(libs.yorisoi.kit.local.materials)
+    implementation(libs.yorisoi.kit.songs)
     // Ed25519 from Android 8 (the platform has it only from 13): third-party channels' signatures
     // and later API-SECRET-MESSAGES.
     implementation(libs.tink.android)

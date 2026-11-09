@@ -48,6 +48,9 @@ object Prompts {
     object Fallback {
         const val GUIDE = "fallback/guide"
         const val NEARBY = "fallback/nearby"
+
+        /** Before a season's song, without the AI (platform REQ-NEARBY-TALK F-24). */
+        const val SONG = "fallback/song"
         fun companion(e: Event) = "fallback/companion/${e.file}"
     }
 

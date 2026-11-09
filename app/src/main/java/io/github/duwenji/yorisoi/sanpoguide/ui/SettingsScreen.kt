@@ -348,8 +348,7 @@ private fun StationSettings(station: Station, viewModel: SettingsViewModel) {
 
     Label("話しかける場面")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        // The song comes with platform REQ-NEARBY-TALK X-5.
-        TalkEventKind.entries.filter { it != TalkEventKind.SONG }.forEach { kind ->
+        TalkEventKind.entries.forEach { kind ->
             FilterChip(
                 selected = station.talksOn(kind),
                 onClick = { viewModel.setEvent(kind, !station.talksOn(kind)) },
@@ -468,6 +467,12 @@ private fun ScreenAndSoundSection(draft: GuideSettings, station: Station, viewMo
             "雨音・波・鳥の声・虫の音などを、その場の雰囲気に合わせて流します。" +
                 "読み上げ中は小さくし、ほかのアプリで音楽などを再生しているときは流しません",
             draft.ambientEnabled, viewModel::setAmbientEnabled,
+        )
+        SwitchRow(
+            "季節の歌を流す",
+            "話すことがないときの雑談の一つとして、季節の唱歌・童謡のメロディ（30〜60 秒）を流します。1 回の散歩で 2 曲まで。" +
+                "曲は Wi-Fi のときに取っておき、散歩の途中では通信しません。ほかのアプリで音楽を再生しているときと通話中は流しません",
+            draft.playSongs, viewModel::setPlaySongs,
         )
         if (draft.ambientEnabled) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -611,6 +616,7 @@ private fun AboutSection(viewModel: SettingsViewModel) {
             "地図: 国土地理院・© OpenStreetMap contributors　スポット: © OpenStreetMap contributors　天気: Open-Meteo.com　" +
                 "写真: Wikimedia Commons（作者・ライセンスは各写真の下に表示）",
         )
+        viewModel.songCredits?.let { Note("季節の歌: $it") }
         Text(
             "バージョン ${BuildConfig.VERSION_NAME}" + when {
                 developerMode -> "（開発者モード）"

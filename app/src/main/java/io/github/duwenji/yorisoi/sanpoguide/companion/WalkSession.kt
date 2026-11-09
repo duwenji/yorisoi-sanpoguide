@@ -33,6 +33,10 @@ class WalkSession(
     var lastChatAt = 0L
     val chatTopics = mutableListOf<ChatTopic>()
 
+    /** The season's songs played on this walk, and when the last one was (platform REQ-NEARBY-TALK F-23). */
+    var songsPlayed = 0
+    var lastSongAt = 0L
+
     /** When the companion last said anything, to keep small talk spaced out. */
     var lastSpokeAt = startedAt
     var lastSpotTalkAt = 0L

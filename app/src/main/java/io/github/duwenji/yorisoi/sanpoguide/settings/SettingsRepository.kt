@@ -57,6 +57,8 @@ data class GuideSettings(
     val spotCacheFreshDays: Int = 7,
     /** Whether the ways walked again and again become frequent ways by themselves (platform REQ-FREQUENT-WAYS F-17). */
     val findWays: Boolean = true,
+    /** Whether a season's song may be played as one of the chat's topics (platform REQ-NEARBY-TALK F-27). */
+    val playSongs: Boolean = true,
     /**
      * How many times a day the user's own key may be called; null for no limit (platform AI-ROLES H-9).
      * Channels talk within it. The operator's AI keeps the relay's limit instead (API-AI-RELAY R-2).
@@ -146,6 +148,7 @@ class SettingsRepository(context: Context) {
             putBoolean(KEY_SPOT_CACHE, settings.spotCacheEnabled)
             putInt(KEY_SPOT_CACHE_FRESH_DAYS, settings.spotCacheFreshDays)
             putBoolean(KEY_FIND_WAYS, settings.findWays)
+            putBoolean(KEY_PLAY_SONGS, settings.playSongs)
             putInt(KEY_DAILY_AI_LIMIT, settings.dailyAiLimit ?: NO_LIMIT)
             putString(KEY_MAP_STYLE, settings.mapStyle.name)
             val mapsKey = settings.googleMapsApiKey.trim()
@@ -200,6 +203,7 @@ class SettingsRepository(context: Context) {
             spotCacheFreshDays = prefs.getInt(KEY_SPOT_CACHE_FRESH_DAYS, DEFAULTS.spotCacheFreshDays)
                 .takeIf { it in GuideSettings.SPOT_CACHE_FRESH_DAYS } ?: DEFAULTS.spotCacheFreshDays,
             findWays = prefs.getBoolean(KEY_FIND_WAYS, DEFAULTS.findWays),
+            playSongs = prefs.getBoolean(KEY_PLAY_SONGS, DEFAULTS.playSongs),
             dailyAiLimit = if (prefs.contains(KEY_DAILY_AI_LIMIT)) prefs.getInt(KEY_DAILY_AI_LIMIT, NO_LIMIT).takeIf { it != NO_LIMIT } else DEFAULTS.dailyAiLimit,
             mapStyle = prefs.getString(KEY_MAP_STYLE, null)
                 ?.let { name -> MapStyle.entries.firstOrNull { it.name == name } }
@@ -256,6 +260,7 @@ class SettingsRepository(context: Context) {
         const val KEY_SHARE_LOCATION_WITH_AI = "share_location_with_ai"
         const val KEY_SPOT_CACHE = "spot_cache"
         const val KEY_FIND_WAYS = "find_ways"
+        const val KEY_PLAY_SONGS = "play_songs"
         const val KEY_SPOT_CACHE_FRESH_DAYS = "spot_cache_fresh_days"
         const val KEY_MAP_STYLE = "map_style"
         const val KEY_GOOGLE_MAPS_KEY = "google_maps_api_key"

@@ -367,4 +367,35 @@ class TalkDeciderTest {
         // Round again after the last.
         assertEquals(ChatTopic.SEASON_WEATHER, ChatTopic.next(listOf(ChatTopic.BODY, ChatTopic.CHANNEL), ChatTopic.BODY_AFTER_MS, nearbyKnown = true))
     }
+
+    // ---- a season's song (platform REQ-NEARBY-TALK F-23) ----
+
+    @Test
+    fun `a song is one of the chat's topics, only when one can be played`() {
+        val all = ChatTopic.entries.filter { it != ChatTopic.SONG }
+        assertEquals(ChatTopic.SONG, ChatTopic.next(all.takeLast(2), ChatTopic.BODY_AFTER_MS, nearbyKnown = true, songReady = true))
+        assertEquals(ChatTopic.SEASON_WEATHER, ChatTopic.next(all.takeLast(2), ChatTopic.BODY_AFTER_MS, nearbyKnown = true, songReady = false))
+        assertEquals(
+            TalkDecision.Chat(ChatTopic.SONG),
+            decide(quietStretch.copy(chatTopics = all.takeLast(2), elapsedMs = 40 * minute, songReady = true)),
+        )
+    }
+
+    @Test
+    fun `not in the first ten minutes, at most two a walk, twenty minutes apart (F-23, R-5)`() {
+        assertEquals(false, SongMoment.allowed(9 * minute, 0, 0, now))
+        assertEquals(true, SongMoment.allowed(10 * minute, 0, 0, now))
+        assertEquals(false, SongMoment.allowed(40 * minute, 1, now - 19 * minute, now))
+        assertEquals(true, SongMoment.allowed(40 * minute, 1, now - 20 * minute, now))
+        assertEquals(false, SongMoment.allowed(90 * minute, 2, now - 60 * minute, now))
+    }
+
+    @Test
+    fun `the catalog's words for now`() {
+        assertEquals("clear", SongMoment.weather(Weather("晴れ", 20.0, 0.0, code = 0)))
+        assertEquals("rain", SongMoment.weather(Weather("雨", 20.0, 1.0, code = 61)))
+        assertEquals("snow", SongMoment.weather(Weather("雪", 0.0, 1.0, code = 73)))
+        assertEquals("cloudy", SongMoment.weather(Weather("くもり", 20.0, 0.0, code = 3)))
+        assertEquals(null, SongMoment.weather(null))
+    }
 }

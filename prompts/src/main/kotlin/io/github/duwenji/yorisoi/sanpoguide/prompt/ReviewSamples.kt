@@ -57,7 +57,7 @@ object ReviewSamples {
             // platform REQ-NEARBY-TALK F-14: a word between the other lines, on the spots around.
             TalkEventKind.CHAT to talk(
                 "chat", "話すことがないときの雑談（周りの見どころ）", Prompts.Event.CHAT, midWalk,
-                mapOf("topic" to "周りの見どころ", "nearby_topic" to true, "body_topic" to false, "channel_topic" to false),
+                mapOf("topic" to "周りの見どころ", "nearby_topic" to true, "body_topic" to false, "channel_topic" to false, "song_topic" to false, "song_title" to null),
             ),
             // platform REQ-NEARBY-TALK F-10: a notable spot a little ahead, told of before arriving.
             TalkEventKind.PREVIEW to talk(

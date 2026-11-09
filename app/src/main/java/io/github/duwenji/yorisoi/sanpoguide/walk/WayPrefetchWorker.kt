@@ -15,8 +15,8 @@ import io.github.duwenji.yorisoi.sanpoguide.SanpoApp
 import java.util.concurrent.TimeUnit
 
 /**
- * Searches ahead along the frequent ways (platform REQ-FREQUENT-WAYS F-6〜F-8, D-9): once a day,
- * and once right after a walk. Only on a network that isn't metered, with the battery not low,
+ * Searches ahead along the frequent ways (platform REQ-FREQUENT-WAYS F-6〜F-8, D-9), and fetches the
+ * season's songs (platform API-SONGS): once a day, and once right after a walk. Only on a network that isn't metered, with the battery not low,
  * and never during a walk.
  */
 class WayPrefetchWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
@@ -27,6 +27,10 @@ class WayPrefetchWorker(context: Context, params: WorkerParameters) : CoroutineW
         val ways = app.ways.ways.value.map { it.points }
         val searches = app.spots.prefetch(ways)
         Log.i(TAG, "Searched ahead $searches times along ${ways.size} ways")
+        // The season's songs, on the same unmetered network and never on a walk (platform API-SONGS AS-1, AS-2).
+        if (app.settings.settings.value.playSongs && app.songs.refresh()) {
+            Log.i(TAG, "Fetched ${app.songs.prefetch()} songs")
+        }
         return Result.success()
     }
 
