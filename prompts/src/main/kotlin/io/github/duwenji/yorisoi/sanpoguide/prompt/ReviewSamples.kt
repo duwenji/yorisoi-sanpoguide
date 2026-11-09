@@ -46,7 +46,7 @@ object ReviewSamples {
             TalkEventKind.START to talk("start-morning-sunny", "散歩の開始（朝・晴れ）", Prompts.Event.START, morningSunny),
             TalkEventKind.START to talk("start-evening-rain", "散歩の開始（夕方・雨）", Prompts.Event.START, eveningRain),
             TalkEventKind.REVISIT to talk(
-                "revisit", "再訪したスポットの一言", Prompts.Event.REVISIT, midWalk + ("weather" to null),
+                "revisit", "再訪したスポットの一言", Prompts.Event.REVISIT, midWalk + ("weather" to null) + ("nearby" to null),
                 mapOf(
                     "name" to "鶴岡八幡宮", "category" to "神社", "total_count" to 3, "today_count" to null,
                     "last_when" to "3日前", "last_remark" to null,
@@ -55,7 +55,7 @@ object ReviewSamples {
             TalkEventKind.REST to talk("rest", "休憩", Prompts.Event.REST, midWalk, mapOf("minutes" to 4)),
             TalkEventKind.MILESTONE to talk("milestone", "区切り（距離・時間）", Prompts.Event.MILESTONE, midWalk),
             TalkEventKind.FINISH to talk(
-                "finish", "散歩の終了", Prompts.Event.FINISH, midWalk + ("walk" to null),
+                "finish", "散歩の終了", Prompts.Event.FINISH, midWalk + ("walk" to null) + ("nearby" to null),
                 mapOf("km" to "2.3", "minutes" to 45, "spot_count" to 2, "spots" to "段葛、鶴岡八幡宮"),
             ),
         ).filter { (kind, _) -> kind in manifest.events }.map { it.second }
@@ -64,6 +64,18 @@ object ReviewSamples {
             guide("guide-shrine", "初めてのスポットの解説（寺社）", spot("鶴岡八幡宮", "神社", 45, listOf("amenity=place_of_worship", "religion=shinto"))),
             guide("guide-park", "初めてのスポットの解説（公園）", spot("源氏山公園", "公園", 0, listOf("leisure=park"), inside = true)),
             guide("guide-small", "初めてのスポットの解説（情報の少ない小さなスポット）", spot("無名の祠", "神社", 20, listOf("amenity=place_of_worship"))),
+            // platform REQ-NEARBY-TALK F-8: the map's facts, and the spots around by name and kind only.
+            guide(
+                "guide-nearby", "初めてのスポットの解説（地図データの情報と周りの見どころつき）",
+                spot("高徳院", "寺院", 30, listOf("amenity=place_of_worship", "religion=buddhist", "denomination=jodo")) + mapOf(
+                    "facts" to mapOf("lines" to listOf("宗教: 仏教（浄土宗）", "拝観時間: 8:00〜17:30")),
+                    "nearby" to mapOf("spots" to listOf(
+                        mapOf("name" to "長谷寺", "category" to "寺院"),
+                        mapOf("name" to "長谷駅", "category" to "駅"),
+                        mapOf("name" to "鎌倉文学館", "category" to "博物館"),
+                    )),
+                ),
+            ),
             // The grounds carry an instruction the AI must not follow (API-MATERIALS W-23).
             guide(
                 "guide-grounded", "初めてのスポットの解説（資料つき。資料の中の指示に従わないか）",
@@ -81,12 +93,12 @@ object ReviewSamples {
 
     private fun spot(name: String, category: String, distanceM: Int, tags: List<String>, inside: Boolean = false) = mapOf(
         "name" to name, "category" to category, "distance_m" to distanceM, "inside" to inside, "tags" to tags, "coords" to null,
-        "grounded" to false, "grounds" to null,
+        "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null,
     )
 
     private val firstWalk = mapOf(
         "walk" to mapOf("minutes" to 0, "km" to "0.0", "spots" to null),
-        "last_walk" to null, "recent" to null, "location" to null, "plan" to null,
+        "last_walk" to null, "recent" to null, "location" to null, "plan" to null, "nearby" to null,
     )
 
     private val morningSunny = firstWalk + mapOf(
@@ -109,5 +121,11 @@ object ReviewSamples {
         ),
         "recent" to mapOf("lines" to listOf("段葛の参道は、春は桜が見事なんですよ。")),
         "location" to null, "plan" to null,
+        // platform REQ-NEARBY-TALK F-9: the spots around, with how far and which way.
+        "nearby" to mapOf("spots" to listOf(
+            mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 400, "compass" to "北東", "side" to "右手"),
+            mapOf("name" to "鎌倉駅", "category" to "駅", "distance_m" to 800, "compass" to "南", "side" to "後ろ"),
+            mapOf("name" to "若宮大路", "category" to "史跡", "distance_m" to 100, "compass" to "南", "side" to null),
+        )),
     )
 }

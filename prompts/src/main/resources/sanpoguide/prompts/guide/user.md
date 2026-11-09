@@ -12,6 +12,10 @@
     grounded    資料があるなら true
     grounds     このスポットについての資料（素材提供者の資料のうち、AI の根拠に使ってよいもの。yorisoi-platform/docs/material-producer-api.md「AI の根拠」）。
                 各要素は source（素材提供者名）と text（本文。山かっこは全角にしてある）。ないときは null
+    facts       地図データ（OpenStreetMap）から読み取ったこのスポットの情報。ないときは null
+      lines       「項目: 値」のリスト（例: 開館時間: 9:00〜17:00）
+    nearby      周り（約1km以内）の見どころ。ないときは null（yorisoi-platform REQ-NEARBY-TALK F-8）
+      spots       各要素は name（名称）と category（種別）。距離と方角は渡さない（解説は使い回すため）
 }}
 散策中の利用者の近くにあるスポットを案内してください。
 名称: {{name}}
@@ -34,6 +38,18 @@ OpenStreetMapのタグ:
 {{#tags}}
 - {{.}}
 {{/tags}}
+{{#facts}}
+地図データの情報:
+{{#lines}}
+- {{.}}
+{{/lines}}
+{{/facts}}
+{{#nearby}}
+周りの見どころ（約1km以内。話がつながるときだけ触れる）:
+{{#spots}}
+- {{name}}（{{category}}）
+{{/spots}}
+{{/nearby}}
 {{#grounded}}
 資料（運営が審査した素材提供者の資料）:
 {{/grounded}}

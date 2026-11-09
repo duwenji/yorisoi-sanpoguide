@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.companion
 
+import io.github.duwenji.yorisoi.kit.geo.NearbyHighlight
 import io.github.duwenji.yorisoi.kit.geo.weather.Weather
 import io.github.duwenji.yorisoi.kit.geo.Poi
 import io.github.duwenji.yorisoi.sanpoguide.guide.GuidePrompt
@@ -35,6 +36,10 @@ sealed interface TalkEvent {
     data class Finish(val walk: WalkRecord) : TalkEvent
 }
 
+/** Whether a line for the event may talk of the spots around (platform REQ-NEARBY-TALK F-9). */
+internal val TalkEvent.aboutWhereYouAre: Boolean
+    get() = this is TalkEvent.Start || this is TalkEvent.Milestone || this is TalkEvent.Rest || this is TalkEvent.Sunset
+
 /**
  * The walking companion's voice: turns an event plus the current situation (time, season,
  * weather, this walk, past walks) into one short, natural line.
@@ -51,6 +56,8 @@ class WalkCompanion(
     private val mood: () -> Mood? = { null },
     /** Whether the user allows coordinates to go to the AI (off by default). */
     private val shareLocation: () -> Boolean = { false },
+    /** The spots around now (platform REQ-NEARBY-TALK F-9). */
+    private val nearby: () -> List<NearbyHighlight> = { emptyList() },
 ) {
     /**
      * The AI's line for [event] on [channel], whose slots fill the system prompt and add to the
@@ -117,6 +124,8 @@ class WalkCompanion(
                 )
             },
             "recent" to session?.recentLines?.toList()?.takeIf { it.isNotEmpty() }?.let { mapOf("lines" to it) },
+            // A line about a spot, an amenity, the weather turning or the walk's end has its subject.
+            "nearby" to Surroundings.companionVars(if (event.aboutWhereYouAre) nearby() else emptyList()),
             "location" to session?.takeIf { shareLocation() }?.routeSketch(ROUTE_SKETCH_POINTS)
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { route ->
