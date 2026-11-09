@@ -36,11 +36,14 @@ sealed interface TalkEvent {
     data class Finish(val walk: WalkRecord) : TalkEvent
     /** A notable spot a little ahead (platform REQ-NEARBY-TALK F-10); [distanceM] to 50m, [direction] as for a facility. */
     data class Preview(val poi: Poi, val distanceM: Int, val direction: String?) : TalkEvent
+    /** A word between the other lines, on [topic] (platform REQ-NEARBY-TALK F-14); the AI's only. */
+    data class Chat(val topic: ChatTopic) : TalkEvent
 }
 
 /** Whether a line for the event may talk of the spots around (platform REQ-NEARBY-TALK F-9). */
 internal val TalkEvent.aboutWhereYouAre: Boolean
-    get() = this is TalkEvent.Start || this is TalkEvent.Milestone || this is TalkEvent.Rest || this is TalkEvent.Sunset
+    get() = this is TalkEvent.Start || this is TalkEvent.Milestone || this is TalkEvent.Rest || this is TalkEvent.Sunset ||
+        this is TalkEvent.Chat
 
 /**
  * The walking companion's voice: turns an event plus the current situation (time, season,
@@ -86,6 +89,7 @@ class WalkCompanion(
         is TalkEvent.NearFacility -> Prompts.Event.FACILITY
         is TalkEvent.Finish -> Prompts.Event.FINISH
         is TalkEvent.Preview -> Prompts.Event.PREVIEW
+        is TalkEvent.Chat -> Prompts.Event.CHAT
     }
 
     /** Variables for `companion/situation` (documented at the top of that file). */
@@ -183,6 +187,12 @@ class WalkCompanion(
                 "need_seat" to (a.need == FacilityNeed.SEAT),
             )
         }
+        is TalkEvent.Chat -> mapOf(
+            "topic" to event.topic.label,
+            "nearby_topic" to (event.topic == ChatTopic.NEARBY),
+            "body_topic" to (event.topic == ChatTopic.BODY),
+            "channel_topic" to (event.topic == ChatTopic.CHANNEL),
+        )
         is TalkEvent.Preview -> mapOf(
             "name" to event.poi.name,
             "category" to event.poi.category,

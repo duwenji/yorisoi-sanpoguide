@@ -45,6 +45,14 @@ class Narration(private val producers: Producers, private val station: () -> Sta
             else -> error("No text from ${Shorthand.COMPANION}: $result")
         }
 
+    /**
+     * The AI's line for [event], or null when the AI can't give one: for a chat, which has no fixed
+     * line (platform REQ-NEARBY-TALK F-17).
+     */
+    suspend fun aiLine(event: TalkEvent, session: WalkSession?, weather: Weather?): Material? =
+        (producers.first(listOf(BuiltInProducers.AI_COMPANION.id), request(EventSubject(event), MaterialType.TEXT, session, weather)) as? MaterialResult.Ready)
+            ?.material
+
     /** A spot's narration when the walk reaches it, with its credit to show. */
     suspend fun spotGuide(poi: Poi, distanceM: Int?): Material =
         when (val result = producers.first(Shorthand.SPOT_GUIDE, spotRequest(poi, distanceM))) {

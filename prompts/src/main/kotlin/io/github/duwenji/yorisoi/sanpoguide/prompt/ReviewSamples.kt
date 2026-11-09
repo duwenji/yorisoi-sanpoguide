@@ -54,6 +54,11 @@ object ReviewSamples {
             ),
             TalkEventKind.REST to talk("rest", "休憩", Prompts.Event.REST, midWalk, mapOf("minutes" to 4)),
             TalkEventKind.MILESTONE to talk("milestone", "区切り（距離・時間）", Prompts.Event.MILESTONE, midWalk),
+            // platform REQ-NEARBY-TALK F-14: a word between the other lines, on the spots around.
+            TalkEventKind.CHAT to talk(
+                "chat", "話すことがないときの雑談（周りの見どころ）", Prompts.Event.CHAT, midWalk,
+                mapOf("topic" to "周りの見どころ", "nearby_topic" to true, "body_topic" to false, "channel_topic" to false),
+            ),
             // platform REQ-NEARBY-TALK F-10: a notable spot a little ahead, told of before arriving.
             TalkEventKind.PREVIEW to talk(
                 "preview", "少し先の見どころの予告", Prompts.Event.PREVIEW, midWalk + ("nearby" to null),
