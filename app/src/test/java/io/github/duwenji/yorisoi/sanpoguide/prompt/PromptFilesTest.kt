@@ -118,11 +118,13 @@ class PromptFilesTest {
         Prompts.event(Prompts.Event.WEATHER_CHANGE) to weatherChangeSamples,
         Prompts.event(Prompts.Event.FACILITY) to facilitySamples,
         Prompts.event(Prompts.Event.CHAT) to listOf(
-            mapOf("topic" to "季節と天気", "nearby_topic" to false, "body_topic" to false, "channel_topic" to false),
-            mapOf("topic" to "周りの見どころ", "nearby_topic" to true, "body_topic" to false, "channel_topic" to false),
-            mapOf("topic" to "体のこと（水分・休憩）", "nearby_topic" to false, "body_topic" to true, "channel_topic" to false),
-            mapOf("topic" to "このチャンネルらしい話題", "nearby_topic" to false, "body_topic" to false, "channel_topic" to true),
+            mapOf("topic" to "季節と天気", "nearby_topic" to false, "body_topic" to false, "channel_topic" to false, "song_topic" to false, "song_title" to null),
+            mapOf("topic" to "周りの見どころ", "nearby_topic" to true, "body_topic" to false, "channel_topic" to false, "song_topic" to false, "song_title" to null),
+            mapOf("topic" to "体のこと（水分・休憩）", "nearby_topic" to false, "body_topic" to true, "channel_topic" to false, "song_topic" to false, "song_title" to null),
+            mapOf("topic" to "このチャンネルらしい話題", "nearby_topic" to false, "body_topic" to false, "channel_topic" to true, "song_topic" to false, "song_title" to null),
+            mapOf("topic" to "季節の歌", "nearby_topic" to false, "body_topic" to false, "channel_topic" to false, "song_topic" to true, "song_title" to "紅葉"),
         ),
+        Prompts.Fallback.SONG to listOf(mapOf("season" to "秋", "title" to "紅葉")),
         Prompts.event(Prompts.Event.PREVIEW) to listOf(
             mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to "前方"),
             mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to null),

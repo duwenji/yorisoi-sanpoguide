@@ -36,8 +36,11 @@ sealed interface TalkEvent {
     data class Finish(val walk: WalkRecord) : TalkEvent
     /** A notable spot a little ahead (platform REQ-NEARBY-TALK F-10); [distanceM] to 50m, [direction] as for a facility. */
     data class Preview(val poi: Poi, val distanceM: Int, val direction: String?) : TalkEvent
-    /** A word between the other lines, on [topic] (platform REQ-NEARBY-TALK F-14); the AI's only. */
-    data class Chat(val topic: ChatTopic) : TalkEvent
+    /**
+     * A word between the other lines, on [topic] (platform REQ-NEARBY-TALK F-14); the AI's only.
+     * [songTitle]: the song played after it, when the topic is a season's song (F-24).
+     */
+    data class Chat(val topic: ChatTopic, val songTitle: String? = null) : TalkEvent
 }
 
 /** Whether a line for the event may talk of the spots around (platform REQ-NEARBY-TALK F-9). */
@@ -192,6 +195,8 @@ class WalkCompanion(
             "nearby_topic" to (event.topic == ChatTopic.NEARBY),
             "body_topic" to (event.topic == ChatTopic.BODY),
             "channel_topic" to (event.topic == ChatTopic.CHANNEL),
+            "song_topic" to (event.topic == ChatTopic.SONG),
+            "song_title" to event.songTitle,
         )
         is TalkEvent.Preview -> mapOf(
             "name" to event.poi.name,

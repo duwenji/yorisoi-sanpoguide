@@ -1,5 +1,10 @@
 package io.github.duwenji.yorisoi.sanpoguide.walk
 
+import kotlinx.coroutines.flow.first
+import io.github.duwenji.yorisoi.sanpoguide.prompt.Prompts
+import io.github.duwenji.yorisoi.kit.songs.SongSeason
+import io.github.duwenji.yorisoi.sanpoguide.companion.SongMoment
+import io.github.duwenji.yorisoi.sanpoguide.companion.ChatTopic
 import io.github.duwenji.yorisoi.sanpoguide.companion.AheadSpot
 import io.github.duwenji.yorisoi.sanpoguide.material.PoiSubject
 import io.github.duwenji.yorisoi.sanpoguide.material.EventSubject
@@ -134,6 +139,7 @@ class WalkService : LifecycleService() {
             session = s
             if (app.settings.settings.value.developerMode) startDiagnostics(s)
             app.feed.startWalk(s)
+            app.songs.startWalk()
             local = app.local.startWalk()?.also { feed -> lifecycleScope.launch { feed.start() } }
             startLocationUpdates()
             startTicker()
@@ -363,8 +369,8 @@ class WalkService : LifecycleService() {
                 s.lastMilestoneDistanceM = s.distanceM
                 saveProgress(s)
             }
-            // People's own words come before the AI's chat (platform REQ-NEARBY-TALK D-10).
-            is TalkDecision.Chat -> if (!idleCues(s, now)) talk {
+            // A season's song: a word before it, then its melody (platform REQ-NEARBY-TALK F-23, F-24).
+            is TalkDecision.Chat -> if (decision.topic == ChatTopic.SONG) talk { playSong(s, now) } else if (!idleCues(s, now)) talk {
                 s.lastChatAt = now
                 s.chatTopics += decision.topic
                 app.narration.aiLine(TalkEvent.Chat(decision.topic), s, weather)?.let { speakLine(it) }
@@ -380,7 +386,7 @@ class WalkService : LifecycleService() {
      * showing the first that comes to something.
      */
     private suspend fun idleCues(s: WalkSession, now: Long): Boolean {
-        if (now - s.lastSpokeAt < LOCAL_GAP_MS) return false
+        if (now - s.lastSpokeAt < LOCAL_GAP_MS || app.songPlayer.isPlaying) return false
         val station = app.stations.current.value
         for (fire in app.cueFinder.events(station.id, station.cueMedia, CueEvent.IDLE, Subject.None, s.shownCues, now)) {
             val shown = present(s, fire, station)
@@ -451,7 +457,45 @@ class WalkService : LifecycleService() {
             lastChatAt = s.lastChatAt,
             chatTopics = s.chatTopics.toList(),
             nearbyKnown = app.spots.spots.value.any { it.id !in s.talkedAbout },
+            songReady = songReady(s, station, now),
         )
+    }
+
+    /**
+     * Whether a season's song can be played now (platform REQ-NEARBY-TALK F-23, F-26, F-27): the user
+     * and the channel allow it, the walk does (its length, the songs so far), no other music or call is
+     * on, and a song of the season is kept on the device.
+     */
+    private fun songReady(s: WalkSession, station: Station, now: Long): Boolean =
+        app.settings.settings.value.playSongs && TalkEventKind.SONG in station.events &&
+            SongMoment.allowed(s.elapsedMs(now), s.songsPlayed, s.lastSongAt, now) && app.songPlayer.mayPlay() &&
+            app.songs.pick(SongMoment.timeOfDay(now), SongMoment.weather(weather), app.songs.recentlyPlayed()) != null
+
+    /**
+     * A season's song: the AI's word before it (else the fixed one, F-24), then the melody once the
+     * word has been read out. Played in the background, so the walk's decisions go on and can stop it.
+     */
+    private suspend fun playSong(s: WalkSession, now: Long) {
+        s.lastChatAt = now
+        s.chatTopics += ChatTopic.SONG
+        val song = app.songs.pick(SongMoment.timeOfDay(now), SongMoment.weather(weather), app.songs.recentlyPlayed())
+        val file = song?.let(app.songs::fileOf)
+        if (song == null || file == null || !app.songPlayer.mayPlay()) return
+        s.songsPlayed++
+        s.lastSongAt = now
+        app.songs.played(song)
+        app.diagnostics.event("song", "song" to song.id)
+        val intro = app.narration.aiLine(TalkEvent.Chat(ChatTopic.SONG, song.title), s, weather)
+        if (intro != null) {
+            speakLine(intro)
+        } else {
+            val season = mapOf("spring" to "春", "summer" to "夏", "autumn" to "秋", "winter" to "冬")[SongSeason.now(now)]
+            speakLine(app.prompts.render(Prompts.Fallback.SONG, mapOf("season" to season, "title" to song.title)))
+        }
+        lifecycleScope.launch {
+            app.speaker.speaking.first { !it }
+            if (session === s) app.songPlayer.play(file)
+        }
     }
 
     /**
@@ -559,6 +603,8 @@ class WalkService : LifecycleService() {
         // A line that finishes generating after the walk ended is dropped, so it can't
         // re-post the ongoing walk notification.
         val s = session ?: return
+        // Whatever the companion says next, a song gives way to it (platform REQ-NEARBY-TALK F-25).
+        if (app.songPlayer.isPlaying) lifecycleScope.launch { app.songPlayer.stop() }
         app.diagnostics.event("said", "text" to line.text, "spot" to line.spotName, "credit" to line.credit)
         s.remember(line.text)
         app.feed.add(line)

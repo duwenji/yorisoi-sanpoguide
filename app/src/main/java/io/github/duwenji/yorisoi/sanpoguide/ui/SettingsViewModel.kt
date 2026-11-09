@@ -128,6 +128,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setSpotCacheEnabled(on: Boolean) = edit { it.copy(spotCacheEnabled = on) }
     fun setSpotCacheFreshDays(days: Int) = edit { it.copy(spotCacheFreshDays = days) }
     fun setFindWays(on: Boolean) = edit { it.copy(findWays = on) }
+    fun setPlaySongs(on: Boolean) = edit { it.copy(playSongs = on) }
+
+    /**
+     * The season's songs for "about" (platform API-SONGS AS-6): the catalog's credit, and each song's
+     * title and makers; null before a catalog was fetched.
+     */
+    val songCredits: String?
+        get() = (getApplication<SanpoApp>()).songs.catalog?.let { c ->
+            c.credit + "　" + c.songs.joinToString("、") { s ->
+                val words = s.lyricist.name
+                val tune = s.composer.name
+                if (words == tune) "「${s.title}」（${words}）" else "「${s.title}」（作詞 $words・作曲 $tune）"
+            }
+        }
 
     private val _spotCacheCleared = MutableStateFlow(false)
     /** Whether the kept spot searches were cleared while on this screen. */

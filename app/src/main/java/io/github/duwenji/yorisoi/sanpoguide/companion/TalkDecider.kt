@@ -83,6 +83,8 @@ data class TalkSituation(
     val chatTopics: List<ChatTopic> = emptyList(),
     /** Whether there are spots around to talk of (the companion is told of them). */
     val nearbyKnown: Boolean = false,
+    /** Whether a season's song can be played now (platform REQ-NEARBY-TALK F-23, F-26, F-27). */
+    val songReady: Boolean = false,
 ) : TalkGates<WalkGate> {
     override fun isOpen(gate: WalkGate): Boolean = when (gate) {
         WalkGate.SPOT_GAP -> now - lastSpotTalkAt >= level.spotGapMs
@@ -229,7 +231,7 @@ object TalkDecider {
             if (s.level == TalkLevel.QUIET || TalkEventKind.CHAT !in s.events || !s.aiReady) return@Rule null
             // A chat the AI didn't answer isn't asked again at once.
             if (s.now - s.lastChatAt < s.level.minGapMs) return@Rule null
-            ChatTopic.next(s.chatTopics, s.elapsedMs, s.nearbyKnown)?.let(TalkDecision::Chat)
+            ChatTopic.next(s.chatTopics, s.elapsedMs, s.nearbyKnown, s.songReady)?.let(TalkDecision::Chat)
         },
     )
 
