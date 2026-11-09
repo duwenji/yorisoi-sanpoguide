@@ -34,6 +34,12 @@ data class NearbySpot(
 )
 
 /**
+ * A notable spot a little ahead of the user, worth telling of before arriving (platform
+ * REQ-NEARBY-TALK F-10): not talked about or told of on this walk, nor visited less than a day ago.
+ */
+data class AheadSpot(val poi: Poi, val distanceM: Float, val direction: String?)
+
+/**
  * Everything [TalkDecider] reads, as plain values gathered by the walk service each time.
  * No Android types, so a scene can be written down in a unit test.
  */
@@ -68,6 +74,8 @@ data class TalkSituation(
     val pendingGreeting: String?,
     val pendingSelect: Boolean,
     val justSwitched: Boolean,
+    /** Spots a little ahead, from [TalkDecider.ANNOUNCE_RADIUS_M] to [TalkDecider.PREVIEW_RADIUS_M] (platform REQ-NEARBY-TALK F-10). */
+    val ahead: List<AheadSpot> = emptyList(),
 ) : TalkGates<WalkGate> {
     override fun isOpen(gate: WalkGate): Boolean = when (gate) {
         WalkGate.SPOT_GAP -> now - lastSpotTalkAt >= level.spotGapMs
@@ -103,6 +111,8 @@ sealed interface TalkDecision {
     data class Spot(val poi: Poi, val distanceM: Int) : TalkDecision
     /** A point the channel put a cue on. */
     data class PointCue(val fire: CueFire) : TalkDecision
+    /** A notable spot a little ahead, told of before arriving (platform REQ-NEARBY-TALK F-10). */
+    data class Preview(val poi: Poi, val distanceM: Int, val direction: String?) : TalkDecision
     data class Sunset(val minutesLeft: Int) : TalkDecision
     data class NearFacility(val advice: FacilityAdvice) : TalkDecision
     data class Rest(val minutes: Int) : TalkDecision
@@ -126,6 +136,10 @@ object TalkDecider {
     const val STATIONARY_MINUTES = 2
     /** A rest remark comes after standing this long. */
     const val REST_MINUTES = 4
+    /** A spot this far ahead may be told of before arriving (platform REQ-NEARBY-TALK F-10). */
+    const val PREVIEW_RADIUS_M = 300f
+    /** Only spots this notable ([Poi.notability]: with a wikipedia or wikidata link) are told of ahead. */
+    const val PREVIEW_NOTABILITY = 2
 
     /** The walk's rules, in the order they are asked. [TalkRule.safety]: a channel can't switch it off. */
     val rules: List<Rule> = listOf(
@@ -160,6 +174,20 @@ object TalkDecider {
         },
         // A point the channel put a cue on, as for spots: not while standing still (API-CHANNEL-PACKAGE「きっかけ」).
         Rule("point", setOf(WalkGate.MOVING, WalkGate.SETTLED)) { s -> s.pointCue?.let(TalkDecision::PointCue) },
+        // Nothing to talk of here: a notable spot a little ahead, told of before arriving. The spot gap
+        // holds, as for a spot; not on a quiet level (platform REQ-NEARBY-TALK F-10〜F-13).
+        Rule("preview", setOf(WalkGate.SPOT_GAP, WalkGate.MOVING, WalkGate.SETTLED)) { s ->
+            if (s.level == TalkLevel.QUIET || TalkEventKind.PREVIEW !in s.events) return@Rule null
+            s.ahead
+                .filter { it.poi.notability >= PREVIEW_NOTABILITY && it.poi.category !in s.skippedCategories }
+                .filter { it.distanceM > ANNOUNCE_RADIUS_M && it.distanceM <= PREVIEW_RADIUS_M }
+                .minWithOrNull(
+                    compareBy<AheadSpot> { if (it.poi.category in s.preferredCategories) 0 else 1 }
+                        .thenByDescending { it.poi.notability }
+                        .thenBy { it.distanceM },
+                )
+                ?.let { TalkDecision.Preview(it.poi, ((it.distanceM.toInt() + 25) / 50 * 50).coerceAtLeast(50), it.direction) }
+        },
         // Heads-up before dark, regardless of the talk level: it's about getting home, not chat.
         Rule("sunset", safety = true) { s ->
             val sunsetAt = s.weather?.sunsetAt

@@ -49,6 +49,8 @@ class AiGuideProducer(
     private val guides: GuideRepository,
     private val settings: SettingsRepository,
     private val surroundings: Surroundings? = null,
+    /** Whether a spot was told of ahead on this walk (platform REQ-NEARBY-TALK F-11). */
+    private val previewed: (String) -> Boolean = { false },
 ) : Producer {
     override val descriptor = BuiltInProducers.AI_GUIDE
 
@@ -64,6 +66,7 @@ class AiGuideProducer(
                     spot.poi, spot.distanceM, station, request.grounding,
                     request.context.walk?.mood?.takeIf { station.moodTone },
                     surroundings?.now(except = spot.poi.id).orEmpty(),
+                    previewed(spot.poi.id),
                 )
             } catch (e: IllegalStateException) {
                 if (guides.limitReached()) return MaterialResult.Unavailable(Reason.LIMIT) else throw e

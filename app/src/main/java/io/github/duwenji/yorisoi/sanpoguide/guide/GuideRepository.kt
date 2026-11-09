@@ -62,6 +62,7 @@ class GuideRepository(
         grounds: List<Ground> = emptyList(),
         mood: Mood? = null,
         nearby: List<NearbyHighlight> = emptyList(),
+        previewed: Boolean = false,
     ): String {
         val settings = settingsRepo.settings.value
         check(settings.isConfigured) { "No AI service is set up" }
@@ -71,12 +72,13 @@ class GuideRepository(
         // sets the tone, so a narration isn't made (and billed) again when it changes.
         val from = grounds.joinToString(",") { "${it.collection}@${it.version}#${it.resource}" }
         val ai = if (settings.aiRoute == AiRoute.OPERATOR) "operator" else "${settings.provider}/${settings.model()}"
-        val cacheKey = "$ai/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from"
+        // A guide that follows a heads-up opens otherwise (platform REQ-NEARBY-TALK F-11): kept apart.
+        val cacheKey = "$ai/${channel.key}/${channel.guideLength}/${poi.id}/$share/$from" + if (previewed) "/previewed" else ""
         cache[cacheKey]?.let { return it }
         val text = gateway.generate(
             Purpose.GUIDE,
             prompts.render(Prompts.Guide.SYSTEM, channel.guideSystemVars()),
-            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds, mood, nearby)),
+            prompts.render(Prompts.Guide.USER, GuidePrompt.spotVars(poi, distanceM, share, grounds, mood, nearby, previewed)),
         )
         OutputCheck.violation(text)?.let { error("The narration has $it") }
         cache[cacheKey] = text

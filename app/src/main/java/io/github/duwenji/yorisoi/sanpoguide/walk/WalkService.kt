@@ -1,5 +1,6 @@
 package io.github.duwenji.yorisoi.sanpoguide.walk
 
+import io.github.duwenji.yorisoi.sanpoguide.companion.AheadSpot
 import io.github.duwenji.yorisoi.sanpoguide.material.PoiSubject
 import io.github.duwenji.yorisoi.sanpoguide.material.EventSubject
 import io.github.duwenji.yorisoi.sanpoguide.material.walkContext
@@ -330,6 +331,12 @@ class WalkService : LifecycleService() {
                 talkAboutSpot(s, decision.poi, decision.distanceM)
             }
             is TalkDecision.PointCue -> talk { show(s, decision.fire, present(s, decision.fire, station), spotName = null) }
+            is TalkDecision.Preview -> talk {
+                s.lastSpotTalkAt = now
+                s.previewed += decision.poi.id
+                app.feed.update(s)
+                speakLine(app.narration.line(TalkEvent.Preview(decision.poi, decision.distanceM, decision.direction), s, weather))
+            }
             is TalkDecision.Sunset -> talk {
                 s.sunsetWarned = true
                 speakLine(app.narration.line(TalkEvent.Sunset(decision.minutesLeft), s, weather))
@@ -431,7 +438,31 @@ class WalkService : LifecycleService() {
             pendingGreeting = s.pendingGreeting,
             pendingSelect = s.pendingSelect,
             justSwitched = s.justSwitched(now),
+            ahead = ahead(s, location, station, now),
         )
+    }
+
+    /**
+     * The notable spots a little ahead (platform REQ-NEARBY-TALK F-10), while walking: in front, past
+     * the spots within reach and up to [TalkDecider.PREVIEW_RADIUS_M], not talked about or told of on
+     * this walk, nor visited less than a day ago. The decider picks among them.
+     */
+    private fun ahead(s: WalkSession, location: Location, station: Station, now: Long): List<AheadSpot> {
+        if (!location.hasBearing() || location.speed < MIN_HEADING_SPEED || TalkEventKind.PREVIEW !in station.events) return emptyList()
+        return app.spots.spots.value
+            .filter { it.notability >= TalkDecider.PREVIEW_NOTABILITY && it.id !in s.talkedAbout && it.id !in s.previewed }
+            .map { it to it.distanceFrom(location) }
+            .filter { (_, d) -> d > TalkDecider.ANNOUNCE_RADIUS_M && d <= TalkDecider.PREVIEW_RADIUS_M }
+            .mapNotNull { (poi, d) ->
+                val target = Location("").apply { latitude = poi.lat; longitude = poi.lon }
+                val side = relativeDirection(location.bearing, location.bearingTo(target))
+                // Ahead means in front: a spot behind or to the side is passed, not come to.
+                if (side != "前方") return@mapNotNull null
+                if (s.visits.any { it.matches(poi) }) return@mapNotNull null
+                val last = app.history.visitsTo(poi, excludingWalk = s.id).firstOrNull()
+                if (last != null && now - last.at < RECENT_VISIT_MS) return@mapNotNull null
+                AheadSpot(poi, d, side)
+            }
     }
 
     /**

@@ -21,7 +21,8 @@ object GuidePrompt {
      * [shareLocation]: the user allows coordinates to go to the AI (off by default). [grounds]: the
      * reviewed texts the AI may take as fact (API-MATERIALS「AI の根拠」), each with whose it is. [mood]:
      * the tone to speak in, when the channel matches it (`mood.tone`). [nearby]: the spots around
-     * (platform REQ-NEARBY-TALK F-8), of which only the names and kinds go in.
+     * (platform REQ-NEARBY-TALK F-8), of which only the names and kinds go in. [previewed]: told of
+     * ahead a little before (F-11), so the guide doesn't open the same way again.
      */
     fun spotVars(
         poi: Poi,
@@ -30,6 +31,7 @@ object GuidePrompt {
         grounds: List<Ground> = emptyList(),
         mood: Mood? = null,
         nearby: List<NearbyHighlight> = emptyList(),
+        previewed: Boolean = false,
     ): Map<String, Any?> = mapOf(
         "name" to poi.name,
         "category" to poi.category,
@@ -43,6 +45,7 @@ object GuidePrompt {
         // A ground can't close its own tag and pass for the prompt (API-MATERIALS I-15).
         "grounds" to grounds.map { mapOf("text" to fence(it.text), "source" to fence(it.producerName)) }.ifEmpty { null },
         "facts" to facts(poi)?.let { mapOf("lines" to it) },
+        "previewed" to previewed,
         "nearby" to Surroundings.guideVars(nearby.filter { it.poi.id != poi.id }),
     )
 

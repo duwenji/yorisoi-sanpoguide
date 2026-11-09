@@ -39,6 +39,7 @@ object Prompts {
         WEATHER_CHANGE("weather_change", null),
         FACILITY("facility", null),
         FINISH("finish", TalkEventKind.FINISH),
+        PREVIEW("preview", TalkEventKind.PREVIEW),
     }
 
     fun event(e: Event) = "companion/events/${e.file}"
