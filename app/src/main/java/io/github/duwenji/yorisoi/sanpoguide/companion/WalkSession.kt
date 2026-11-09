@@ -26,6 +26,9 @@ class WalkSession(
     /** Spots already talked about during this walk; each is mentioned once per walk. */
     val talkedAbout = mutableSetOf<String>()
 
+    /** Spots told of ahead on this walk (platform REQ-NEARBY-TALK F-11): once each, and so said when arriving. */
+    val previewed = mutableSetOf<String>()
+
     /** When the companion last said anything, to keep small talk spaced out. */
     var lastSpokeAt = startedAt
     var lastSpotTalkAt = 0L

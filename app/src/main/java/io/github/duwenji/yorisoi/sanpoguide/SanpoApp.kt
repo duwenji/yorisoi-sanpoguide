@@ -234,7 +234,7 @@ class SanpoApp : Application() {
         )
         val producers = Producers(
             listOf(
-                AiGuideProducer(guides, settings, surroundings),
+                AiGuideProducer(guides, settings, surroundings) { it in feed.previewed.value },
                 AiCompanionProducer(companion, settings),
                 FallbackTextProducer(prompts, companion),
                 CommonsPhotoProducer(photos, settings),

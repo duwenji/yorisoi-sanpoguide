@@ -14,6 +14,7 @@
                 各要素は source（素材提供者名）と text（本文。山かっこは全角にしてある）。ないときは null
     facts       地図データ（OpenStreetMap）から読み取ったこのスポットの情報。ないときは null
       lines       「項目: 値」のリスト（例: 開館時間: 9:00〜17:00）
+    previewed   少し前に「この先に〇〇がある」と予告したスポットなら true（yorisoi-platform REQ-NEARBY-TALK F-11）
     nearby      周り（約1km以内）の見どころ。ないときは null（yorisoi-platform REQ-NEARBY-TALK F-8）
       spots       各要素は name（名称）と category（種別）。距離と方角は渡さない（解説は使い回すため）
 }}
@@ -34,6 +35,9 @@
 {{#mood}}
 いまの雰囲気: {{summary}}
 {{/mood}}
+{{#previewed}}
+少し前に「この先にこのスポットがある」と予告してある。予告と同じ前置き（「この先に〜があります」など）を繰り返さず、着いたことを受けて話し始める
+{{/previewed}}
 OpenStreetMapのタグ:
 {{#tags}}
 - {{.}}

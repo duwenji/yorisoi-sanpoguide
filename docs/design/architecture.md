@@ -108,7 +108,7 @@ flowchart LR
   Loc["位置の更新<br/>10 秒・10m ごと<br/>（300m 移動でスポット再検索）"] --> Talk
   Tick["タイマー<br/>止まっていても判定"] --> Talk
 
-  Talk["<b>TalkDecider.decide()</b><br/>① 天気の急変（頻度に関係なく）<br/>② チャンネルを切り替えた直後の一言（AI なし）と、選んだときのきっかけ<br/>③ スポット 60m 以内（チャンネルのきっかけがあるスポットが先。次に初訪問 / 再訪。SpotChooser）<br/>④ 地点のきっかけ<br/>⑤ 日の入り前（頻度に関係なく）<br/>── ここから雑談の間隔を守る ──<br/>⑥ 施設の案内（FacilityAdvisor）<br/>── 切り替えの直後 1 分はここまで ──<br/>⑦ 休憩の声かけ（4 分とどまる）<br/>⑧ 距離・時間の区切り（チャンネルの頻度）"]
+  Talk["<b>TalkDecider.decide()</b><br/>① 天気の急変（頻度に関係なく）<br/>② チャンネルを切り替えた直後の一言（AI なし）と、選んだときのきっかけ<br/>③ スポット 60m 以内（チャンネルのきっかけがあるスポットが先。次に初訪問 / 再訪。SpotChooser）<br/>④ 地点のきっかけ<br/>④' 少し先の見どころの予告（前方 60〜300m、注目度 2 以上。スポットの間隔を守る。静かでは出さない）<br/>⑤ 日の入り前（頻度に関係なく）<br/>── ここから雑談の間隔を守る ──<br/>⑥ 施設の案内（FacilityAdvisor）<br/>── 切り替えの直後 1 分はここまで ──<br/>⑦ 休憩の声かけ（4 分とどまる）<br/>⑧ 距離・時間の区切り（チャンネルの頻度）"]
 
   Talk -- "TalkEvent" --> Compose["<b>文を作る</b>（Narration）<br/>初訪問のスポット: GuideRepository.guideFor()<br/>それ以外（再訪を含む）: WalkCompanion.say()<br/>文面は sanpoguide/prompts/ と、選んでいるチャンネルから"]
   Talk -- "きっかけ（CueFire）" --> CueShow["CuePresenter → CueShow<br/>チャンネルの素材（図 7）"]

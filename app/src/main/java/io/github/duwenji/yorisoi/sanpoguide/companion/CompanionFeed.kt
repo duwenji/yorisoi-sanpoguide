@@ -49,6 +49,11 @@ class CompanionFeed {
     /** Spot ids talked about during the current walk. */
     val talkedAbout: StateFlow<Set<String>> = _talkedAbout.asStateFlow()
 
+    private val _previewed = MutableStateFlow<Set<String>>(emptySet())
+
+    /** The spots told of ahead on this walk (platform REQ-NEARBY-TALK F-11). */
+    val previewed: StateFlow<Set<String>> = _previewed.asStateFlow()
+
     private val _guiding = MutableStateFlow<Poi?>(null)
     /** The spot the current walk last introduced; the map shows the way to it. Null outside walk mode. */
     val guiding: StateFlow<Poi?> = _guiding.asStateFlow()
@@ -61,6 +66,7 @@ class CompanionFeed {
         _lines.value = emptyList()
         _walked.value = emptyList()
         _talkedAbout.value = emptySet()
+        _previewed.value = emptySet()
         _guiding.value = null
         update(session)
     }
@@ -68,6 +74,7 @@ class CompanionFeed {
     fun update(session: WalkSession) {
         _live.value = LiveWalk(session.startedAt, session.distanceM, session.visits.size)
         _talkedAbout.value = session.talkedAbout.toSet()
+        _previewed.value = session.previewed.toSet()
         // Points are added only every few meters; copy the route only when it has grown.
         if (session.routeSize != _walked.value.size) _walked.value = session.walkedRoute()
     }

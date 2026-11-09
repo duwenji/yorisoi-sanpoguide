@@ -54,6 +54,11 @@ object ReviewSamples {
             ),
             TalkEventKind.REST to talk("rest", "休憩", Prompts.Event.REST, midWalk, mapOf("minutes" to 4)),
             TalkEventKind.MILESTONE to talk("milestone", "区切り（距離・時間）", Prompts.Event.MILESTONE, midWalk),
+            // platform REQ-NEARBY-TALK F-10: a notable spot a little ahead, told of before arriving.
+            TalkEventKind.PREVIEW to talk(
+                "preview", "少し先の見どころの予告", Prompts.Event.PREVIEW, midWalk + ("nearby" to null),
+                mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to "前方"),
+            ),
             TalkEventKind.FINISH to talk(
                 "finish", "散歩の終了", Prompts.Event.FINISH, midWalk + ("walk" to null) + ("nearby" to null),
                 mapOf("km" to "2.3", "minutes" to 45, "spot_count" to 2, "spots" to "段葛、鶴岡八幡宮"),
@@ -93,7 +98,7 @@ object ReviewSamples {
 
     private fun spot(name: String, category: String, distanceM: Int, tags: List<String>, inside: Boolean = false) = mapOf(
         "name" to name, "category" to category, "distance_m" to distanceM, "inside" to inside, "tags" to tags, "coords" to null,
-        "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null,
+        "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null, "previewed" to false,
     )
 
     private val firstWalk = mapOf(

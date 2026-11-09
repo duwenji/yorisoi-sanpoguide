@@ -20,7 +20,7 @@ class PromptFilesTest {
     private val root = File("../prompts/src/main/resources/sanpoguide/prompts")
     private val prompts = PromptTemplates { name -> File(root, "$name.md").readText() }
 
-    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社", "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null)
+    private val spot = mapOf("name" to "鶴岡八幡宮", "category" to "神社", "grounded" to false, "grounds" to null, "facts" to null, "nearby" to null, "previewed" to false)
 
     /** System prompts take the channel's slots; the standard channel's are the realistic sample. */
     private val standard = BuiltInStations.load { id -> DirectoryStationFiles(File("../prompts/src/main/resources/sanpoguide/channels/$id")) }
@@ -60,6 +60,7 @@ class PromptFilesTest {
                 "nearby" to mapOf("spots" to listOf(mapOf("name" to "宝戒寺", "category" to "寺院"))),
             ),
             spot + mapOf("distance_m" to 0, "inside" to true, "tags" to listOf("leisure=park"), "coords" to null, "mood" to null),
+            spot + mapOf("distance_m" to 40, "inside" to false, "tags" to emptyList<String>(), "coords" to null, "mood" to null, "previewed" to true),
             spot + mapOf("distance_m" to null, "inside" to false, "tags" to emptyList<String>(), "coords" to null, "mood" to null),
             spot + mapOf(
                 "distance_m" to 45, "inside" to false, "tags" to emptyList<String>(), "coords" to null, "mood" to null,
@@ -116,6 +117,10 @@ class PromptFilesTest {
         Prompts.event(Prompts.Event.SUNSET) to listOf(mapOf("minutes" to 25)),
         Prompts.event(Prompts.Event.WEATHER_CHANGE) to weatherChangeSamples,
         Prompts.event(Prompts.Event.FACILITY) to facilitySamples,
+        Prompts.event(Prompts.Event.PREVIEW) to listOf(
+            mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to "前方"),
+            mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to null),
+        ),
         Prompts.event(Prompts.Event.FINISH) to listOf(
             mapOf("km" to "2.3", "minutes" to 45, "spot_count" to 2, "spots" to "段葛、舞殿"),
             mapOf("km" to "0.4", "minutes" to 6, "spot_count" to 0, "spots" to null),
@@ -134,6 +139,7 @@ class PromptFilesTest {
         Prompts.Fallback.companion(Prompts.Event.SUNSET) to listOf(mapOf("minutes" to 25)),
         Prompts.Fallback.companion(Prompts.Event.WEATHER_CHANGE) to weatherChangeSamples,
         Prompts.Fallback.companion(Prompts.Event.FACILITY) to facilitySamples,
+        Prompts.Fallback.companion(Prompts.Event.PREVIEW) to listOf(mapOf("name" to "宝戒寺", "category" to "寺院", "distance_m" to 250, "direction" to null)),
         Prompts.Fallback.companion(Prompts.Event.FINISH) to listOf(
             mapOf("km" to "2.3", "minutes" to 45, "spot_count" to 2, "spots" to null),
         ),

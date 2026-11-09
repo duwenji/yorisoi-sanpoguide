@@ -34,6 +34,8 @@ sealed interface TalkEvent {
     /** [direction] is relative to the walking direction, or null when the heading is unknown. */
     data class NearFacility(val advice: FacilityAdvice, val direction: String?) : TalkEvent
     data class Finish(val walk: WalkRecord) : TalkEvent
+    /** A notable spot a little ahead (platform REQ-NEARBY-TALK F-10); [distanceM] to 50m, [direction] as for a facility. */
+    data class Preview(val poi: Poi, val distanceM: Int, val direction: String?) : TalkEvent
 }
 
 /** Whether a line for the event may talk of the spots around (platform REQ-NEARBY-TALK F-9). */
@@ -83,6 +85,7 @@ class WalkCompanion(
         is TalkEvent.WeatherTurn -> Prompts.Event.WEATHER_CHANGE
         is TalkEvent.NearFacility -> Prompts.Event.FACILITY
         is TalkEvent.Finish -> Prompts.Event.FINISH
+        is TalkEvent.Preview -> Prompts.Event.PREVIEW
     }
 
     /** Variables for `companion/situation` (documented at the top of that file). */
@@ -180,6 +183,12 @@ class WalkCompanion(
                 "need_seat" to (a.need == FacilityNeed.SEAT),
             )
         }
+        is TalkEvent.Preview -> mapOf(
+            "name" to event.poi.name,
+            "category" to event.poi.category,
+            "distance_m" to event.distanceM,
+            "direction" to event.direction,
+        )
         is TalkEvent.Finish -> mapOf(
             "km" to km(event.walk.distanceM),
             "minutes" to minutes(event.walk.durationMs),

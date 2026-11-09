@@ -14,6 +14,7 @@ import io.github.duwenji.yorisoi.kit.channel.material.Subject
 import io.github.duwenji.yorisoi.sanpoguide.settings.TalkLevel
 import io.github.duwenji.yorisoi.sanpoguide.settings.Thresholds
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import io.github.duwenji.yorisoi.kit.geo.weather.WeatherChangeKind
 
@@ -262,7 +263,7 @@ class TalkDeciderTest {
     @Test
     fun `the walk's rules, in order, and those a channel can't switch off`() {
         assertEquals(
-            listOf("weather", "greeting", "spot", "point", "sunset", "facility", "rest", "milestone"),
+            listOf("weather", "greeting", "spot", "point", "preview", "sunset", "facility", "rest", "milestone"),
             TalkDecider.rules.map { it.name },
         )
         // ECOSYSTEM E-6: what the profile lists as events a channel can't stop (channel-package-format.md F-4).
@@ -277,5 +278,50 @@ class TalkDeciderTest {
         val spotSoon = calm.copy(spots = listOf(spot("八幡宮", 30f)), lastSpotTalkAt = now - 3 * minute)
         assertEquals(TalkDecision.Nothing, decide(spotSoon.copy(level = TalkLevel.QUIET)))
         assertEquals(TalkDecision.Spot::class, decide(spotSoon)::class)
+    }
+
+    // ---- a notable spot a little ahead (platform REQ-NEARBY-TALK F-10〜F-13) ----
+
+    private fun notable(name: String, category: String = "寺院") = Poi(name, name, 35.0, 139.0, category, mapOf("wikipedia" to "ja:$name"))
+    private fun ahead(poi: Poi, distanceM: Float) = AheadSpot(poi, distanceM, "前方")
+
+    @Test
+    fun `a notable spot a little ahead is told of, to 50m`() {
+        val decision = decide(calm.copy(ahead = listOf(ahead(notable("宝戒寺"), 238f))))
+        assertEquals(TalkDecision.Preview(notable("宝戒寺"), 250, "前方"), decision)
+    }
+
+    @Test
+    fun `only notable spots, past the spots within reach and not too far, are told of ahead`() {
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(ahead = listOf(ahead(poi("祠"), 200f)))))
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(ahead = listOf(ahead(notable("宝戒寺"), 40f)))))
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(ahead = listOf(ahead(notable("宝戒寺"), 350f)))))
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(ahead = listOf(ahead(notable("宝戒寺"), 200f)), skippedCategories = setOf("寺院"))))
+    }
+
+    @Test
+    fun `a spot within reach comes before one ahead, and the spot gap holds`() {
+        val withSpot = calm.copy(spots = listOf(spot("八幡宮", 30f)), ahead = listOf(ahead(notable("宝戒寺"), 200f)))
+        assertTrue(decide(withSpot) is TalkDecision.Spot)
+        assertEquals(TalkDecision.Nothing, decide(calm.copy(ahead = listOf(ahead(notable("宝戒寺"), 200f)), lastSpotTalkAt = now - 30_000, lastSpokeAt = now - 30_000)))
+    }
+
+    @Test
+    fun `nothing is told of ahead on a quiet level, a channel that turns it off, or standing still`() {
+        val ahead = listOf(ahead(notable("宝戒寺"), 200f))
+        assertTrue(decide(calm.copy(ahead = ahead, level = TalkLevel.QUIET)) !is TalkDecision.Preview)
+        assertTrue(decide(calm.copy(ahead = ahead, events = allEvents - TalkEventKind.PREVIEW)) !is TalkDecision.Preview)
+        assertTrue(decide(calm.copy(ahead = ahead, restMinutes = TalkDecider.STATIONARY_MINUTES)) !is TalkDecision.Preview)
+    }
+
+    @Test
+    fun `of several ahead, the channel's kind, then the most notable, then the nearest`() {
+        val shrine = Poi("八坂", "八坂", 35.0, 139.0, "神社", mapOf("wikipedia" to "ja:八坂"))
+        val temple = notable("宝戒寺")
+        val far = AheadSpot(shrine, 280f, "前方")
+        val near = AheadSpot(temple, 150f, "前方")
+        // Both as notable (a link, a major kind): the nearer.
+        assertEquals(temple, (decide(calm.copy(ahead = listOf(far, near))) as TalkDecision.Preview).poi)
+        assertEquals(shrine, (decide(calm.copy(ahead = listOf(far, near), preferredCategories = setOf("神社"))) as TalkDecision.Preview).poi)
     }
 }
