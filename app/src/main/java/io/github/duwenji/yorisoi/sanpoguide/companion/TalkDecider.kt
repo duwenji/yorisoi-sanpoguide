@@ -76,6 +76,13 @@ data class TalkSituation(
     val justSwitched: Boolean,
     /** Spots a little ahead, from [TalkDecider.ANNOUNCE_RADIUS_M] to [TalkDecider.PREVIEW_RADIUS_M] (platform REQ-NEARBY-TALK F-10). */
     val ahead: List<AheadSpot> = emptyList(),
+    /** Whether the AI can be asked now: a chat has no fixed line (platform REQ-NEARBY-TALK F-17). */
+    val aiReady: Boolean = false,
+    /** When a chat was last tried, said or not; the chats' topics so far, oldest first. */
+    val lastChatAt: Long = 0,
+    val chatTopics: List<ChatTopic> = emptyList(),
+    /** Whether there are spots around to talk of (the companion is told of them). */
+    val nearbyKnown: Boolean = false,
 ) : TalkGates<WalkGate> {
     override fun isOpen(gate: WalkGate): Boolean = when (gate) {
         WalkGate.SPOT_GAP -> now - lastSpotTalkAt >= level.spotGapMs
@@ -113,6 +120,8 @@ sealed interface TalkDecision {
     data class PointCue(val fire: CueFire) : TalkDecision
     /** A notable spot a little ahead, told of before arriving (platform REQ-NEARBY-TALK F-10). */
     data class Preview(val poi: Poi, val distanceM: Int, val direction: String?) : TalkDecision
+    /** A word between the other lines, on [topic] (platform REQ-NEARBY-TALK F-14). */
+    data class Chat(val topic: ChatTopic) : TalkDecision
     data class Sunset(val minutesLeft: Int) : TalkDecision
     data class NearFacility(val advice: FacilityAdvice) : TalkDecision
     data class Rest(val minutes: Int) : TalkDecision
@@ -213,6 +222,14 @@ object TalkDecider {
                 (s.now - s.lastMilestoneAt >= s.level.milestoneIntervalMs && walkedSinceMilestone > 100)
             // Still a checkpoint for the history on a quiet channel, so the walk isn't lost if the service dies.
             if (!due) null else if (TalkEventKind.MILESTONE in s.events) TalkDecision.Milestone else TalkDecision.Checkpoint
+        },
+        // Nothing else to say for the small-talk gap: a word between, with the AI only, while walking
+        // (standing still is the rest remark's). Not on a quiet level (platform REQ-NEARBY-TALK F-14〜F-18).
+        Rule("chat", setOf(WalkGate.CHAT_GAP, WalkGate.MOVING, WalkGate.SETTLED)) { s ->
+            if (s.level == TalkLevel.QUIET || TalkEventKind.CHAT !in s.events || !s.aiReady) return@Rule null
+            // A chat the AI didn't answer isn't asked again at once.
+            if (s.now - s.lastChatAt < s.level.minGapMs) return@Rule null
+            ChatTopic.next(s.chatTopics, s.elapsedMs, s.nearbyKnown)?.let(TalkDecision::Chat)
         },
     )
 

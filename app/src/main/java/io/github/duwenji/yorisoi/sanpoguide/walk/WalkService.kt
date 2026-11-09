@@ -363,6 +363,13 @@ class WalkService : LifecycleService() {
                 s.lastMilestoneDistanceM = s.distanceM
                 saveProgress(s)
             }
+            // People's own words come before the AI's chat (platform REQ-NEARBY-TALK D-10).
+            is TalkDecision.Chat -> if (!idleCues(s, now)) talk {
+                s.lastChatAt = now
+                s.chatTopics += decision.topic
+                app.narration.aiLine(TalkEvent.Chat(decision.topic), s, weather)?.let { speakLine(it) }
+                    ?: app.diagnostics.event("chat_unsaid", "topic" to decision.topic.name)
+            }
             TalkDecision.Nothing -> idleCues(s, now)
         }
     }
@@ -372,15 +379,16 @@ class WalkService : LifecycleService() {
      * shorthand ones too (a studio first, then a note; platform API-MATERIALS「省略形の展開」),
      * showing the first that comes to something.
      */
-    private suspend fun idleCues(s: WalkSession, now: Long) {
-        if (now - s.lastSpokeAt < LOCAL_GAP_MS) return
+    private suspend fun idleCues(s: WalkSession, now: Long): Boolean {
+        if (now - s.lastSpokeAt < LOCAL_GAP_MS) return false
         val station = app.stations.current.value
         for (fire in app.cueFinder.events(station.id, station.cueMedia, CueEvent.IDLE, Subject.None, s.shownCues, now)) {
             val shown = present(s, fire, station)
             if (shown.isEmpty()) continue
             show(s, fire, shown, spotName = null)
-            return
+            return true
         }
+        return false
     }
 
     /** People's own words from a cue, read out as they are with the source first, then a studio's audio (API-MATERIALS P-8). */
@@ -439,6 +447,10 @@ class WalkService : LifecycleService() {
             pendingSelect = s.pendingSelect,
             justSwitched = s.justSwitched(now),
             ahead = ahead(s, location, station, now),
+            aiReady = app.settings.settings.value.isConfigured && !app.guides.limitReached(),
+            lastChatAt = s.lastChatAt,
+            chatTopics = s.chatTopics.toList(),
+            nearbyKnown = app.spots.spots.value.any { it.id !in s.talkedAbout },
         )
     }
 

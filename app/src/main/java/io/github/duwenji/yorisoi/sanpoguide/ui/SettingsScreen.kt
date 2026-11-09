@@ -348,8 +348,8 @@ private fun StationSettings(station: Station, viewModel: SettingsViewModel) {
 
     Label("話しかける場面")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        // The chat and the song come with platform REQ-NEARBY-TALK X-4.
-        TalkEventKind.entries.filter { it.required || it == TalkEventKind.PREVIEW }.forEach { kind ->
+        // The song comes with platform REQ-NEARBY-TALK X-5.
+        TalkEventKind.entries.filter { it != TalkEventKind.SONG }.forEach { kind ->
             FilterChip(
                 selected = station.talksOn(kind),
                 onClick = { viewModel.setEvent(kind, !station.talksOn(kind)) },

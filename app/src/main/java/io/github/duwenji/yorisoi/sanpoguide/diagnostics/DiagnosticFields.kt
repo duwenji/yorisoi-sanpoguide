@@ -36,6 +36,7 @@ object DiagnosticFields {
             "category" to d.poi.category, "distanceM" to d.distanceM,
         )
         is TalkDecision.PointCue -> listOf("kind" to "point_cue", "cue" to d.fire.key)
+        is TalkDecision.Chat -> listOf("kind" to "chat", "topic" to d.topic.name)
         is TalkDecision.Preview -> listOf(
             "kind" to "preview", "poiId" to d.poi.id, "name" to d.poi.name,
             "category" to d.poi.category, "distanceM" to d.distanceM, "direction" to d.direction,

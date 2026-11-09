@@ -263,7 +263,7 @@ class TalkDeciderTest {
     @Test
     fun `the walk's rules, in order, and those a channel can't switch off`() {
         assertEquals(
-            listOf("weather", "greeting", "spot", "point", "preview", "sunset", "facility", "rest", "milestone"),
+            listOf("weather", "greeting", "spot", "point", "preview", "sunset", "facility", "rest", "milestone", "chat"),
             TalkDecider.rules.map { it.name },
         )
         // ECOSYSTEM E-6: what the profile lists as events a channel can't stop (channel-package-format.md F-4).
@@ -323,5 +323,48 @@ class TalkDeciderTest {
         // Both as notable (a link, a major kind): the nearer.
         assertEquals(temple, (decide(calm.copy(ahead = listOf(far, near))) as TalkDecision.Preview).poi)
         assertEquals(shrine, (decide(calm.copy(ahead = listOf(far, near), preferredCategories = setOf("神社"))) as TalkDecision.Preview).poi)
+    }
+
+    // ---- a word between the other lines (platform REQ-NEARBY-TALK F-14〜F-18) ----
+
+    /** Walking 20 minutes, the last line 5 minutes ago, nothing else due; the AI can be asked. */
+    private val quietStretch = calm.copy(
+        aiReady = true, elapsedMs = 20 * minute, lastSpokeAt = now - 5 * minute, lastMilestoneAt = now - 5 * minute, distanceM = 300.0,
+    )
+
+    @Test
+    fun `after the small-talk gap with nothing to say, a chat on the first topic`() {
+        assertEquals(TalkDecision.Chat(ChatTopic.SEASON_WEATHER), decide(quietStretch))
+        // Not before the gap (3 minutes on the normal level).
+        assertEquals(TalkDecision.Nothing, decide(quietStretch.copy(lastSpokeAt = now - 2 * minute)))
+    }
+
+    @Test
+    fun `no chat without the AI, on a quiet level, a channel that turns it off, or standing still`() {
+        assertEquals(TalkDecision.Nothing, decide(quietStretch.copy(aiReady = false)))
+        assertTrue(decide(quietStretch.copy(level = TalkLevel.QUIET)) !is TalkDecision.Chat)
+        assertEquals(TalkDecision.Nothing, decide(quietStretch.copy(events = allEvents - TalkEventKind.CHAT)))
+        assertTrue(decide(quietStretch.copy(restMinutes = TalkDecider.STATIONARY_MINUTES)) !is TalkDecision.Chat)
+    }
+
+    @Test
+    fun `a chat the AI didn't answer isn't tried again at once`() {
+        assertEquals(TalkDecision.Nothing, decide(quietStretch.copy(lastChatAt = now - minute)))
+    }
+
+    @Test
+    fun `a milestone due comes before a chat`() {
+        assertEquals(TalkDecision.Milestone, decide(quietStretch.copy(distanceM = 1500.0)))
+    }
+
+    @Test
+    fun `topics go in turn, never one of the last two, and only those there is something for`() {
+        assertEquals(ChatTopic.TIME_OF_DAY, ChatTopic.next(listOf(ChatTopic.SEASON_WEATHER), 0, nearbyKnown = true))
+        assertEquals(ChatTopic.NEARBY, ChatTopic.next(listOf(ChatTopic.TIME_OF_DAY, ChatTopic.ROUTE), 0, nearbyKnown = true))
+        // No spots around, too early for the body: on to the channel's topic.
+        assertEquals(ChatTopic.CHANNEL, ChatTopic.next(listOf(ChatTopic.TIME_OF_DAY, ChatTopic.ROUTE), 0, nearbyKnown = false))
+        assertEquals(ChatTopic.BODY, ChatTopic.next(listOf(ChatTopic.ROUTE, ChatTopic.NEARBY), ChatTopic.BODY_AFTER_MS, nearbyKnown = true))
+        // Round again after the last.
+        assertEquals(ChatTopic.SEASON_WEATHER, ChatTopic.next(listOf(ChatTopic.BODY, ChatTopic.CHANNEL), ChatTopic.BODY_AFTER_MS, nearbyKnown = true))
     }
 }

@@ -40,6 +40,7 @@ object Prompts {
         FACILITY("facility", null),
         FINISH("finish", TalkEventKind.FINISH),
         PREVIEW("preview", TalkEventKind.PREVIEW),
+        CHAT("chat", TalkEventKind.CHAT),
     }
 
     fun event(e: Event) = "companion/events/${e.file}"
