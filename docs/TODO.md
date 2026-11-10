@@ -63,6 +63,15 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] 実機での確認: マイクから声で一言を置く（屋外・風の中での聞き取り。REQ-NOTES U-4）、聞き取り中にやめる、お知らせの音声の再生と読み上げとの順番、散歩の終わりのいいね・聞いた数の送信
 - [ ] 本番のその場の素材の配信に切り替えるときの `LOCAL_MATERIALS_URL`（本番の中継と同じ時期）
 
+## 周りの見どころと雑談（platform REQ-NEARBY-TALK）
+
+1.9.0 (14) を内部テストに出した（2026-11-10）。季節の歌は開発用の配信（YorisoiSpotTiles-dev の songs/v1/）から取る。
+
+- [ ] 予告: 前にある見どころを、着く前に話すか。予告したスポットに着いたとき、同じことを繰り返さないか
+- [ ] 周りの見どころ: 1 km の中の駅・橋・坂などを、方角と距離を添えて話の種にするか
+- [ ] 雑談: 「普通」で 3 分ほど黙ると世間話をするか。「静か」では話さないか
+- [ ] 季節の歌: 始めて 10 分より後に出るか、1 回に 2 曲まで・20 分あけて流れるか、話し始めると止まるか。設定で止められるか
+
 ## チャンネル
 
 設計は [channels.md](design/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md)・[platform MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
