@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.duwenji.yorisoi.sanpoguide"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.8.0"
+        versionCode = 14
+        versionName = "1.9.0"
 
         // The operator's AI (platform API-AI-RELAY): every build uses the development relay until
         // production's is deployed.
