@@ -252,10 +252,12 @@ fun MainScreen(
         // attribution in view.
         Box(Modifier.padding(padding).fillMaxSize()) {
             Box(Modifier.fillMaxSize().clipToBounds()) {
+                val heading = rememberHeading(location)
+                val up = rememberMapUp(settings.mapHeadingUp, heading)
                 SpotMap(
                     tiles = map.tiles,
                     location = location,
-                    heading = rememberHeading(location),
+                    heading = heading,
                     spots = shown,
                     facilities = facilities,
                     walked = walked,
@@ -266,6 +268,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize(),
                     selected = selected?.item?.poi,
                     recenterRequests = recenter,
+                    up = up,
                     onTilesFailed = viewModel::onMapTilesFailed,
                 )
                 if (loading) LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
@@ -283,7 +286,13 @@ fun MainScreen(
                 ) {
                     Icon(Icons.Filled.MyLocation, contentDescription = "現在地に戻る")
                 }
-                if (walking) NoteMicButton(studio, Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 84.dp))
+                MapUpButton(
+                    headingUp = settings.mapHeadingUp,
+                    up = up,
+                    onClick = { viewModel.setMapHeadingUp(!settings.mapHeadingUp) },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 84.dp),
+                )
+                if (walking) NoteMicButton(studio, Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 136.dp))
             }
             Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (walking || lines.isNotEmpty()) {

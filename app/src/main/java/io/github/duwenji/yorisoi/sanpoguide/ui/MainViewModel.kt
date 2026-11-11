@@ -118,6 +118,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** Saved at once: mid-walk, the walk service picks the switch up and the new channel says hello. */
     fun chooseStation(id: String) = app.settings.save(app.settings.settings.value.copy(stationId = id))
 
+    /** The map's north-up / heading-up button; kept for the next time the app opens. */
+    fun setMapHeadingUp(on: Boolean) = app.settings.setMapHeadingUp(on)
+
     val liveWalk: StateFlow<LiveWalk?> = app.feed.live
     val companionLines: StateFlow<List<Utterance>> = app.feed.lines
     val walked: StateFlow<List<LatLon>> = app.feed.walked

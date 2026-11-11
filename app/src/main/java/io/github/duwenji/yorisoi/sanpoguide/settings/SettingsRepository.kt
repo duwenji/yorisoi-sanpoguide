@@ -68,6 +68,11 @@ data class GuideSettings(
     /** The user's own Google Maps Platform key (Map Tiles API), for the Google map styles. */
     val googleMapsApiKey: String = "",
     /**
+     * Whether the main map turns so the way the user faces is at the top, else north up.
+     * Switched by the map's button; saved at once, not with the rest of the settings.
+     */
+    val mapHeadingUp: Boolean = false,
+    /**
      * For publishers trying their channel before review: test tickets can be read (API-CHANNEL-LIST).
      * Turned on by tapping the version seven times; saved at once, not with the rest of the settings.
      */
@@ -120,6 +125,12 @@ class SettingsRepository(context: Context) {
     /** Saved at once, apart from [save]'s draft, which leaves it as it is. */
     fun setDeveloperMode(on: Boolean) {
         prefs.edit { putBoolean(KEY_DEVELOPER_MODE, on) }
+        _settings.value = load()
+    }
+
+    /** Saved at once, apart from [save]'s draft, which leaves it as it is. */
+    fun setMapHeadingUp(on: Boolean) {
+        prefs.edit { putBoolean(KEY_MAP_HEADING_UP, on) }
         _settings.value = load()
     }
 
@@ -209,6 +220,7 @@ class SettingsRepository(context: Context) {
                 ?.let { name -> MapStyle.entries.firstOrNull { it.name == name } }
                 ?: DEFAULTS.mapStyle,
             googleMapsApiKey = prefs.getString(KEY_GOOGLE_MAPS_KEY, null)?.let(KeyCipher::decrypt).orEmpty(),
+            mapHeadingUp = prefs.getBoolean(KEY_MAP_HEADING_UP, DEFAULTS.mapHeadingUp),
             developerMode = prefs.getBoolean(KEY_DEVELOPER_MODE, DEFAULTS.developerMode),
         )
     }
@@ -265,6 +277,7 @@ class SettingsRepository(context: Context) {
         const val KEY_MAP_STYLE = "map_style"
         const val KEY_GOOGLE_MAPS_KEY = "google_maps_api_key"
         const val KEY_DEVELOPER_MODE = "developer_mode"
+        const val KEY_MAP_HEADING_UP = "map_heading_up"
         const val KEY_DAILY_AI_LIMIT = "daily_ai_limit"
         private const val NO_LIMIT = -1
         val DEFAULTS = GuideSettings()
