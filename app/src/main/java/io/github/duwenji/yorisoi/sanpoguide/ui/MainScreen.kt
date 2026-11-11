@@ -603,7 +603,7 @@ internal fun GoogleAttribution(tiles: MapTiles.Google, copyright: String?, modif
 private fun RouteLabel(route: RouteToSpot, onClear: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = OVER_MAP_ALPHA),
         shadowElevation = 2.dp,
         modifier = modifier.padding(8.dp),
     ) {
@@ -764,7 +764,7 @@ private fun FacilityBar(items: List<FacilityItem>, onClick: (FacilityItem) -> Un
                         Icon(facilityIcon(kind), contentDescription = null, Modifier.size(12.dp), tint = Color.White)
                     }
                 },
-                colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = OVER_MAP_ALPHA)),
                 elevation = AssistChipDefaults.assistChipElevation(elevation = 2.dp),
                 border = null,
             )
@@ -788,7 +788,7 @@ private fun facilityIcon(kind: FacilityKind) = when (kind) {
 private fun NoticePill(notice: Notice, more: Int, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = OVER_MAP_ALPHA),
         shadowElevation = 2.dp,
         modifier = modifier.then(if (onClick != null) Modifier.clip(RoundedCornerShape(18.dp)).clickable(onClick = onClick) else Modifier),
     ) {
@@ -838,6 +838,8 @@ private fun formatDistance(poi: Poi, m: Int): String = if (poi.isInside(m)) "敷
 
 private fun formatMeters(m: Int): String = if (m < 1000) "${m}m" else "%.1fkm".format(m / 1000f)
 
+/** The cards over the map: enough of the map shows through, the words still read. */
+internal const val OVER_MAP_ALPHA = 0.85f
 private val SHEET_HANDLE_HEIGHT = 20.dp
 private val SPOT_ROW_HEIGHT = 64.dp
 /** Spots shown below the map outside a walk, before the list is pulled up. */
