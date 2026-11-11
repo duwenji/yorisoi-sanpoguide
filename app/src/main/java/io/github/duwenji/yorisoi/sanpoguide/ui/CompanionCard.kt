@@ -90,7 +90,8 @@ fun CompanionCard(
     val faint = MaterialTheme.colorScheme.onSurfaceVariant
     Surface(
         shape = RoundedCornerShape(20.dp),
-        shadowElevation = 4.dp,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = OVER_MAP_ALPHA),
+        shadowElevation = 2.dp,
         modifier = modifier.fillMaxWidth().animateContentSize(),
     ) {
         Column {
