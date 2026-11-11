@@ -72,6 +72,14 @@ SanpoGuide で残っている作業と、決めること。できている機能
 - [ ] 雑談: 「普通」で 3 分ほど黙ると世間話をするか。「静か」では話さないか
 - [ ] 季節の歌: 始めて 10 分より後に出るか、1 回に 2 曲まで・20 分あけて流れるか、話し始めると止まるか。設定で止められるか
 
+## 地図の向き・ちらつき・重なるカード
+
+1.10.0 (15) を内部テストに出した（2026-11-11）。
+
+- [ ] 地図の向き: 切り替えボタンで「北が上」と「向いている方向が上」が替わるか。歩きながら向きを変えたとき、地図が回りすぎないか
+- [ ] ちらつき: 散策プランの画面を開いた直後に、地図がちらつかないか
+- [ ] 重なるカード: 語りのカード・施設のチップ・お知らせが、外の明るさでも読めるか
+
 ## チャンネル
 
 設計は [channels.md](design/channels.md)、形式は [platform API-CHANNEL-PACKAGE](https://github.com/duwenji/yorisoi-platform/blob/main/docs/contracts/API-CHANNEL-PACKAGE.md)、第三者のチャンネルの方針は [platform CHANNELS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/channels.md)・[platform MATERIALS](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/materials.md)、関係者の呼び方は [関係者と共通用語](https://github.com/duwenji/yorisoi-platform/blob/main/docs/overview/roles-and-vocabulary.md)。
